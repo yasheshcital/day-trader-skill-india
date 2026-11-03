@@ -39,8 +39,9 @@ class Repo(unittest.TestCase):
         self.assertEqual(found, sorted(SKILLS))
 
     def test_root_matches_the_reel(self):
-        root = sorted(d for d in os.listdir(ROOT) if not d.startswith(".git"))
-        self.assertEqual(root, sorted([".claude-plugin", "LICENSE", "README.md", "tests"] + SKILLS))
+        # .gitignore starts with ".git", so name it outright. .git itself stays hidden.
+        root = sorted(d for d in os.listdir(ROOT) if d == ".gitignore" or not d.startswith(".git"))
+        self.assertEqual(root, sorted([".claude-plugin", ".gitignore", "india", "LICENSE", "README.md", "tests"] + SKILLS))
 
     def test_frontmatter_name_and_description(self):
         for s in SKILLS:
