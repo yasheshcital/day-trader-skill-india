@@ -13,10 +13,15 @@ bt = load("india", "backtest")
 
 NIFTY = os.path.join(FIX, "india", "NIFTY-2026-08-05_2026-11-03-5m.algotest.json")
 STOCKS = os.path.join(FIX, "india", "stocks")
+NIFTY50 = os.path.join(FIX, "india", "nifty50")
 # An independent run of 15m or-mid 2R on the six stock files, all 60 sessions.
 INDEPENDENT_TRADES = 173
 INDEPENDENT_R = -0.13
 INDEPENDENT_NET = -0.34
+# An independent run of the same rule on tests/fixtures/india/nifty50.
+NIFTY50_RULE = {"or_minutes": 15, "stop": "or_mid", "target_r": 2.0}
+NIFTY50_BUY = (1457, -0.05, -0.22)
+NIFTY50_SELL = (1796, 0.14, -0.04)
 
 
 class Costs(unittest.TestCase):
@@ -91,6 +96,143 @@ class Backtest(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(tmp, "out.json")))
         finally:
             shutil.rmtree(tmp)
+
+    def test_summary_prints_only_the_all_block(self):
+        code, text, err = _run([STOCKS, "--symbols", "SBIN", "--summary", "--write", os.devnull])
+        self.assertEqual(code, 0, err)
+        self.assertIn("ALL", text)
+        self.assertIn("FAIL:", text)
+        self.assertNotIn("short left out", text)
+        self.assertNotIn("SBIN  (", text)
+
+    def test_nifty50_15m_or_mid_2r_buy_and_sell(self):
+        loaded = bt.load_folder(NIFTY50, self.tm)
+        buy = bt.run_loaded(loaded, self.tm, side="buy", ruleset=[NIFTY50_RULE], folder=NIFTY50)
+        sell = bt.run_loaded(loaded, self.tm, side="sell", ruleset=[NIFTY50_RULE], folder=NIFTY50)
+        _print_side("buy", buy, NIFTY50_BUY)
+        _print_side("sell", sell, NIFTY50_SELL)
+        _assert_count(self, buy, NIFTY50_BUY[0])
+        _assert_count(self, sell, NIFTY50_SELL[0])
+        self.assertEqual(len(loaded), 50)
+
+    def test_a_short_is_sized_and_the_buy_is_the_exit(self):
+        # Distance to the stop, not entry minus stop: a short stop sits above the entry.
+        self.assertEqual(bt.whole_shares(100, 102, 500, 100000), 250)
+        self.assertEqual(bt.whole_shares(100, 99, 500, 100000), 500)
+        # Sell 1000 to open, buy 1010 to cover. STT stays on the sell, stamp on the buy.
+        self.assertEqual(bt.round_trip_for("sell", 1000, 1010, 10), costs.round_trip(1010, 1000, 10))
+        self.assertNotEqual(costs.round_trip(1000, 1010, 10), costs.round_trip(1010, 1000, 10))
+
+    def test_pass_mark_names_each_miss(self):
+        rule = _fake_rule(trades=149, net=-0.120, first=-0.169, second=-0.082, stock_nets=[-0.1, 0.2])
+        got = bt.judge(rule)
+        self.assertEqual(got["result"], "FAIL")
+        self.assertIn("average R after costs -0.120 < +0.10", got["reasons"])
+        self.assertIn("first half -0.169 is not above 0 after costs", got["reasons"])
+        self.assertIn("second half -0.082 is not above 0 after costs", got["reasons"])
+        self.assertTrue(any("need 60%" in reason for reason in got["reasons"]))
+        passed = _fake_rule(trades=100, net=0.10, first=0.01, second=0.20, stock_nets=[0.1, 0.2, 0.3, -0.1, -0.2])
+        self.assertEqual(bt.judge(passed)["result"], "PASS")
+        self.assertEqual(bt.judge(passed)["reasons"], [])
+
+    def test_inplay_gap_volume_and_warmup(self):
+        # Ten flat sessions, then one candidate. Opening range is 15 minutes (3 bars).
+        base = [("2026-08-%02d" % (i + 1), 100, 100, 100) for i in range(10)]
+        sessions = _sessions(base + [("2026-08-11", 101, 100, 100)])
+        dates, skipped = bt.dates_for(sessions, "buy", ["inplay"], 15, {})
+        self.assertEqual(skipped, 10)
+        self.assertEqual(dates, {"2026-08-11"})  # |101 - 100| / 100 = 1.0% exactly
+        # The same gap on a warmup day is skipped, not traded.
+        early = _sessions([("2026-08-01", 110, 100, 100)] + base[1:])
+        dates, skipped = bt.dates_for(early, "buy", ["inplay"], 15, {})
+        self.assertEqual(skipped, 10)
+        self.assertEqual(dates, set())
+        # 0.5% is not a gap, and 300 volume against a 300 average is not 2x.
+        quiet = _sessions(base + [("2026-08-11", 100.5, 100, 100)])
+        self.assertEqual(bt.dates_for(quiet, "buy", ["inplay"], 15, {})[0], set())
+        # No gap, but today's opening-range volume is exactly twice the previous 10.
+        loud = _sessions(base + [("2026-08-11", 100, 100, 200)])
+        self.assertEqual(bt.dates_for(loud, "buy", ["inplay"], 15, {})[0], {"2026-08-11"})
+        short = _sessions(base + [("2026-08-11", 100, 100, 199)])
+        self.assertEqual(bt.dates_for(short, "buy", ["inplay"], 15, {})[0], set())
+
+    def test_market_filter_on_synthetic_days(self):
+        up = _flat_bars()
+        up[3]["c"] = 102
+        up[3]["h"] = 102
+        self.assertEqual(bt.market_bias(up, 15, self.tm), "buy")
+        down = _flat_bars()
+        down[3]["c"] = 98
+        down[3]["l"] = 98
+        self.assertEqual(bt.market_bias(down, 15, self.tm), "sell")
+        late = _flat_bars()
+        late[63]["c"] = 110  # 14:35, after the 14:30 cutoff
+        late[63]["h"] = 110
+        self.assertIsNone(bt.market_bias(late, 15, self.tm))
+        # The first close beyond the range decides, even if the next bar reverses.
+        first = _flat_bars()
+        first[3]["c"] = 102
+        first[4]["c"] = 90
+        self.assertEqual(bt.market_bias(first, 15, self.tm), "buy")
+        # In play and a down index: shorts only.
+        base = [("2026-08-%02d" % (i + 1), 100, 100, 100) for i in range(10)]
+        sessions = _sessions(base + [("2026-08-11", 101, 100, 100)])
+        bias = {"2026-08-11": "sell"}
+        self.assertEqual(bt.dates_for(sessions, "buy", ["inplay", "market"], 15, bias)[0], set())
+        self.assertEqual(bt.dates_for(sessions, "sell", ["inplay", "market"], 15, bias)[0], {"2026-08-11"})
+        self.assertEqual(bt.dates_for(sessions, "buy", ["market"], 15, {"2026-08-11": None})[0], set())
+
+
+def _print_side(side, report, independent):
+    block = report["rules"][0]["combined"]["all"]
+    trades, before, after = independent
+    off = 100.0 * (block["trades"] - trades) / trades
+    print("nifty50 15m or-mid 2R %s: trades %d (independent %d, %+.1f%%), avg R %s (about %s), "
+          "avg R after costs %s (about %s)" % (
+              side, block["trades"], trades, off, block["avg_R"], before,
+              block["avg_R_after_costs"], after))
+
+
+def _assert_count(case, report, expect):
+    got = report["rules"][0]["combined"]["all"]["trades"]
+    case.assertLessEqual(abs(got - expect), 0.02 * expect,
+                         "trade count %d is more than 2%% away from %d" % (got, expect))
+
+
+def _fake_rule(trades, net, first, second, stock_nets):
+    def block(n, value):
+        return {"trades": n, "win_rate": None, "avg_R": value, "avg_R_after_costs": value, "rupees": 0.0}
+    symbols = {}
+    for i, value in enumerate(stock_nets):
+        symbols["S%d" % i] = {"summary": {"all": block(1, value), "first_half": block(0, None),
+                                           "second_half": block(0, None)}}
+    return {
+        "combined": {"all": block(trades, net), "first_half": block(trades // 2, first),
+                     "second_half": block(trades - trades // 2, second)},
+        "symbols": symbols,
+    }
+
+
+def _bar(price, volume):
+    return {"o": price, "h": price, "l": price, "c": price, "v": volume}
+
+
+def _sessions(spec):
+    """spec rows are (date, open, close, volume on each of the first 3 bars)."""
+    out = []
+    for date, opened, close, volume in spec:
+        bars = [_bar(close, volume) for _i in range(3)]
+        bars[0]["o"] = opened
+        out.append((date, bars))
+    return out
+
+
+def _flat_bars():
+    # 75 bars inside a 99-101 opening range, so a later close can leave it.
+    bars = []
+    for _i in range(75):
+        bars.append({"o": 100, "h": 101, "l": 99, "c": 100, "v": 0})
+    return bars
 
 
 def _run(argv):
