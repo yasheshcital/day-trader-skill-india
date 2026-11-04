@@ -15,6 +15,7 @@ tm = load("trader-timemachine", "timemachine")
 
 DIR = os.path.join(FIX, "trader-timemachine")
 NIFTY = os.path.join(DIR, "NIFTY-60d5m.json")
+REAL = os.path.join(DIR, "NIFTY-real-60d5m.json")
 with open(NIFTY, encoding="utf-8") as _fh:
     TEXT = _fh.read()
 NOW = "2026-10-30 09:40"
@@ -146,7 +147,8 @@ class Reel(unittest.TestCase):
                      "10,000 replays", "67 five-minute bars", "seed 19", "60 full sessions",
                      "target first   36.4 %", "stop first     58.4 %", "neither        5.1 %    still open at 3:10 PM",
                      "green          40.5 %", "median ₹23,012.35, 90 % of replays between ₹22,860.48 and ₹23,167.16",
-                     "Average R: +0.173", "fired 49 times: 23 target, 26 stop, 0 neither. Average R +0.408",
+                     "Average R: +0.173", "entries 9:30 AM to 2:30 PM",
+                     "fired 49 times: 23 target, 26 stop, 0 neither. Average R +0.408",
                      "not a prediction", "--seed 19"):
             self.assertIn(line, text, line)
         self.assertNotIn(" ET", text)
@@ -409,6 +411,50 @@ class Plans(unittest.TestCase):
         self.assertTrue(tm.verdict(dict(mc, p_target=0.40, p_stop=0.40)).startswith("Strongly toward the target"))
         self.assertIn("at 1.5R the target has to come first in 40 %", tm.verdict(dict(mc, r_at_target=1.5)))
 
+    def test_entries_stop_at_1430_and_start_at_0930(self):
+        """A close outside 09:30 to 14:30 is not an entry, even when --until is 15:10."""
+        rule = {"setup": "orb", "or_minutes": 15, "stop_rule": "or_mid", "target_r": 2.0}
+        early = dict(rule, or_minutes=5)
+
+        def session(slot):
+            rows = []
+            for i in range(75):
+                c = 110.0 if i == slot else 100.0
+                rows.append({"h": c + 1, "l": c - 1, "c": c})
+            return rows
+
+        last = 70  # the 15:10 bar
+        self.assertEqual(tm.history_replay([("2026-08-05", session(63))], rule, last)["triggered"], 0)
+        on_time = tm.history_replay([("2026-08-05", session(62))], rule, last)
+        self.assertEqual((on_time["triggered"], on_time["trades"][0]["time"]), (1, "2:30 PM"))
+        self.assertEqual(tm.history_replay([("2026-08-05", session(1))], early, last)["triggered"], 0)
+        at_930 = tm.history_replay([("2026-08-05", session(2))], early, last)
+        self.assertEqual(at_930["trades"][0]["time"], "9:30 AM")
+
+    def test_the_plan_or_config_sets_the_window(self):
+        doc = machine(plan(no_entries_before="11:00", no_entries_after="12:00"), replays=30)
+        self.assertEqual((doc["history"]["no_entries_before"], doc["history"]["no_entries_after"]), ("11:00", "12:00"))
+        for t in doc["history"]["trades"]:
+            minute = tm.parse_clock(t["time"], "time")
+            self.assertTrue(11 * 60 <= minute <= 12 * 60, t)
+        self.assertIn("entries 11:00 AM to 12:00 PM", "\n".join(tm.report(doc)))
+        d = tempfile.mkdtemp()
+        try:
+            cfg = os.path.join(d, "config.json")
+            with open(cfg, "w") as fh:
+                json.dump({"no_entries_before": "10:00", "no_entries_after": "11:00"}, fh)
+            doc = machine(replays=30, config_path=cfg)
+            self.assertEqual((doc["history"]["no_entries_before"], doc["history"]["no_entries_after"]),
+                             ("10:00", "11:00"))
+            over = machine(plan(no_entries_after="14:00", no_entries_before="13:00"), replays=30, config_path=cfg)
+            self.assertEqual((over["history"]["no_entries_before"], over["history"]["no_entries_after"]),
+                             ("13:00", "14:00"))
+        finally:
+            shutil.rmtree(d)
+        with self.assertRaises(tm.TMError) as cm:
+            tm.entry_window({"no_entries_before": "15:00", "no_entries_after": "14:00"}, config_path="")
+        self.assertIn("earlier than", str(cm.exception))
+
     def test_1r_on_the_fixture_is_close_to_a_coin_flip(self):
         doc = machine(plan(target=23030.40))
         m = doc["mc"]
@@ -582,6 +628,31 @@ class Cli(unittest.TestCase):
         self.assertTrue(lines[-1].startswith("Leans toward the target"))
         code, again, _ = run(["chart", "--plan", self.plan, "--offline", NIFTY, "--now", NOW])
         self.assertEqual(again, text)
+
+
+class RealSessions(unittest.TestCase):
+    """The real AlgoTest NIFTY file, converted to Yahoo bars. Replay percentages are not pinned."""
+
+    def test_october_30_on_the_real_sessions(self):
+        with open(REAL, encoding="utf-8") as fh:
+            text = fh.read()
+        kw = dict(replays=10000, seed=19, source="offline", config_path="")
+        first = tm.time_machine(text, plan(), NOW_UTC, **kw)
+        second = tm.time_machine(text, plan(), NOW_UTC, **kw)
+        self.assertEqual(first["mc"], second["mc"])
+        self.assertEqual(first["history"], second["history"])
+        m, h = first["mc"], first["history"]
+        self.assertEqual((m["pool_sessions"], m["pool_from"], m["pool_to"]), (59, "2026-08-05", "2026-10-29"))
+        self.assertNotIn(DAY, [t["date"] for t in h["trades"]])
+        self.assertTrue(all(t["date"] < DAY for t in h["trades"]))
+        self.assertEqual((h["triggered"], h["target"], h["stop"], h["close"]), (31, 6, 14, 11))
+        self.assertEqual((h["no_entries_before"], h["no_entries_after"]), ("09:30", "14:30"))
+        for t in h["trades"]:
+            minute = tm.parse_clock(t["time"], "time")
+            self.assertTrue(9 * 60 + 30 <= minute <= 14 * 60 + 30, t)
+        self.assertIn("entries 9:30 AM to 2:30 PM", "\n".join(tm.report(first)))
+        print("history average R %+.3f" % h["avg_R"])
+        print("replay average R %+.3f" % m["avg_R"])
 
 
 if __name__ == "__main__":

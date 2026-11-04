@@ -37,7 +37,10 @@ How the replays work (the reel's sim.py, same algorithm, same random draws):
      between the 1st and 99th percentile.
   6. History: the plan's own rule (an opening-range breakout with the same
      opening range, stop rule and target R) re-run on every one of those past
-     full sessions, first close beyond the range = entry, same stop-first rule.
+     full sessions. The entry is the first bar that closes beyond the range
+     whose close is between no_entries_before and no_entries_after (09:30 and
+     14:30 IST unless the plan or trader/config.json says otherwise), the same
+     window trader-entry uses. Then the same stop-first rule.
 
 The verdict line looks at the replays that hit one side (target or stop) and
 compares the target's share of them, target / (target + stop), with the share
@@ -87,6 +90,8 @@ SESSION_BARS = 75    # 09:15 to 15:30 in 5-minute bars
 OPEN_MIN = 9 * 60 + 15
 CLOSE_MIN = 15 * 60 + 30
 FLAT_BY_MIN = 15 * 60 + 10   # default --until when the plan has no flat_by
+# Same entry window as trader-entry/entry.py. The plan overrides trader/config.json.
+ENTRY_DEFAULTS = {"no_entries_before": "09:30", "no_entries_after": "14:30"}
 MIN_SESSIONS = 20
 SAMPLE_PATHS = 160
 BAND_PATHS = 2000
@@ -183,6 +188,40 @@ def clock12(minutes):
 
 def clock24(minutes):
     return "%02d:%02d" % divmod(minutes, 60)
+
+
+def parse_hhmm(text, what):
+    """'09:30' or '14:30' -> minutes after midnight. Same shape as trader-entry's config."""
+    m = re.match(r"^\s*(\d{1,2}):(\d{2})\s*$", str(text or ""))
+    if not m or int(m.group(1)) > 23 or int(m.group(2)) > 59:
+        raise TMError("%s wants an India time like 14:30, not %r" % (what, text))
+    return int(m.group(1)) * 60 + int(m.group(2))
+
+
+def entry_window(plan, config_path="trader/config.json"):
+    """(no_entries_before, no_entries_after) in minutes. The plan wins, then
+    trader/config.json, then 09:30 and 14:30."""
+    cfg = dict(ENTRY_DEFAULTS)
+    if config_path and os.path.exists(config_path):
+        try:
+            with open(config_path, encoding="utf-8") as fh:
+                doc = json.load(fh)
+        except ValueError as e:
+            raise TMError("%s is not valid JSON: %s" % (config_path, e))
+        if not isinstance(doc, dict):
+            raise TMError("%s is not a config" % config_path)
+        for k in ENTRY_DEFAULTS:
+            if doc.get(k):
+                cfg[k] = doc[k]
+    for k in ENTRY_DEFAULTS:
+        if plan.get(k):
+            cfg[k] = plan[k]
+    before = parse_hhmm(cfg["no_entries_before"], "no_entries_before")
+    after = parse_hhmm(cfg["no_entries_after"], "no_entries_after")
+    if before >= after:
+        raise TMError("no_entries_before (%s) must be earlier than no_entries_after (%s)"
+                      % (clock24(before), clock24(after)))
+    return before, after
 
 
 # ---------------------------------------------------------------- data
@@ -461,16 +500,24 @@ def rule_stop(rule, oh, ol, entry, long):
     return ticks_away(entry * (1 - frac) if long else entry * (1 + frac), long)
 
 
-def history_replay(sessions, rule, last, side="buy"):
-    """The plan's rule on every past full session: entry = the first bar after the
-    opening range to close beyond it (up to the --until bar), then stop first, then
-    target, bar by bar, else the close at --until."""
+def history_replay(sessions, rule, last, side="buy", no_entries_before=9 * 60 + 30, no_entries_after=14 * 60 + 30):
+    """The plan's rule on every past full session. The entry is the first bar after
+    the opening range whose close is beyond it and whose close time is between
+    no_entries_before and no_entries_after (inclusive), the same window as
+    trader-entry. The trade is then followed to the --until bar: stop first, then
+    target, else the close at --until."""
     long = side == "buy"
     n = rule["or_minutes"] // 5
     trades = []
+
+    def in_window(i):
+        close_min = OPEN_MIN + 5 * (i + 1)
+        return no_entries_before <= close_min <= no_entries_after
+
     for d, D in sessions:
         oh, ol = opening_range(D, n)
-        kk = next((i for i in range(n, last + 1) if (D[i]["c"] > oh if long else D[i]["c"] < ol)), None)
+        kk = next((i for i in range(n, last + 1)
+                   if in_window(i) and (D[i]["c"] > oh if long else D[i]["c"] < ol)), None)
         if kk is None:
             continue
         e = to_tick(D[kk]["c"])
@@ -499,6 +546,7 @@ def history_replay(sessions, rule, last, side="buy"):
         "close": sum(1 for x in trades if x["outcome"] == "close"),
         "green": sum(1 for x in trades if x["R"] > 0),
         "avg_R": round(statistics.mean(x["R"] for x in trades), 3) if trades else None,
+        "no_entries_before": clock24(no_entries_before), "no_entries_after": clock24(no_entries_after),
         "rule": rule, "trades": trades,
     }
 
@@ -597,7 +645,7 @@ def normalize_plan(raw, src="flags"):
     if or_min < 5 or or_min % 5 or or_min >= SESSION_BARS * 5:
         raise TMError("opening_range.minutes must be a multiple of 5 (got %s)" % or_min)
     risk = (entry - stop) if long else (stop - entry)
-    return {
+    out = {
         "symbol": sym, "side": side, "date": date, "setup": str(raw.get("setup") or "orb"),
         "entry": entry, "entry_time": clock12(OPEN_MIN + 5 * (k + 1)), "entry_bar": k,
         "stop": stop, "target": target, "risk_per_share": round(risk, 2),
@@ -606,6 +654,10 @@ def normalize_plan(raw, src="flags"):
         "stop_rule": str(raw.get("stop_rule") or "auto"), "interval": "5m",
         "flat_by": raw.get("flat_by"), "from": src,
     }
+    for k in ENTRY_DEFAULTS:
+        if raw.get(k):
+            out[k] = str(raw[k])
+    return out
 
 
 def resolve_rule(plan, entry_day):
@@ -693,7 +745,8 @@ def verdict_notes(mc):
     return notes
 
 
-def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=None, source="yahoo"):
+def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=None, source="yahoo",
+                 config_path="trader/config.json"):
     """Chart JSON text + a normalized plan -> the timemachine.json document."""
     if not 1 <= replays <= 1000000:
         raise TMError("--replays must be between 1 and 1,000,000")
@@ -745,9 +798,10 @@ def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=No
               band_times=[clock24(OPEN_MIN + 5 * (j + 1)) for j in range(k, last + 1)])
     rule = resolve_rule(plan, entry_day)
     plan_out = {kk: v for kk, v in plan.items() if v is not None}
+    before, after = entry_window(plan, config_path)
     if rule:
         plan_out["stop_rule"] = rule["stop_rule"]
-        history = history_replay(sessions, rule, last, plan["side"])
+        history = history_replay(sessions, rule, last, plan["side"], before, after)
     else:
         history = {"sessions": len(sessions), "triggered": 0, "rule": None, "trades": [],
                    "note": "skipped: the history replay knows the opening-range breakout (orb) only, "
@@ -814,13 +868,20 @@ def report(doc):
         stop_words = {"or_mid": "opening-range midpoint", "or_low": "opening-range low",
                       "or_high": "opening-range high"}.get(ru["stop_rule"],
                                                            "%.2f %% from the entry" % ru.get("stop_pct", 0))
+        window = ""
+        if h.get("no_entries_before") and h.get("no_entries_after"):
+            window = ", entries %s to %s" % (clock12(int(h["no_entries_before"][:2]) * 60
+                                                     + int(h["no_entries_before"][3:])),
+                                              clock12(int(h["no_entries_after"][:2]) * 60
+                                                      + int(h["no_entries_after"][3:])))
         if h["triggered"]:
-            lines.append("History: the same rule (%d-min opening range, stop at the %s, %gR target) on each of "
+            lines.append("History: the same rule (%d-min opening range, stop at the %s, %gR target%s) on each of "
                          "those %d real sessions fired %d times: %d target, %d stop, %d neither. Average R %+.3f."
-                         % (ru["or_minutes"], stop_words, ru["target_r"], h["sessions"], h["triggered"],
+                         % (ru["or_minutes"], stop_words, ru["target_r"], window, h["sessions"], h["triggered"],
                             h["target"], h["stop"], h["close"], h["avg_R"]))
         else:
-            lines.append("History: the same rule never fired in those %d sessions." % h["sessions"])
+            lines.append("History: the same rule never fired in those %d sessions%s."
+                         % (h["sessions"], " (%s)" % window[2:] if window else ""))
     else:
         lines.append("History: " + h.get("note", "skipped."))
     lines += ["", doc["verdict"]] + list(doc.get("verdict_notes") or []) + [""]
