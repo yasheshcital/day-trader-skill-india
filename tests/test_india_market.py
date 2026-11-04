@@ -1,6 +1,7 @@
 """NSE calendar and clock."""
 
 import datetime
+import inspect
 import unittest
 
 from _load import load
@@ -49,9 +50,39 @@ class NseMarket(unittest.TestCase):
         self.assertEqual(nse.to_ist(DT(2026, 12, 1, 10, 0)), DT(2026, 12, 1, 15, 30))
         self.assertEqual(nse.IST, datetime.timedelta(hours=5, minutes=30))
 
-    def test_round_to_the_five_paise_tick(self):
-        self.assertEqual(nse.round_to_tick(101.07), 101.05)
-        self.assertEqual(nse.round_to_tick(101.07, down=False), 101.10)
+    def test_tick_for_follows_the_cash_bands_and_indices_stay_at_five_paise(self):
+        cases = (
+            (249.99, None, 0.01),
+            (250, None, 0.05),
+            (1000, None, 0.05),
+            (1000.05, None, 0.10),
+            (5000, None, 0.10),
+            (5000.50, None, 0.50),
+            (10000, None, 0.50),
+            (10001, None, 1.00),
+            (20000, None, 1.00),
+            (20005, None, 5.00),
+            (22990.25, "NIFTY", 0.05),
+        )
+        for price, symbol, tick in cases:
+            self.assertEqual(nse.tick_for(price, symbol), tick, (price, symbol))
+            self.assertEqual(exitp.tick_for(price, symbol), tick, (price, symbol))
+            self.assertEqual(tm.tick_for(price, symbol), tick, (price, symbol))
+        for name in nse.INDEX_SYMBOLS:
+            self.assertEqual(nse.tick_for(50000, name), 0.05, name)
+        # 260 is in the 0.05 band. An explicit tick still floors and ceils.
+        self.assertEqual(nse.round_to_tick(260.07, "RELIANCE"), 260.05)
+        self.assertEqual(nse.round_to_tick(260.07, "RELIANCE", down=False), 260.10)
+        self.assertEqual(nse.round_to_tick(101.07, tick=0.05), 101.05)
+        self.assertEqual(nse.round_to_tick(101.07, down=False, tick=0.05), 101.10)
+        self.assertEqual(nse.round_to_tick(1162.55, "RELIANCE"), 1162.50)
+        self.assertEqual(nse.round_to_tick(1162.55, "RELIANCE", down=False), 1162.60)
+
+    def test_tick_for_is_the_same_copy_in_exit_and_timemachine(self):
+        self.assertEqual(exitp.INDEX_SYMBOLS, nse.INDEX_SYMBOLS)
+        self.assertEqual(tm.INDEX_SYMBOLS, nse.INDEX_SYMBOLS)
+        self.assertEqual(inspect.getsource(exitp.tick_for), inspect.getsource(nse.tick_for))
+        self.assertEqual(inspect.getsource(tm.tick_for), inspect.getsource(nse.tick_for))
 
     def test_entry_uses_the_same_holiday_list(self):
         self.assertEqual(entry.NSE_HOLIDAYS, nse.NSE_HOLIDAYS)

@@ -1,5 +1,6 @@
 """AlgoTest candles -> the Yahoo chart JSON entry.py reads with --offline."""
 
+import datetime
 import io
 import json
 import os
@@ -169,6 +170,60 @@ class Converter(unittest.TestCase):
         self.assertEqual(result_of(doc)["meta"]["regularMarketTime"], 1793354400)
         self.assertEqual(report["skipped"], [(conv.OUTSIDE, 1)])
         self.assertEqual(conv.output_names("NIFTY", "1m"), ["NIFTY.json"])
+
+    def test_an_nse_underlying_name_drops_the_prefix(self):
+        payload = {"underlying": "NSE_RELIANCE", "candles": [
+            candle("2026-10-30T09:20:00", 1, 1, 1, 1),
+        ]}
+        doc, report = conv.to_yahoo(payload, None)
+        self.assertEqual(report["symbol"], "RELIANCE")
+        self.assertEqual(result_of(doc)["meta"]["symbol"], "RELIANCE")
+        doc, _ = conv.to_yahoo({"candles": payload["candles"]}, "NSE_RELIANCE")
+        self.assertEqual(result_of(doc)["meta"]["symbol"], "RELIANCE")
+        tmp = tempfile.mkdtemp()
+        try:
+            src = os.path.join(tmp, "in.json")
+            with open(src, "w", encoding="utf-8") as fh:
+                json.dump(payload, fh)
+            code, out, err = run([src, "--interval", "5m", "--out", os.path.join(tmp, "out")])
+            self.assertEqual(code, 0, err)
+            self.assertTrue(os.path.exists(os.path.join(tmp, "out", "RELIANCE.json")))
+            self.assertIn("RELIANCE.json", out)
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_daily_bars_are_stamped_at_the_open(self):
+        payload = {"underlying": "NSE_RELIANCE", "candles": [
+            {"datetime": "2026-10-27T15:40:00", "open": 1195.2, "high": 1202.6, "low": 1184.0,
+             "close": 1196.2, "volume": 23484423.0},
+            {"datetime": "2026-10-28T15:40:00", "open": 1194.5, "high": 1204.3, "low": 1156.4,
+             "close": 1158.0, "volume": 42777865.0},
+            {"datetime": "2026-10-29T15:40:00", "open": 1159.2, "high": 1182.1, "low": 1155.6,
+             "close": 1167.4, "volume": 39866205.0},
+            {"datetime": "2026-10-30T15:40:00", "open": 1170.6, "high": 1174.6, "low": 1152.5,
+             "close": 1164.9, "volume": 27134835.0},
+        ]}
+        doc, report = conv.to_yahoo(payload, None, interval="1d")
+        r = result_of(doc)
+        q = r["indicators"]["quote"][0]
+
+        def epoch(day, hour, minute):
+            utc = conv.nse_market.ist_to_utc(datetime.datetime(2026, 10, day, hour, minute))
+            return int((utc - conv.EPOCH).total_seconds())
+
+        self.assertEqual(r["timestamp"], [epoch(d, 9, 15) for d in (27, 28, 29, 30)])
+        self.assertEqual(r["meta"]["regularMarketTime"], epoch(30, 15, 30))
+        self.assertEqual(r["meta"]["dataGranularity"], "1d")
+        self.assertEqual(r["meta"]["symbol"], "RELIANCE")
+        self.assertEqual(q["open"], [1195.2, 1194.5, 1159.2, 1170.6])
+        self.assertEqual(q["high"], [1202.6, 1204.3, 1182.1, 1174.6])
+        self.assertEqual(q["low"], [1184.0, 1156.4, 1155.6, 1152.5])
+        self.assertEqual(q["close"], [1196.2, 1158.0, 1167.4, 1164.9])
+        self.assertEqual(q["volume"], [23484423, 42777865, 39866205, 27134835])
+        self.assertEqual(r["meta"]["previousClose"], 1167.4)
+        self.assertEqual(report["skipped"], [])
+        self.assertEqual(report["warnings"], [])
+        self.assertEqual(report["bars"], 4)
 
     def test_a_late_open_warns_and_still_writes(self):
         doc, report = conv.to_yahoo(

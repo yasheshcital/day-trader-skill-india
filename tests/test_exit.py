@@ -39,10 +39,10 @@ def run(mod, argv):
     return code, out.getvalue(), err.getvalue()
 
 
-def c(entry_px, stop, target="2R", oh=OH, ol=OL, atr=None, n=None):
+def c(entry_px, stop, target="2R", oh=OH, ol=OL, atr=None, n=None, symbol="NIFTY"):
     sr, sp = exitp.parse_stop(stop)
     tr, tp = exitp.parse_target(target)
-    return exitp.compute(entry_px, sr, sp, tr, tp, oh, ol, atr, n)
+    return exitp.compute(entry_px, sr, sp, tr, tp, oh, ol, atr, n, symbol)
 
 
 class Math(unittest.TestCase):
@@ -81,7 +81,20 @@ class Math(unittest.TestCase):
         p = c(22990.25, "atr:1.5", atr=45.1875, n=4)
         self.assertEqual(p["stop"], Decimal("22922.45"))              # 22990.25 - 67.78125 = 22922.46875
         self.assertEqual(p["stop"] % Decimal("0.05"), 0)
+        self.assertEqual(p["tick"], Decimal("0.05"))
         self.assertEqual(p["stop_label"], "1.5 x ATR(4) under the entry")
+
+    def test_reliance_floors_the_stop_to_ten_paise(self):
+        p = c(1166.00, "pct:0.3", symbol="RELIANCE")
+        self.assertEqual(p["entry"], Decimal("1166.00"))
+        self.assertEqual(p["stop"], Decimal("1162.50"))          # 1166 x 0.997 = 1162.502
+        self.assertEqual(p["risk"], Decimal("3.50"))
+        self.assertEqual(p["target"], Decimal("1173.00"))
+        self.assertEqual(p["tick"], Decimal("0.1"))
+        p = c(1166.00, "pct:0.3", "1R", symbol="RELIANCE")
+        self.assertEqual(p["target"], Decimal("1169.50"))
+        p = c(1166.00, "price:1162.55", symbol="RELIANCE")
+        self.assertEqual(p["stop"], Decimal("1162.50"))
 
     def test_target_rounds_half_up_and_price_targets(self):
         p = c(22990.25, "or-mid", "1.5R")
@@ -182,6 +195,7 @@ class Cli(unittest.TestCase):
         self.assertIn("Risk a share  ₹40.15 (0.17% of the entry)", text)
         self.assertIn("Reward:risk   1.0", text)
         self.assertIn("Flat by       15:10 IST", text)
+        self.assertIn("Tick ₹0.05", text)
         self.assertIn("not a guarantee", text)
         self.assertIn("/trader-timemachine", text)
         self.assertNotIn("$", text)

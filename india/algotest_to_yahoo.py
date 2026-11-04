@@ -3,16 +3,21 @@
 read with --offline.
 
     python3 india/algotest_to_yahoo.py INPUT.json --symbol NIFTY --out trader/bars
+    python3 india/algotest_to_yahoo.py RELIANCE.json --interval 1d
 
 Input is a file saved from AlgoTest's get_ohlc_by_data_source:
 
-    {"candles": [{"datetime": "2026-10-30T09:20:00", "open": ..., "high": ...,
-                  "low": ..., "close": ..., "volume": ...}, ...]}
+    {"underlying": "NSE_RELIANCE", "candles": [{"datetime": "2026-10-30T09:20:00",
+      "open": ..., "high": ..., "low": ..., "close": ..., "volume": ...}, ...]}
 
 "datetime" is naive IST. By default it marks the END of the bar (--label end).
 Yahoo timestamps are the bar START as UTC epoch seconds: end minus one
-interval, then IST minus 5:30. The clock comes from india/nse_market.py.
-Standard library only. Nothing here places an order.
+interval, then IST minus 5:30. --interval 1d is one bar per trading day:
+AlgoTest stamps those at 15:40, so there is no session-time filter; the
+timestamp is 09:15 IST that day and regularMarketTime is 15:30 IST of the
+last day. --symbol defaults to the file's underlying, and an NSE_ prefix
+is dropped (NSE_RELIANCE becomes RELIANCE). The clock comes from
+india/nse_market.py. Standard library only. Nothing here places an order.
 """
 
 import argparse
@@ -27,7 +32,8 @@ if _ROOT not in sys.path:
 
 from india import nse_market
 
-INTERVALS = {"1m": 60, "5m": 300}
+INTERVALS = {"1m": 60, "5m": 300, "1d": None}
+NAME_KEYS = ("underlying", "symbol", "name")
 EPOCH = datetime.datetime(1970, 1, 1)
 OUTSIDE = "outside the session"
 
@@ -77,10 +83,24 @@ def _candles(payload):
 
 
 def _symbol(symbol):
-    sym = str(symbol).strip().upper()
+    """A ticker. AlgoTest underlying names look like NSE_RELIANCE."""
+    sym = str(symbol or "").strip().upper()
+    if sym.startswith("NSE_"):
+        sym = sym[4:]
     if not sym or "/" in sym or "\\" in sym:
         raise ConvertError("symbol is not a file name: %r" % (symbol,))
     return sym
+
+
+def _named(payload, symbol):
+    """--symbol, or the file's underlying / symbol / name, without an NSE_ prefix."""
+    if symbol:
+        return _symbol(symbol)
+    if isinstance(payload, dict):
+        for key in NAME_KEYS:
+            if payload.get(key):
+                return _symbol(payload[key])
+    raise ConvertError("pass --symbol, or save the AlgoTest underlying (NSE_RELIANCE becomes RELIANCE)")
 
 
 def to_yahoo(payload, symbol, interval="5m", label="end", prev_close=None):
@@ -92,12 +112,13 @@ def to_yahoo(payload, symbol, interval="5m", label="end", prev_close=None):
     bar does not start at 09:15 is a warning, not an error.
     """
     if interval not in INTERVALS:
-        raise ConvertError("interval wants 1m or 5m, not %r" % (interval,))
+        raise ConvertError("interval wants 1m, 5m or 1d, not %r" % (interval,))
     if label not in ("end", "start"):
         raise ConvertError("label wants end or start, not %r" % (label,))
-    sym = _symbol(symbol)
+    sym = _named(payload, symbol)
+    daily = interval == "1d"
     step = INTERVALS[interval]
-    shift = datetime.timedelta(seconds=step if label == "end" else 0)
+    shift = datetime.timedelta(seconds=(step or 0) if label == "end" else 0)
     counts = {}
     kept = {}
     for i, candle in enumerate(_candles(payload)):
@@ -105,18 +126,28 @@ def to_yahoo(payload, symbol, interval="5m", label="end", prev_close=None):
         if not isinstance(candle, dict):
             raise ConvertError("%s is not an object" % where)
         mark = _parse_ist(candle.get("datetime"), where)
-        start = mark - shift
-        ok, reason = nse_market.trading_day(start.date())
-        if not ok:
-            _bump(counts, reason)
-            continue
-        kind = _classify(start, step)
-        if kind == "outside":
-            _bump(counts, OUTSIDE)
-            continue
-        if kind == "off":
-            _bump(counts, "off the %s grid" % interval)
-            continue
+        # Daily candles are stamped 15:40. Keep the date, ignore the clock,
+        # and write the bar at 09:15. Intraday bars still have to sit inside
+        # 09:15 to 15:30.
+        if daily:
+            ok, reason = nse_market.trading_day(mark.date())
+            if not ok:
+                _bump(counts, reason)
+                continue
+            start = datetime.datetime.combine(mark.date(), nse_market.OPEN)
+        else:
+            start = mark - shift
+            ok, reason = nse_market.trading_day(start.date())
+            if not ok:
+                _bump(counts, reason)
+                continue
+            kind = _classify(start, step)
+            if kind == "outside":
+                _bump(counts, OUTSIDE)
+                continue
+            if kind == "off":
+                _bump(counts, "off the %s grid" % interval)
+                continue
         try:
             o = float(candle["open"])
             h = float(candle["high"])
@@ -166,7 +197,9 @@ def to_yahoo(payload, symbol, interval="5m", label="end", prev_close=None):
         "timezone": "IST",
         "gmtoffset": 19800,
         "dataGranularity": interval,
-        "regularMarketTime": _epoch(nse_market.ist_to_utc(last["start"] + datetime.timedelta(seconds=step))),
+        "regularMarketTime": _epoch(nse_market.ist_to_utc(
+            datetime.datetime.combine(last["start"].date(), nse_market.CLOSE) if daily else
+            last["start"] + datetime.timedelta(seconds=step))),
         "regularMarketPrice": last["c"],
     }
     if prev is not None:
@@ -241,7 +274,8 @@ def write_chart(doc, out_dir, symbol, interval):
 def main(argv=None):
     p = argparse.ArgumentParser(description="Convert AlgoTest candles to Yahoo chart JSON.")
     p.add_argument("input", help="JSON file from get_ohlc_by_data_source")
-    p.add_argument("--symbol", required=True, help="ticker, for example NIFTY")
+    p.add_argument("--symbol", default=None,
+                   help="ticker (default: the file's underlying; NSE_RELIANCE becomes RELIANCE)")
     p.add_argument("--interval", default="5m", choices=sorted(INTERVALS))
     p.add_argument("--label", default="end", choices=("end", "start"),
                    help="datetime is the bar end (default) or the bar start")

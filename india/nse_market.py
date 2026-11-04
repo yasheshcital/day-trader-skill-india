@@ -6,6 +6,7 @@ Nothing here places an order, and no trader-* script imports this yet.
 """
 
 import datetime
+from decimal import Decimal
 
 # Fixed offset. Not a zone: these helpers keep naive datetimes, like the
 # New York ones, so the module stays on Python 3.8 (no zoneinfo).
@@ -77,10 +78,41 @@ def next_open(d):
     return None
 
 
-def round_to_tick(price, tick=0.05, down=True):
-    """Round to the NSE tick (5 paise). down floors; down=False ceils.
-    A price already on the tick stays put."""
-    tick_paise = int(round(tick * 100))
+# NSE cash-segment ticks since April 2025. Copied into trader-exit and
+# trader-timemachine; those folders do not import this module.
+INDEX_SYMBOLS = ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX", "BANKEX")
+
+
+def tick_for(price, symbol=None):
+    """Cash-segment tick for this price. Indices always use 0.05.
+    Below 250 -> 0.01; 250 to 1000 -> 0.05; above 1000 to 5000 -> 0.10;
+    above 5000 to 10000 -> 0.50; above 10000 to 20000 -> 1.00; above 20000 -> 5.00."""
+    # NSE reviews ticks monthly from the previous month-end close; we use the
+    # entry price, which can differ near a band edge.
+    sym = str(symbol or "").strip().upper()
+    if sym in INDEX_SYMBOLS:
+        return 0.05
+    p = Decimal(str(price))
+    if p < 250:
+        return 0.01
+    if p <= 1000:
+        return 0.05
+    if p <= 5000:
+        return 0.10
+    if p <= 10000:
+        return 0.50
+    if p <= 20000:
+        return 1.00
+    return 5.00
+
+
+def round_to_tick(price, symbol=None, down=True, tick=None):
+    """Round to the NSE tick. down floors; down=False ceils.
+    A price already on the tick stays put. The tick comes from tick_for
+    unless one is passed in."""
+    if tick is None:
+        tick = tick_for(price, symbol)
+    tick_paise = int(round(float(tick) * 100))
     paise = int(round(float(price) * 100))
     rem = paise % tick_paise
     if rem:

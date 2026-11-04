@@ -10,7 +10,9 @@ It never places an order.
     python3 exit.py plan --symbol RELIANCE --entry 1400 --setup level --stop pct:1
     python3 exit.py show                                    # the current trader/plan.json
 
-Stops (a long's stop rounds DOWN to the 5-paise tick, away from the entry):
+Stops (a long's stop floors to the tick for the entry price, away from the entry).
+Indices stay on 5 paise. A stock follows the cash-segment band (0.01 under 250,
+0.05 from 250 to 1000, 0.10 above 1000 to 5000, and wider above that):
   or-mid     the opening-range midpoint (the default for an orb entry)
   or-low     the opening-range low
   price:X    your price
@@ -20,7 +22,7 @@ Stops (a long's stop rounds DOWN to the 5-paise tick, away from the entry):
              bars by then it averages all of them and says so.
   A level setup has no opening-range default: give a stop.
 
-Targets (round half up to the 5-paise tick):
+Targets (round half up to that same tick):
   2R (default), 1R, 1.5R ...   entry + R x risk, where risk = entry - stop
   price:X                      your price
 
@@ -57,7 +59,6 @@ INTERVALS = {"1m": 60, "5m": 300}
 DEFAULTS = {"flat_by": "15:10", "min_reward_risk": 1.0}
 ATR_BARS = 14
 MIN_RISK_PCT = Decimal("0.05")     # risk under 0.05% of the price is inside the spread's noise
-TICK = Decimal("0.05")             # NSE tick: 5 paise
 TWO_DP = Decimal("0.01")           # ratios and the on-screen paise, not the tick
 EPOCH = datetime.datetime(1970, 1, 1)
 NOTE = "A stop is a plan, not a guarantee: a gap or a fast market can fill past it."
@@ -84,6 +85,32 @@ NSE_HOLIDAYS = {
 }
 OPEN = datetime.time(9, 15)
 CLOSE = datetime.time(15, 30)
+
+# NSE cash-segment ticks since April 2025. Copied from india/nse_market.py.
+INDEX_SYMBOLS = ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX", "BANKEX")
+
+
+def tick_for(price, symbol=None):
+    """Cash-segment tick for this price. Indices always use 0.05.
+    Below 250 -> 0.01; 250 to 1000 -> 0.05; above 1000 to 5000 -> 0.10;
+    above 5000 to 10000 -> 0.50; above 10000 to 20000 -> 1.00; above 20000 -> 5.00."""
+    # NSE reviews ticks monthly from the previous month-end close; we use the
+    # entry price, which can differ near a band edge.
+    sym = str(symbol or "").strip().upper()
+    if sym in INDEX_SYMBOLS:
+        return 0.05
+    p = Decimal(str(price))
+    if p < 250:
+        return 0.01
+    if p <= 1000:
+        return 0.05
+    if p <= 5000:
+        return 0.10
+    if p <= 10000:
+        return 0.50
+    if p <= 20000:
+        return 1.00
+    return 5.00
 
 
 class PlanError(Exception):
@@ -169,7 +196,7 @@ def session(d):
     return OPEN, CLOSE
 
 
-# ---------------------------------------------------------------- money math (Decimal, to the 5-paise tick)
+# ---------------------------------------------------------------- money math (Decimal, on the entry's tick)
 
 def D(x, what="a number"):
     try:
@@ -180,14 +207,16 @@ def D(x, what="a number"):
         raise PlanError("%s is not a number: %r" % (what, x))
 
 
-def to_tick(x):
-    """Round half up onto the 5-paise grid."""
-    return (D(x) / TICK).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * TICK
+def to_tick(x, tick):
+    """Round half up onto this tick."""
+    t = D(tick)
+    return (D(x) / t).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * t
 
 
-def floor_tick(x):
+def floor_tick(x, tick):
     """A long's stop: round down onto the tick, away from the entry."""
-    return (D(x) / TICK).quantize(Decimal("1"), rounding=ROUND_FLOOR) * TICK
+    t = D(tick)
+    return (D(x) / t).quantize(Decimal("1"), rounding=ROUND_FLOOR) * t
 
 
 def money(x):
@@ -246,16 +275,17 @@ def r_label(r):
 
 
 def compute(entry, stop_rule, stop_param, target_rule, target_param, or_high=None, or_low=None,
-            atr=None, atr_bars=None):
-    """The stop, the target and the risk, on the 5-paise tick. Raises PlanError with the reason."""
-    e = to_tick(entry)
+            atr=None, atr_bars=None, symbol=None):
+    """The stop, the target and the risk, on the entry's tick. Raises PlanError with the reason."""
+    tick = D(tick_for(entry, symbol))
+    e = to_tick(entry, tick)
     if e <= 0:
         raise PlanError("the entry price must be above ₹0")
     detail = ""
     if stop_rule in ("or_mid", "or_low"):
         if or_high is None or or_low is None:
             raise PlanError("an %s stop needs the opening range (--or-high and --or-low)" % stop_rule.replace("_", "-"))
-        oh, ol = to_tick(or_high), to_tick(or_low)
+        oh, ol = to_tick(or_high, tick), to_tick(or_low, tick)
         if oh <= ol:
             raise PlanError("the opening-range high %s must be above its low %s" % (money(oh), money(ol)))
         if stop_rule == "or_mid":
@@ -280,7 +310,7 @@ def compute(entry, stop_rule, stop_param, target_rule, target_param, or_high=Non
             num(a.quantize(Decimal("0.0001"))), atr_bars, " (fewer than 14 so far)" if atr_bars < ATR_BARS else "")
     else:
         raise PlanError("unknown stop rule %r" % stop_rule)
-    stop = floor_tick(raw)
+    stop = floor_tick(raw, tick)
     if stop != D(raw):
         detail = (detail + ", rounded down" if detail else "₹%s rounded down" % num(raw))
     if stop >= e:
@@ -295,10 +325,10 @@ def compute(entry, stop_rule, stop_param, target_rule, target_param, or_high=Non
                         "survive the spread, normal wiggle would stop you out. Widen it."
                         % (money(risk), money(floor_risk.quantize(TWO_DP, rounding=ROUND_HALF_UP)), money(e)))
     if target_rule == "r":
-        target = to_tick(e + target_param * risk)
+        target = to_tick(e + target_param * risk, tick)
         t_label = r_label(target_param)
     else:
-        target = to_tick(target_param)
+        target = to_tick(target_param, tick)
         t_label = None
     if target <= e:
         raise PlanError("the target %s is at or below the entry %s: a long's target goes above it"
@@ -308,7 +338,7 @@ def compute(entry, stop_rule, stop_param, target_rule, target_param, or_high=Non
         t_label = "your price (%sR)" % ratio(rr)
     return {"entry": e, "stop": stop, "stop_label": label, "stop_detail": detail, "target": target,
             "target_r": target_param if target_rule == "r" else rr, "target_label": t_label,
-            "risk": risk, "reward_risk": rr}
+            "risk": risk, "reward_risk": rr, "tick": tick}
 
 
 # ---------------------------------------------------------------- bars for ATR (same reader as trader-entry)
@@ -564,11 +594,11 @@ def build_plan(a, now_utc):
                             % (info["interval"], info["symbol"], day, len(bars)))
         atr, atr_n = atr_of(bars)
     c = compute(info["entry"], stop_rule, stop_param, target_rule, target_param, info["or_high"], info["or_low"],
-                atr, atr_n)
+                atr, atr_n, info["symbol"])
     flat_by, flat_note = resolve_flat_by(day, a.flat_by, cfg, entry_time)
     orr = None
     if info["or_high"] is not None and info["or_low"] is not None:
-        orr = {"high": float(to_tick(info["or_high"])), "low": float(to_tick(info["or_low"])),
+        orr = {"high": float(to_tick(info["or_high"], c["tick"])), "low": float(to_tick(info["or_low"], c["tick"])),
                "minutes": int(info["or_minutes"] or 15)}
     plan = {"created_by": "trader-exit", "symbol": info["symbol"], "side": "buy", "date": day.isoformat(),
             "setup": info["setup"], "entry": float(c["entry"]),
@@ -576,7 +606,8 @@ def build_plan(a, now_utc):
             "entry_bar": info["entry_bar"], "interval": info["interval"], "opening_range": orr,
             "stop": float(c["stop"]), "stop_rule": stop_rule, "stop_label": c["stop_label"],
             "target": float(c["target"]), "target_r": float(c["target_r"]), "target_label": c["target_label"],
-            "risk_per_share": float(c["risk"]), "reward_risk": float(c["reward_risk"]), "flat_by": flat_by,
+            "risk_per_share": float(c["risk"]), "reward_risk": float(c["reward_risk"]), "tick": float(c["tick"]),
+            "flat_by": flat_by,
             "stop_detail": c["stop_detail"], "created_at": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"), "note": NOTE}
     if atr is not None:
         plan["atr"] = round(atr, 4)
@@ -611,6 +642,8 @@ def describe(plan):
     out = ["Exit plan: %s long, %s, %s on %s bars" % (
         plan["symbol"], day.strftime("%a %Y-%m-%d"), setup, "5-minute" if plan["interval"] == "5m" else "1-minute")]
     out.append("  Entry         %s%s" % (money(plan["entry"]), when))
+    if plan.get("tick") is not None:
+        out.append("  Tick %s" % money(plan["tick"]))
     out.append("  Stop          %s  %s%s" % (money(plan["stop"]), plan["stop_label"],
                                              (": " + plan["stop_detail"]) if plan.get("stop_detail") else ""))
     out.append("  Target        %s  %s" % (money(plan["target"]), plan["target_label"]))

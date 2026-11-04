@@ -357,10 +357,13 @@ class Plans(unittest.TestCase):
         self.assertIn("outside that bar's range", doc["warnings"][0])
 
     def test_stop_rounds_away_from_the_entry(self):
-        self.assertEqual(tm.ticks_away(22950.125, True), 22950.10)
-        self.assertEqual(tm.ticks_away(22950.125, False), 22950.15)
-        self.assertEqual(tm.ticks_away(22950.100000000002, True), 22950.10)
-        self.assertEqual(tm.ticks_away(22949.999999999998, True), 22949.95)
+        nifty = tm.tick_for(22990.25, "NIFTY")
+        self.assertEqual(nifty, 0.05)
+        self.assertEqual(tm.ticks_away(22950.125, True, nifty), 22950.10)
+        self.assertEqual(tm.ticks_away(22950.125, False, nifty), 22950.15)
+        self.assertEqual(tm.ticks_away(22950.100000000002, True, nifty), 22950.10)
+        self.assertEqual(tm.ticks_away(22949.999999999998, True, nifty), 22949.95)
+        self.assertEqual(tm.ticks_away(1162.55, True, tm.tick_for(1166, "RELIANCE")), 1162.50)
 
     def test_the_stop_rule_is_worked_out_when_not_given(self):
         rule = machine(plan(stop_rule=None), replays=100)["history"]["rule"]

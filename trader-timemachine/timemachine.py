@@ -102,7 +102,6 @@ STRONG = 0.15
 MANY_NEITHER = 0.40
 EPOCH = datetime.datetime(1970, 1, 1)
 WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-TICK = Decimal("0.05")
 
 # Copied from india/nse_market.py. Skill folders do not import each other.
 IST = datetime.timedelta(hours=5, minutes=30)
@@ -124,6 +123,32 @@ NSE_HOLIDAYS = {
     "2026-11-24": "Prakash Gurpurb Sri Guru Nanak Dev",
     "2026-12-25": "Christmas",
 }
+
+# NSE cash-segment ticks since April 2025. Copied from india/nse_market.py.
+INDEX_SYMBOLS = ("NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX", "BANKEX")
+
+
+def tick_for(price, symbol=None):
+    """Cash-segment tick for this price. Indices always use 0.05.
+    Below 250 -> 0.01; 250 to 1000 -> 0.05; above 1000 to 5000 -> 0.10;
+    above 5000 to 10000 -> 0.50; above 10000 to 20000 -> 1.00; above 20000 -> 5.00."""
+    # NSE reviews ticks monthly from the previous month-end close; we use the
+    # entry price, which can differ near a band edge.
+    sym = str(symbol or "").strip().upper()
+    if sym in INDEX_SYMBOLS:
+        return 0.05
+    p = Decimal(str(price))
+    if p < 250:
+        return 0.01
+    if p <= 1000:
+        return 0.05
+    if p <= 5000:
+        return 0.10
+    if p <= 10000:
+        return 0.50
+    if p <= 20000:
+        return 1.00
+    return 5.00
 
 
 class TMError(Exception):
@@ -473,15 +498,17 @@ def _dec(x):
     return Decimal(str(x))
 
 
-def to_tick(x):
-    """Round half up onto the 5-paise grid."""
-    return float((_dec(x) / TICK).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * TICK)
+def to_tick(x, tick):
+    """Round half up onto this tick."""
+    t = _dec(tick)
+    return float((_dec(x) / t).quantize(Decimal("1"), rounding=ROUND_HALF_UP) * t)
 
 
-def ticks_away(x, long):
-    """Round a stop to the 5-paise tick, away from the entry: down for a buy, up for a sell."""
+def ticks_away(x, long, tick):
+    """Round a stop to the tick, away from the entry: down for a buy, up for a sell."""
+    t = _dec(tick)
     rounding = ROUND_FLOOR if long else ROUND_CEILING
-    return float((_dec(x) / TICK).quantize(Decimal("1"), rounding=rounding) * TICK)
+    return float((_dec(x) / t).quantize(Decimal("1"), rounding=rounding) * t)
 
 
 def opening_range(D, n):
@@ -490,17 +517,18 @@ def opening_range(D, n):
     return max(b["h"] for b in rows), min(b["l"] for b in rows)
 
 
-def rule_stop(rule, oh, ol, entry, long):
+def rule_stop(rule, oh, ol, entry, long, tick):
     r = rule["stop_rule"]
     if r == "or_mid":
-        return ticks_away((oh + ol) / 2, long)
+        return ticks_away((oh + ol) / 2, long, tick)
     if r in ("or_low", "or_high"):
-        return ticks_away(ol if long else oh, long)
+        return ticks_away(ol if long else oh, long, tick)
     frac = rule["stop_pct"] / 100.0
-    return ticks_away(entry * (1 - frac) if long else entry * (1 + frac), long)
+    return ticks_away(entry * (1 - frac) if long else entry * (1 + frac), long, tick)
 
 
-def history_replay(sessions, rule, last, side="buy", no_entries_before=9 * 60 + 30, no_entries_after=14 * 60 + 30):
+def history_replay(sessions, rule, last, side="buy", no_entries_before=9 * 60 + 30, no_entries_after=14 * 60 + 30,
+                   symbol=None):
     """The plan's rule on every past full session. The entry is the first bar after
     the opening range whose close is beyond it and whose close time is between
     no_entries_before and no_entries_after (inclusive), the same window as
@@ -520,12 +548,13 @@ def history_replay(sessions, rule, last, side="buy", no_entries_before=9 * 60 + 
                    if in_window(i) and (D[i]["c"] > oh if long else D[i]["c"] < ol)), None)
         if kk is None:
             continue
-        e = to_tick(D[kk]["c"])
-        s = rule_stop(rule, oh, ol, e, long)
+        tick = tick_for(D[kk]["c"], symbol)
+        e = to_tick(D[kk]["c"], tick)
+        s = rule_stop(rule, oh, ol, e, long, tick)
         risk = (e - s) if long else (s - e)
         if risk <= 0:
             continue
-        t = to_tick(e + rule["target_r"] * risk) if long else to_tick(e - rule["target_r"] * risk)
+        t = to_tick(e + rule["target_r"] * risk, tick) if long else to_tick(e - rule["target_r"] * risk, tick)
         oc = None
         for b in D[kk + 1:last + 1]:
             if (b["l"] <= s) if long else (b["h"] >= s):
@@ -673,13 +702,14 @@ def resolve_rule(plan, entry_day):
             "target_r": plan["target_r"],
             "stop_pct": round(100.0 * plan["risk_per_share"] / plan["entry"], 4)}
     far = "or_low" if long else "or_high"
+    tick = tick_for(plan["entry"], plan.get("symbol"))
     if rule["stop_rule"] == "auto":
         rule["stop_rule"] = "pct"
         if all(i in entry_day for i in range(n)):
             oh, ol = opening_range(entry_day, n)
-            if abs(ticks_away((oh + ol) / 2, long) - plan["stop"]) < float(TICK):
+            if abs(ticks_away((oh + ol) / 2, long, tick) - plan["stop"]) < tick:
                 rule["stop_rule"] = "or_mid"
-            elif abs(ticks_away(ol if long else oh, long) - plan["stop"]) < float(TICK):
+            elif abs(ticks_away(ol if long else oh, long, tick) - plan["stop"]) < tick:
                 rule["stop_rule"] = far
     elif rule["stop_rule"] in ("or_low", "or_high") and rule["stop_rule"] != far:
         rule["stop_rule"] = "pct"
@@ -784,7 +814,8 @@ def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=No
                       % (clock24(OPEN_MIN + 5 * k), plan["entry_time"], plan["date"], sym, reason))
     eb = entry_day[k]
     warn = []
-    if not eb["l"] - float(TICK) <= plan["entry"] <= eb["h"] + float(TICK):
+    tick = tick_for(plan["entry"], plan.get("symbol"))
+    if not eb["l"] - tick <= plan["entry"] <= eb["h"] + tick:
         warn.append("the plan's entry %.2f is outside that bar's range %.2f to %.2f"
                     % (plan["entry"], eb["l"], eb["h"]))
     sessions, short = full_sessions(days, plan["date"])
@@ -801,7 +832,7 @@ def time_machine(text, plan, now_utc, replays=10000, seed=19, window=2, until=No
     before, after = entry_window(plan, config_path)
     if rule:
         plan_out["stop_rule"] = rule["stop_rule"]
-        history = history_replay(sessions, rule, last, plan["side"], before, after)
+        history = history_replay(sessions, rule, last, plan["side"], before, after, plan["symbol"])
     else:
         history = {"sessions": len(sessions), "triggered": 0, "rule": None, "trades": [],
                    "note": "skipped: the history replay knows the opening-range breakout (orb) only, "
