@@ -20,3 +20,13 @@ Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681
 Attempt 7 is in sample only: 612 trades on 18 days, 12 of them winning, best 5 days 97.1% of the profit. The stock files end on 2026-10-30, so there is no later sample here to confirm it. The new day clauses are what fail it.
 
 All results use the same pass mark, fixed before attempt 2.
+
+## Forward test
+
+Started 2026-11-04, before any forward data. This section records the live paper rule. It is not an in-sample result, and no forward numbers are filled in here.
+
+The entry rule matches attempt 7. A trend day is a day when NIFTY's first 5-minute close beyond its own 30-minute range is a bar that closes at or before 10:00. Each stock in the folder enters on its first close beyond its own 30-minute range, in NIFTY's direction, at or after that signal bar and by 14:30. The stop is the range midpoint, rounded to the tick (down for a long, up for a short). The target is 2R. Flat at 15:10.
+
+Sizing is not attempt 7's Rs 2,000 a trade. The paper book risks Rs 6,000 a day, split into 35 equal slices, with a position cap of Rs 5,00,000 and whole shares. A later signal is not opened once the day's committed risk reaches Rs 6,000.
+
+The forward test passes only when all of these hold: at least 30 qualifying days, average R after costs at least +0.10, winning days above 55%, still profitable in rupees without the best 2 days, and net rupees above 0 on at least 60% of the stocks that traded. Until 30 qualifying days the report says IN PROGRESS. Confirmation uses only sessions after 2026-10-30.
