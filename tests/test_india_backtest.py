@@ -129,13 +129,16 @@ class Backtest(unittest.TestCase):
         self.assertNotEqual(costs.round_trip(1000, 1010, 10), costs.round_trip(1010, 1000, 10))
 
     def test_pass_mark_names_each_miss(self):
-        rule = _fake_rule(trades=149, net=-0.120, first=-0.169, second=-0.082, stock_nets=[-0.1, 0.2])
+        rule = _fake_rule(trades=149, net=-0.120, first=-0.169, second=-0.082, stock_nets=[-0.1, 0.2],
+                          trading_days=18, best5_share=0.96)
         got = bt.judge(rule)
         self.assertEqual(got["result"], "FAIL")
         self.assertIn("average R after costs -0.120 < +0.10", got["reasons"])
         self.assertIn("first half -0.169 is not above 0 after costs", got["reasons"])
         self.assertIn("second half -0.082 is not above 0 after costs", got["reasons"])
         self.assertTrue(any("need 60%" in reason for reason in got["reasons"]))
+        self.assertIn("trading days 18 < 30", got["reasons"])
+        self.assertIn("best 5 days are 96.0% of profit, need 50% or less", got["reasons"])
         passed = _fake_rule(trades=100, net=0.10, first=0.01, second=0.20, stock_nets=[0.1, 0.2, 0.3, -0.1, -0.2])
         self.assertEqual(bt.judge(passed)["result"], "PASS")
         self.assertEqual(bt.judge(passed)["reasons"], [])
@@ -243,6 +246,63 @@ class Backtest(unittest.TestCase):
         self.assertLessEqual(abs(block["trades"] - MARKET_TRADES), 0.02 * MARKET_TRADES,
                              "trade count %d is more than 2%% away from %d" % (block["trades"], MARKET_TRADES))
 
+    def test_signal_by_keeps_only_an_early_close(self):
+        bias = {
+            "early": ("buy", 9 * 60 + 50),
+            "on_time": ("sell", 10 * 60),
+            "late": ("buy", 10 * 60 + 5),
+            "none": (None, None),
+        }
+        got = bt.keep_signals_by(bias, 10 * 60)
+        self.assertEqual(got["early"], ("buy", 9 * 60 + 50))
+        self.assertEqual(got["on_time"], ("sell", 10 * 60))
+        self.assertEqual(got["late"], (None, None))
+        self.assertEqual(got["none"], (None, None))
+
+    def test_day_stats_and_the_risk_budget(self):
+        rows = [
+            {"date": "d1", "net": 100}, {"date": "d1", "net": 50},
+            {"date": "d2", "net": -40}, {"date": "d3", "net": 10},
+            {"date": "d4", "net": 20}, {"date": "d5", "net": 30},
+            {"date": "d6", "net": -10},
+        ]
+        stats = bt.day_stats(rows)
+        self.assertEqual(stats["trading_days"], 6)
+        self.assertEqual(stats["winning_days"], 4)
+        self.assertEqual(stats["worst_rupees"], -40.0)
+        self.assertEqual(stats["avg_rupees"], 26.67)
+        self.assertEqual(stats["best5_share"], 1.25)  # 200 / 160
+        booked = [
+            {"date": "d", "entry_min": 1, "symbol": "A", "side": "buy", "R": 1},
+            {"date": "d", "entry_min": 2, "symbol": "B", "side": "buy", "R": 9},
+            {"date": "d", "entry_min": 3, "symbol": "C", "side": "buy", "R": 9},
+            {"date": "e", "entry_min": 1, "symbol": "A", "side": "buy", "R": 1},
+        ]
+        kept, ran_out = bt.take_until_day_risk(booked, 1000, 2)
+        self.assertEqual([(row["date"], row["symbol"]) for row in kept],
+                         [("d", "A"), ("d", "B"), ("e", "A")])
+        self.assertEqual(ran_out, 1)
+
+    def test_trend_day_30m_or_mid_2r(self):
+        loaded = bt.load_folder(NIFTY50, self.tm)
+        _sym, sessions, _short = bt.load_sessions(NIFTY, self.tm)
+        report = bt.run_loaded(loaded, self.tm, risk=2000, capital=500000, side="both",
+                               filters=["market"], market_sessions=sessions, ruleset=[MARKET_RULE],
+                               folder=NIFTY50, market=NIFTY, signal_by=10 * 60)
+        block = report["rules"][0]
+        trades = block["combined"]["all"]
+        days = block["days"]
+        share = None if days["best5_share"] is None else 100.0 * days["best5_share"]
+        off = 100.0 * (trades["trades"] - 612) / 612
+        print("nifty50 signal by 10:00, 30m or-mid 2R, Rs 2000: trades %d (independent 612, %+.1f%%), "
+              "days %d (independent 18), avg R %s (about +0.31), avg R after costs %s (about +0.23), "
+              "best 5 days %s%% of profit (about 96%%)" % (
+                  trades["trades"], off, days["trading_days"], trades["avg_R"],
+                  trades["avg_R_after_costs"], "n/a" if share is None else "%.1f" % share))
+        self.assertLessEqual(abs(trades["trades"] - 612), 0.02 * 612,
+                             "trade count %d is more than 2%% away from 612" % trades["trades"])
+        self.assertEqual(days["trading_days"], 18)
+
 
 def _print_side(side, report, independent):
     block = report["rules"][0]["combined"]["all"]
@@ -260,7 +320,7 @@ def _assert_count(case, report, expect):
                          "trade count %d is more than 2%% away from %d" % (got, expect))
 
 
-def _fake_rule(trades, net, first, second, stock_nets):
+def _fake_rule(trades, net, first, second, stock_nets, trading_days=30, best5_share=0.5):
     def block(n, value):
         return {"trades": n, "win_rate": None, "avg_R": value, "avg_R_after_costs": value, "rupees": 0.0}
     symbols = {}
@@ -271,6 +331,7 @@ def _fake_rule(trades, net, first, second, stock_nets):
         "combined": {"all": block(trades, net), "first_half": block(trades // 2, first),
                      "second_half": block(trades - trades // 2, second)},
         "symbols": symbols,
+        "days": {"trading_days": trading_days, "best5_share": best5_share},
     }
 
 

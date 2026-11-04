@@ -17,8 +17,10 @@ from india/costs.py. A short is history_replay with side="sell": the stop is the
 range high (the or-low rule) or the midpoint, rounded up, and the target is
 below the entry. On a short the buy is the exit and the sell is the entry.
 The market filter waits for NIFTY's own break: a stock can enter only on a
-close at or after that signal bar. --max-trades-per-day keeps the earliest
-entries of the day.
+close at or after that signal bar. --nifty-signal-by keeps only days whose
+signal bar closes at or before that time. --max-trades-per-day keeps the
+earliest entries of the day. --day-risk splits a daily risk budget into equal
+slices and stops opening trades once the day is full.
 """
 
 import argparse
@@ -408,11 +410,89 @@ def _signed(value):
     return "%+.3f" % value
 
 
+def parse_hhmm(text):
+    """'10:00' -> minutes after midnight."""
+    parts = (text or "").strip().split(":")
+    if len(parts) != 2 or not parts[0].isdigit() or not parts[1].isdigit() or len(parts[1]) != 2:
+        raise BacktestError("--nifty-signal-by wants a time like 10:00, not %r" % (text,))
+    hour, minute = int(parts[0]), int(parts[1])
+    if hour > 23 or minute > 59:
+        raise BacktestError("--nifty-signal-by wants a time like 10:00, not %r" % (text,))
+    return hour * 60 + minute
+
+
+def keep_signals_by(bias, cutoff):
+    """Days whose NIFTY signal closes after cutoff become no-trade days.
+
+    The cutoff is the signal bar's own close, which is known when that bar prints.
+    """
+    if cutoff is None:
+        return bias
+    kept = {}
+    for date, signal in bias.items():
+        side = _side_of(signal)
+        minute = signal[1] if isinstance(signal, tuple) else None
+        if side and minute is not None and minute <= cutoff:
+            kept[date] = signal
+        else:
+            kept[date] = (None, None)
+    return kept
+
+
+def day_stats(rows):
+    """One line of the book: trading days, winning days, average and worst day, best-5 share.
+
+    A winning day has net rupees above 0. The best-5 share is those days' rupees
+    divided by the book's total rupees, and is None when the total is not above 0.
+    """
+    totals = {}
+    for row in rows:
+        totals[row["date"]] = totals.get(row["date"], 0.0) + row["net"]
+    nets = list(totals.values())
+    n = len(nets)
+    if not n:
+        return {"trading_days": 0, "winning_days": 0, "avg_rupees": None,
+                "worst_rupees": None, "best5_share": None}
+    total = sum(nets)
+    best = sum(sorted(nets, reverse=True)[:5])
+    share = (best / total) if total > 0 else None
+    return {
+        "trading_days": n,
+        "winning_days": sum(1 for value in nets if value > 0),
+        "avg_rupees": round(total / float(n), 2),
+        "worst_rupees": round(min(nets), 2),
+        "best5_share": None if share is None else round(share, 4),
+    }
+
+
+def take_until_day_risk(rows, day_risk, expected_entries):
+    """Keep entries in time order until the day's committed risk reaches day_risk.
+
+    Each opened trade commits day_risk / expected_entries. Returns the kept rows
+    and how many days turned at least one later entry away.
+    """
+    slice_amt = _d(day_risk) / Decimal(expected_entries)
+    cap = _d(day_risk)
+    ordered = sorted(rows, key=lambda row: (row["date"], row["entry_min"], row["symbol"], row["side"]))
+    kept = []
+    committed = {}
+    ran_out = set()
+    for row in ordered:
+        used = committed.get(row["date"], Decimal(0))
+        if used + slice_amt > cap:
+            ran_out.add(row["date"])
+            continue
+        committed[row["date"]] = used + slice_amt
+        kept.append(row)
+    return kept, len(ran_out)
+
+
 def judge(rule):
     """PASS only when every mark holds. The reasons are the marks that failed.
 
     trades >= 100, average R after costs >= +0.10, both halves > 0 after costs,
-    and after-cost average R > 0 on at least 60% of the stocks that traded.
+    after-cost average R > 0 on at least 60% of the stocks that traded,
+    at least 30 distinct trading days, and the best 5 days at most 50% of profit.
     """
     reasons = []
     block = rule["combined"]["all"]
@@ -439,6 +519,15 @@ def judge(rule):
         if winners * 5 < len(traded) * 3:
             reasons.append("after-cost R > 0 on %d of %d stocks (%.1f%%), need 60%%" % (
                 winners, len(traded), 100.0 * winners / len(traded)))
+    days = rule.get("days") or {}
+    trading = days.get("trading_days") or 0
+    if trading < 30:
+        reasons.append("trading days %d < 30" % trading)
+    share = days.get("best5_share")
+    if share is None:
+        reasons.append("best 5 days: total profit is not above 0")
+    elif share > 0.50:
+        reasons.append("best 5 days are %.1f%% of profit, need 50%% or less" % (100.0 * share))
     return {"result": "PASS" if not reasons else "FAIL", "reasons": reasons}
 
 
@@ -487,13 +576,22 @@ def load_folder(folder, tm, symbols=None, before=None):
 
 def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
                market_sessions=None, ruleset=None, before=None, folder=None, market=None,
-               max_trades_per_day=None):
+               max_trades_per_day=None, day_risk=None, expected_entries=10, signal_by=None):
     """Score an already loaded folder. filters is a list without 'none'."""
     filters = list(filters or [])
     if "market" in filters and not market_sessions:
         raise BacktestError("--filter market needs --market FILE")
+    if signal_by is not None and "market" not in filters:
+        raise BacktestError("--nifty-signal-by needs --filter market")
     if max_trades_per_day is not None and max_trades_per_day < 1:
         raise BacktestError("--max-trades-per-day must be at least 1")
+    if day_risk is not None and _d(day_risk) <= 0:
+        raise BacktestError("--day-risk must be above 0")
+    if day_risk is not None and expected_entries < 1:
+        raise BacktestError("--expected-entries must be at least 1")
+    trade_risk = risk
+    if day_risk is not None:
+        trade_risk = _d(day_risk) / Decimal(expected_entries)
     sides = sides_of(side)
     skipped = 0
     if "inplay" in filters:
@@ -501,6 +599,8 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
     report_rules = []
     for rule in (ruleset if ruleset is not None else rules()):
         bias = bias_by_date(market_sessions, rule["or_minutes"], tm) if market_sessions else {}
+        if signal_by is not None:
+            bias = keep_signals_by(bias, signal_by)
         pooled = []
         for item in loaded:
             for one in sides:
@@ -514,8 +614,11 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
                         if _side_of(signal) == one and isinstance(signal, tuple) and signal[1] is not None:
                             not_before[date] = signal[1]
                 _hist, part = score_symbol(
-                    tm, item["sessions"], item["symbol"], rule, risk, capital, one, keep, not_before)
+                    tm, item["sessions"], item["symbol"], rule, trade_risk, capital, one, keep, not_before)
                 pooled.extend(part)
+        ran_out = None
+        if day_risk is not None:
+            pooled, ran_out = take_until_day_risk(pooled, day_risk, expected_entries)
         combined_rows = cap_per_day(pooled, max_trades_per_day)
         by_symbol = {}
         for row in combined_rows:
@@ -533,6 +636,8 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
             "or_minutes": rule["or_minutes"], "stop": rule["stop"], "target_r": rule["target_r"],
             "name": rule_name(rule), "symbols": per_symbol, "combined": summarize(combined_rows),
             "positions": position_stats(combined_rows),
+            "days": day_stats(combined_rows),
+            "budget_ran_out": ran_out,
         }
         built["pass"] = judge(built)
         report_rules.append(built)
@@ -541,7 +646,10 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
     return {
         "created_by": "india/backtest",
         "folder": os.path.abspath(folder) if folder else None,
-        "risk": risk, "capital": capital, "before": before,
+        "risk": float(trade_risk), "capital": capital, "before": before,
+        "day_risk": None if day_risk is None else float(day_risk),
+        "expected_entries": expected_entries if day_risk is not None else None,
+        "signal_by": None if signal_by is None else "%02d:%02d" % divmod(signal_by, 60),
         "side": side, "filters": filters or ["none"],
         "market": os.path.abspath(market) if market else None,
         "max_trades_per_day": max_trades_per_day,
@@ -553,7 +661,8 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
 
 
 def run_folder(folder, risk=500, capital=100000, symbols=None, before=None,
-               side="buy", filters=None, market=None, ruleset=None, max_trades_per_day=None, tm=None):
+               side="buy", filters=None, market=None, ruleset=None, max_trades_per_day=None,
+               day_risk=None, expected_entries=10, signal_by=None, tm=None):
     """Every *.algotest.json in folder -> the report dict (rules sorted by net R)."""
     tm = tm or load_timemachine()
     filters = list(filters or [])
@@ -564,7 +673,8 @@ def run_folder(folder, risk=500, capital=100000, symbols=None, before=None,
             raise BacktestError("--filter market needs --market FILE")
         _sym, market_sessions, _short = load_sessions(market, tm, before)
     return run_loaded(loaded, tm, risk, capital, side, filters, market_sessions,
-                      ruleset, before, folder, market, max_trades_per_day)
+                      ruleset, before, folder, market, max_trades_per_day,
+                      day_risk, expected_entries, signal_by)
 
 
 def _pct(rate):
@@ -608,16 +718,36 @@ def _side_text(side):
     return {"buy": "long only", "sell": "short only", "both": "long and short"}[side]
 
 
+def _day_line(stats):
+    stats = stats or {}
+    n = stats.get("trading_days") or 0
+    if not n:
+        return "  days: 0 trading"
+    share = stats.get("best5_share")
+    share_text = "n/a" if share is None else "%.1f%%" % (100.0 * share)
+    return ("  days: %d trading, %d winning, avg Rs %s, worst Rs %s, best 5 days %s of profit" % (
+        n, stats["winning_days"], format(stats["avg_rupees"], ",.2f"),
+        format(stats["worst_rupees"], ",.2f"), share_text))
+
+
 def table(report, summary=False):
     """Plain lines. summary keeps the ALL block and its pass check."""
     filters = report.get("filters") or ["none"]
+    if report.get("day_risk"):
+        money = ("Day risk Rs %s, Rs %s a trade across %d expected entries, position cap Rs %s." % (
+            format(report["day_risk"], ",.0f"), format(report["risk"], ",.2f"),
+            report["expected_entries"], format(report["capital"], ",.0f")))
+    else:
+        money = ("Risk Rs %s a trade, position cap Rs %s." % (
+            format(report["risk"], ",.0f"), format(report["capital"], ",.0f")))
     lines = [
         "Opening-range breakout, %s. Entry 09:30 (or the end of the range) to 14:30, flat by 15:10."
         % _side_text(report.get("side") or "buy"),
-        "Filters: %s. Risk Rs %s a trade, position cap Rs %s. Win rate is trades with R > 0 before costs."
-        % (", ".join(filters), format(report["risk"], ",.0f"), format(report["capital"], ",.0f")),
+        "Filters: %s. %s Win rate is trades with R > 0 before costs." % (", ".join(filters), money),
         "  %-16s %5s  %6s  %7s  %7s  %12s" % ("", "n", "win", "R", "net R", "rupees"),
     ]
+    if report.get("signal_by"):
+        lines.append("NIFTY's signal bar must close by %s." % report["signal_by"])
     if "inplay" in filters:
         lines.append("In play skipped the first %d sessions of each stock (%d sessions)." % (
             INPLAY_WARMUP, report.get("inplay_skipped") or 0))
@@ -645,7 +775,10 @@ def table(report, summary=False):
             lines.append(_line("first half", block["first_half"]))
             lines.append(_line("second half", block["second_half"]))
             if sym is None:
+                lines.append(_day_line(rule.get("days")))
                 lines.append(_position_line(rule.get("positions")))
+                if rule.get("budget_ran_out") is not None:
+                    lines.append("  day risk budget ran out on %d days" % rule["budget_ran_out"])
                 lines.append(_pass_line(rule["pass"]))
     return lines
 
@@ -662,7 +795,11 @@ def write_report(path, report):
 def main(argv=None):
     p = argparse.ArgumentParser(description="Backtest the opening-range rules on AlgoTest 5-minute files.")
     p.add_argument("folder", help="folder of *.algotest.json files")
-    p.add_argument("--risk", type=float, default=500, help="rupees risked per trade (default 500)")
+    p.add_argument("--risk", type=float, default=None, help="rupees risked per trade (default 500)")
+    p.add_argument("--day-risk", type=float, default=None,
+                   help="rupees of risk for the whole day, split into equal slices")
+    p.add_argument("--expected-entries", type=int, default=10,
+                   help="how many slices --day-risk is divided into (default 10)")
     p.add_argument("--capital", type=float, default=100000, help="max position in rupees (default 100000)")
     p.add_argument("--symbols", help="comma-separated tickers to keep, e.g. RELIANCE,TCS")
     p.add_argument("--before", help="use only sessions strictly before this YYYY-MM-DD")
@@ -670,6 +807,7 @@ def main(argv=None):
     p.add_argument("--filter", default="none",
                    help="none, inplay, market, or a comma list such as inplay,market")
     p.add_argument("--market", help="AlgoTest NIFTY file used when the filter includes market")
+    p.add_argument("--nifty-signal-by", help="with --filter market, keep days whose signal closes by HH:MM")
     p.add_argument("--max-trades-per-day", type=int, default=None,
                    help="take only the first N entries of each day, across all stocks")
     p.add_argument("--summary", action="store_true",
@@ -677,15 +815,28 @@ def main(argv=None):
     p.add_argument("--write", default=os.path.join("trader", "backtest.json"),
                    help="where to write the JSON (default trader/backtest.json)")
     args = p.parse_args(argv)
-    if args.risk <= 0 or args.capital <= 0:
-        print("backtest.py: --risk and --capital must be above 0", file=sys.stderr)
+    if args.capital <= 0:
+        print("backtest.py: --capital must be above 0", file=sys.stderr)
+        return 1
+    if args.day_risk is not None and args.risk is not None:
+        print("backtest.py: use --risk or --day-risk, not both", file=sys.stderr)
+        return 1
+    if args.day_risk is None and args.risk is None:
+        args.risk = 500
+    if args.day_risk is None and args.risk <= 0:
+        print("backtest.py: --risk must be above 0", file=sys.stderr)
+        return 1
+    if args.day_risk is not None and (args.day_risk <= 0 or args.expected_entries < 1):
+        print("backtest.py: --day-risk must be above 0 and --expected-entries at least 1", file=sys.stderr)
         return 1
     symbols = args.symbols.split(",") if args.symbols else None
     try:
         filters = parse_filters(args.filter)
-        report = run_folder(args.folder, args.risk, args.capital, symbols, args.before,
-                            args.side, filters, args.market,
-                            max_trades_per_day=args.max_trades_per_day)
+        signal_by = parse_hhmm(args.nifty_signal_by) if args.nifty_signal_by else None
+        report = run_folder(args.folder, args.risk if args.risk is not None else 0, args.capital,
+                            symbols, args.before, args.side, filters, args.market,
+                            max_trades_per_day=args.max_trades_per_day, day_risk=args.day_risk,
+                            expected_entries=args.expected_entries, signal_by=signal_by)
         write_report(args.write, report)
     except (OSError, ValueError, BacktestError, algotest_to_yahoo.ConvertError) as e:
         print("backtest.py: %s" % e, file=sys.stderr)
