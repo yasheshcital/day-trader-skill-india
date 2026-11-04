@@ -1,5 +1,5 @@
-"""trader-exit tests. Bars for the ATR stop reuse tests/fixtures/trader-entry/
-(TSLA's real Oct 19 2026 five-minute bars, see test_entry.py)."""
+"""trader-exit tests. Bars for the ATR stop are TSLA's real Oct 19 2026
+five-minute bars, kept beside these tests now that trader-entry is NSE-only."""
 
 import io
 import json
@@ -13,9 +13,8 @@ from decimal import Decimal
 from _load import load, FIX, ROOT
 
 exitp = load("trader-exit", "exit")
-entry = load("trader-entry", "entry")
 
-TSLA = os.path.join(FIX, "trader-entry", "TSLA-2026-10-19-5m.json")
+TSLA = os.path.join(FIX, "trader-exit", "TSLA-2026-10-19-5m.json")
 
 # trader/plan.json for the reel, exactly as the contract writes it
 REEL_PLAN = {"created_by": "trader-exit", "symbol": "TSLA", "side": "buy", "date": "2026-10-19", "setup": "orb",
@@ -156,8 +155,8 @@ class Cli(unittest.TestCase):
             return json.load(fh)
 
     def test_entry_to_plan_end_to_end(self):
-        code, _, _ = run(entry, ["check", "TSLA", "--offline", TSLA, "--now", "2026-10-19 10:15", "--write"])
-        self.assertEqual(code, 0)
+        # entry.py is NSE-only, so this US reel entry is written as a file.
+        self.write(os.path.join("trader", "entry.json"), REEL_ENTRY)
         code, text, err = self.plan("--stop", "or-mid", "--target", "1R", "--write")
         self.assertEqual(code, 0, err)
         p = self.read_plan()

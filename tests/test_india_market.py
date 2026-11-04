@@ -1,4 +1,4 @@
-"""NSE calendar and clock. Holidays stay empty until the official circular is pasted in."""
+"""NSE calendar and clock."""
 
 import datetime
 import unittest
@@ -6,6 +6,7 @@ import unittest
 from _load import load
 
 nse = load("india", "nse_market")
+entry = load("trader-entry", "entry")
 
 DT = datetime.datetime
 DAY = datetime.date(2026, 1, 2)  # Friday, and not a weekend
@@ -49,6 +50,20 @@ class NseMarket(unittest.TestCase):
     def test_round_to_the_five_paise_tick(self):
         self.assertEqual(nse.round_to_tick(101.07), 101.05)
         self.assertEqual(nse.round_to_tick(101.07, down=False), 101.10)
+
+    def test_entry_uses_the_same_holiday_list(self):
+        self.assertEqual(entry.NSE_HOLIDAYS, nse.NSE_HOLIDAYS)
+        self.assertEqual(nse.NSE_HOLIDAYS.get("2026-11-10"), "Diwali Balipratipada")
+
+    def test_guru_nanak_and_christmas_are_closed_and_the_monday_before_is_open(self):
+        for mod in (nse, entry):
+            closed, why = mod.trading_day(datetime.date(2026, 11, 24))
+            self.assertFalse(closed, mod.__name__)
+            self.assertIn("Guru Nanak", why)
+            closed, why = mod.trading_day(datetime.date(2026, 12, 25))
+            self.assertFalse(closed, mod.__name__)
+            self.assertIn("Christmas", why)
+            self.assertEqual(mod.trading_day(datetime.date(2026, 11, 23)), (True, ""))
 
     def test_next_open_skips_the_weekend(self):
         self.assertEqual(nse.next_open(datetime.date(2026, 1, 2)), "2026-01-05 09:15")
