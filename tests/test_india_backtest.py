@@ -22,6 +22,11 @@ INDEPENDENT_NET = -0.34
 NIFTY50_RULE = {"or_minutes": 15, "stop": "or_mid", "target_r": 2.0}
 NIFTY50_BUY = (1457, -0.05, -0.22)
 NIFTY50_SELL = (1796, 0.14, -0.04)
+# After the market filter waits for NIFTY's own break. 30m or-mid 2R, both sides.
+MARKET_RULE = {"or_minutes": 30, "stop": "or_mid", "target_r": 2.0}
+MARKET_TRADES = 1618
+MARKET_R = 0.18
+MARKET_NET = 0.03
 
 
 class Costs(unittest.TestCase):
@@ -160,27 +165,83 @@ class Backtest(unittest.TestCase):
         up = _flat_bars()
         up[3]["c"] = 102
         up[3]["h"] = 102
-        self.assertEqual(bt.market_bias(up, 15, self.tm), "buy")
+        self.assertEqual(bt.market_bias(up, 15, self.tm), ("buy", 9 * 60 + 35))
         down = _flat_bars()
         down[3]["c"] = 98
         down[3]["l"] = 98
-        self.assertEqual(bt.market_bias(down, 15, self.tm), "sell")
+        self.assertEqual(bt.market_bias(down, 15, self.tm), ("sell", 9 * 60 + 35))
         late = _flat_bars()
         late[63]["c"] = 110  # 14:35, after the 14:30 cutoff
         late[63]["h"] = 110
-        self.assertIsNone(bt.market_bias(late, 15, self.tm))
+        self.assertEqual(bt.market_bias(late, 15, self.tm), (None, None))
         # The first close beyond the range decides, even if the next bar reverses.
         first = _flat_bars()
         first[3]["c"] = 102
         first[4]["c"] = 90
-        self.assertEqual(bt.market_bias(first, 15, self.tm), "buy")
+        self.assertEqual(bt.market_bias(first, 15, self.tm)[0], "buy")
         # In play and a down index: shorts only.
         base = [("2026-08-%02d" % (i + 1), 100, 100, 100) for i in range(10)]
         sessions = _sessions(base + [("2026-08-11", 101, 100, 100)])
-        bias = {"2026-08-11": "sell"}
+        bias = {"2026-08-11": ("sell", 13 * 60)}
         self.assertEqual(bt.dates_for(sessions, "buy", ["inplay", "market"], 15, bias)[0], set())
         self.assertEqual(bt.dates_for(sessions, "sell", ["inplay", "market"], 15, bias)[0], {"2026-08-11"})
-        self.assertEqual(bt.dates_for(sessions, "buy", ["market"], 15, {"2026-08-11": None})[0], set())
+        self.assertEqual(bt.dates_for(sessions, "buy", ["market"], 15, {"2026-08-11": (None, None)})[0], set())
+
+    def test_a_stock_waits_for_nifty_signal(self):
+        # 30-minute range ends 09:45. Bar 6 closes 09:50, bar 44 closes 13:00, bar 45 closes 13:05.
+        nifty = _priced({44: 110})
+        self.assertEqual(bt.market_bias(nifty, 30, self.tm), ("buy", 13 * 60))
+        rule = {"or_minutes": 30, "stop": "or_mid", "target_r": 2.0}
+        both = _priced({6: 110, 44: 104})
+        _hist, rows = _one_day(self, both, rule, 13 * 60)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["entry_min"], 13 * 60)
+        self.assertEqual(rows[0]["entry"], 104)
+        later = _priced({6: 110, 45: 104})
+        _hist, rows = _one_day(self, later, rule, 13 * 60)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["entry_min"], 13 * 60 + 5)
+        early_only = _priced({6: 110})
+        _hist, rows = _one_day(self, early_only, rule, 13 * 60)
+        self.assertEqual(rows, [])
+
+    def test_daily_cap_uses_only_entry_time(self):
+        rows = [
+            {"date": "2026-08-11", "entry_min": 600, "symbol": "BBB", "side": "buy", "R": 5},
+            {"date": "2026-08-11", "entry_min": 590, "symbol": "ZZZ", "side": "buy", "R": 2},
+            {"date": "2026-08-11", "entry_min": 590, "symbol": "AAA", "side": "buy", "R": -1},
+            {"date": "2026-08-12", "entry_min": 600, "symbol": "BBB", "side": "buy", "R": 0},
+        ]
+        kept = bt.cap_per_day(rows, 1)
+        self.assertEqual([(row["date"], row["symbol"]) for row in kept],
+                         [("2026-08-11", "AAA"), ("2026-08-12", "BBB")])
+        self.assertEqual(bt.cap_per_day(rows, None), rows)
+
+    def test_position_size_and_peak_open(self):
+        rows = [
+            {"date": "2026-08-11", "entry": 100, "shares": 10, "entry_min": 600, "exit_min": 700},
+            {"date": "2026-08-11", "entry": 200, "shares": 5, "entry_min": 650, "exit_min": 800},
+            {"date": "2026-08-12", "entry": 50, "shares": 4, "entry_min": 600, "exit_min": 650},
+            {"date": "2026-08-12", "entry": 50, "shares": 4, "entry_min": 650, "exit_min": 700},
+        ]
+        stats = bt.position_stats(rows)
+        self.assertEqual(stats["avg_rupees"], 600.0)  # (1000 + 1000 + 200 + 200) / 4
+        self.assertEqual(stats["peak_open"], 2)  # the second day reuses the slot at 650
+
+    def test_market_30m_or_mid_2r_after_the_fix(self):
+        loaded = bt.load_folder(NIFTY50, self.tm)
+        _sym, sessions, _short = bt.load_sessions(NIFTY, self.tm)
+        report = bt.run_loaded(loaded, self.tm, side="both", filters=["market"],
+                               market_sessions=sessions, ruleset=[MARKET_RULE],
+                               folder=NIFTY50, market=NIFTY)
+        block = report["rules"][0]["combined"]["all"]
+        off = 100.0 * (block["trades"] - MARKET_TRADES) / MARKET_TRADES
+        print("nifty50 market 30m or-mid 2R: trades %d (independent %d, %+.1f%%), avg R %s (about %s), "
+              "avg R after costs %s (about %s)" % (
+                  block["trades"], MARKET_TRADES, off, block["avg_R"], MARKET_R,
+                  block["avg_R_after_costs"], MARKET_NET))
+        self.assertLessEqual(abs(block["trades"] - MARKET_TRADES), 0.02 * MARKET_TRADES,
+                             "trade count %d is more than 2%% away from %d" % (block["trades"], MARKET_TRADES))
 
 
 def _print_side(side, report, independent):
@@ -225,6 +286,21 @@ def _sessions(spec):
         bars[0]["o"] = opened
         out.append((date, bars))
     return out
+
+
+def _priced(closes):
+    """75 bars at 100, with a few closes replaced. The 30-minute range is bars 0 to 5."""
+    bars = []
+    for i in range(75):
+        close = closes.get(i, 100)
+        bars.append({"o": 100, "h": max(100, close), "l": min(100, close), "c": close, "v": 0})
+    return bars
+
+
+def _one_day(case, bars, rule, not_before):
+    return bt.score_symbol(
+        case.tm, [("2026-08-11", bars)], "RELIANCE", rule, 500, 100000, "buy",
+        keep={"2026-08-11"}, not_before={"2026-08-11": not_before})
 
 
 def _flat_bars():

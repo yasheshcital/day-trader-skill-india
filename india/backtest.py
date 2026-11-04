@@ -16,6 +16,9 @@ shares, and the position is capped at --capital (default 1,00,000). Costs come
 from india/costs.py. A short is history_replay with side="sell": the stop is the
 range high (the or-low rule) or the midpoint, rounded up, and the target is
 below the entry. On a short the buy is the exit and the sell is the entry.
+The market filter waits for NIFTY's own break: a stock can enter only on a
+close at or after that signal bar. --max-trades-per-day keeps the earliest
+entries of the day.
 """
 
 import argparse
@@ -192,6 +195,13 @@ def day_in_play(sessions, index, or_minutes):
     return today >= avg * INPLAY_VOLUME
 
 
+def _side_of(value):
+    """A bias entry is (side, close minute), or a bare side from an older caller."""
+    if isinstance(value, tuple):
+        return value[0]
+    return value
+
+
 def dates_for(sessions, side, filters, or_minutes, bias):
     """Dates this side may trade, and how many leading sessions the in-play filter skipped."""
     skipped = 0
@@ -203,18 +213,22 @@ def dates_for(sessions, side, filters, or_minutes, bias):
                 continue
             if not day_in_play(sessions, i, or_minutes):
                 continue
-        if "market" in filters and bias.get(date) != side:
+        if "market" in filters and _side_of(bias.get(date)) != side:
             continue
         dates.append(date)
     return set(dates), skipped
 
 
 def market_bias(bars, or_minutes, tm):
-    """buy if NIFTY's first close beyond this opening range is up, sell if down,
-    None if neither close is outside the range by 14:30."""
+    """(side, close minute) of NIFTY's first close beyond this opening range.
+
+    side is buy when that close is up and sell when it is down. (None, None)
+    when no close leaves the range by 14:30. The minute is the signal bar's
+    close, so a stock cannot enter before it.
+    """
     n = or_minutes // 5
     if len(bars) <= n:
-        return None
+        return None, None
     high = max(bar["h"] for bar in bars[:n])
     low = min(bar["l"] for bar in bars[:n])
     before, after = entry_window(or_minutes)
@@ -226,39 +240,83 @@ def market_bias(bars, or_minutes, tm):
             continue
         close = bars[i]["c"]
         if close > high:
-            return "buy"
+            return "buy", close_min
         if close < low:
-            return "sell"
-    return None
+            return "sell", close_min
+    return None, None
 
 
 def bias_by_date(sessions, or_minutes, tm):
     return dict((date, market_bias(bars, or_minutes, tm)) for date, bars in sessions)
 
 
-def score_symbol(tm, sessions, symbol, rule, risk, capital, side="buy", keep=None):
+def _exit_minute(bars, entry_i, side, stop, target, last, tm):
+    """Close time of the bar that ends the trade. Stop is checked before the target,
+    the same order as history_replay. The flat-by bar closes the rest."""
+    long = side == "buy"
+    for i in range(entry_i + 1, last + 1):
+        bar = bars[i]
+        if (bar["l"] <= stop) if long else (bar["h"] >= stop):
+            return tm.OPEN_MIN + 5 * (i + 1)
+        if (bar["h"] >= target) if long else (bar["l"] <= target):
+            return tm.OPEN_MIN + 5 * (i + 1)
+    return tm.OPEN_MIN + 5 * (last + 1)
+
+
+def _collect_trades(tm, sessions, symbol, rule, last, side, before, after, keep, not_before):
+    """history_replay trades. not_before maps a date to the earliest close minute.
+
+    Bars that close before that minute are not candidates, so the entry is the
+    first later close beyond the range, not the morning break restated.
+    """
+    spec = {
+        "setup": "orb", "or_minutes": rule["or_minutes"], "stop_rule": rule["stop"],
+        "target_r": rule["target_r"],
+    }
+    if not_before is None:
+        hist = tm.history_replay(sessions, spec, last, side, before, after, symbol)
+        trades = hist["trades"]
+        if keep is not None:
+            trades = [trade for trade in trades if trade["date"] in keep]
+        return hist, trades
+    groups = {}
+    for date, bars in sessions:
+        if keep is not None and date not in keep:
+            continue
+        minute = not_before.get(date)
+        if minute is None:
+            continue
+        earliest = minute if minute > before else before
+        if earliest > after:
+            continue
+        groups.setdefault(earliest, []).append((date, bars))
+    trades = []
+    for earliest, chunk in groups.items():
+        hist = tm.history_replay(chunk, spec, last, side, earliest, after, symbol)
+        trades.extend(hist["trades"])
+    return {"trades": trades, "triggered": len(trades)}, trades
+
+
+def score_symbol(tm, sessions, symbol, rule, risk, capital, side="buy", keep=None, not_before=None):
     """history_replay for one side, then size and charge each kept trade.
 
-    keep is a set of dates, or None for every date. Halves are of the sessions.
+    keep is a set of dates, or None for every date. not_before maps a date to the
+    earliest allowed close minute (NIFTY's signal). Halves are of the sessions.
     """
     before, after = entry_window(rule["or_minutes"])
     last = flat_slot(tm)
-    hist = tm.history_replay(sessions, {
-        "setup": "orb", "or_minutes": rule["or_minutes"], "stop_rule": rule["stop"],
-        "target_r": rule["target_r"],
-    }, last, side, before, after, symbol)
+    hist, trades = _collect_trades(tm, sessions, symbol, rule, last, side, before, after, keep, not_before)
     dates = [d for d, _bars in sessions]
     mid = len(dates) // 2
     first = set(dates[:mid])
     by_date = dict(sessions)
     rows = []
-    for trade in hist["trades"]:
-        if keep is not None and trade["date"] not in keep:
-            continue
+    for trade in trades:
         entry, stop = trade["entry"], trade["stop"]
         risk_ps = abs(_d(entry) - _d(stop))
         shares = whole_shares(entry, stop, risk, capital)
-        exit_px = _exit(trade, by_date[trade["date"]][last]["c"])
+        bars = by_date[trade["date"]]
+        exit_px = _exit(trade, bars[last]["c"])
         if side == "buy":
             gross = (_d(exit_px) - _d(entry)) * shares
         else:
@@ -267,12 +325,59 @@ def score_symbol(tm, sessions, symbol, rule, risk, capital, side="buy", keep=Non
         net = gross - cost
         denom = risk_ps * shares
         r_after = float(net / denom) if denom > 0 else trade["R"]
+        entry_min = tm.parse_clock(trade["time"], "entry")
+        entry_i = (entry_min - tm.OPEN_MIN) // 5 - 1
         rows.append({
             "date": trade["date"], "R": trade["R"], "R_after": r_after,
             "net": float(net), "half": "first" if trade["date"] in first else "second",
             "outcome": trade["outcome"], "shares": shares, "side": side,
+            "symbol": symbol, "entry": entry, "entry_min": entry_min,
+            "exit_min": _exit_minute(bars, entry_i, side, stop, trade["target"], last, tm),
         })
     return hist, rows
+
+
+def cap_per_day(rows, limit):
+    """The first `limit` entries of each day. Time first, then symbol. No look at the result."""
+    if not limit:
+        return rows
+    ordered = sorted(rows, key=lambda row: (row["date"], row["entry_min"], row["symbol"], row["side"]))
+    kept = []
+    used = {}
+    for row in ordered:
+        n = used.get(row["date"], 0)
+        if n >= limit:
+            continue
+        used[row["date"]] = n + 1
+        kept.append(row)
+    return kept
+
+
+def position_stats(rows):
+    """Average entry notional, and the most positions open at one time on any day.
+
+    A position is open from its entry close until its exit close. When both fall
+    on the same minute the exit is counted first, so the slot can be reused.
+    """
+    if not rows:
+        return {"avg_rupees": None, "peak_open": 0}
+    notionals = [float(_d(row["entry"]) * row["shares"]) for row in rows]
+    by_date = {}
+    for row in rows:
+        by_date.setdefault(row["date"], []).append(row)
+    peak = 0
+    for day in by_date.values():
+        events = []
+        for row in day:
+            events.append((row["entry_min"], 1))
+            events.append((row["exit_min"], -1))
+        events.sort()
+        open_n = 0
+        for _minute, delta in events:
+            open_n += delta
+            if open_n > peak:
+                peak = open_n
+    return {"avg_rupees": round(statistics.mean(notionals), 2), "peak_open": peak}
 
 
 def _block(rows):
@@ -381,11 +486,14 @@ def load_folder(folder, tm, symbols=None, before=None):
 
 
 def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
-               market_sessions=None, ruleset=None, before=None, folder=None, market=None):
+               market_sessions=None, ruleset=None, before=None, folder=None, market=None,
+               max_trades_per_day=None):
     """Score an already loaded folder. filters is a list without 'none'."""
     filters = list(filters or [])
     if "market" in filters and not market_sessions:
         raise BacktestError("--filter market needs --market FILE")
+    if max_trades_per_day is not None and max_trades_per_day < 1:
+        raise BacktestError("--max-trades-per-day must be at least 1")
     sides = sides_of(side)
     skipped = 0
     if "inplay" in filters:
@@ -393,27 +501,38 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
     report_rules = []
     for rule in (ruleset if ruleset is not None else rules()):
         bias = bias_by_date(market_sessions, rule["or_minutes"], tm) if market_sessions else {}
-        per_symbol = {}
-        combined_rows = []
+        pooled = []
         for item in loaded:
-            rows = []
             for one in sides:
                 keep = None
+                not_before = None
                 if filters:
                     keep, _skip = dates_for(item["sessions"], one, filters, rule["or_minutes"], bias)
+                if "market" in filters:
+                    not_before = {}
+                    for date, signal in bias.items():
+                        if _side_of(signal) == one and isinstance(signal, tuple) and signal[1] is not None:
+                            not_before[date] = signal[1]
                 _hist, part = score_symbol(
-                    tm, item["sessions"], item["symbol"], rule, risk, capital, one, keep)
-                rows.extend(part)
+                    tm, item["sessions"], item["symbol"], rule, risk, capital, one, keep, not_before)
+                pooled.extend(part)
+        combined_rows = cap_per_day(pooled, max_trades_per_day)
+        by_symbol = {}
+        for row in combined_rows:
+            by_symbol.setdefault(row["symbol"], []).append(row)
+        per_symbol = {}
+        for item in loaded:
+            rows = by_symbol.get(item["symbol"], [])
             per_symbol[item["symbol"]] = {
                 "sessions": len(item["sessions"]),
                 "short_sessions": len(item["short"]),
                 "history": history_from(rows),
                 "summary": summarize(rows),
             }
-            combined_rows.extend(rows)
         built = {
             "or_minutes": rule["or_minutes"], "stop": rule["stop"], "target_r": rule["target_r"],
             "name": rule_name(rule), "symbols": per_symbol, "combined": summarize(combined_rows),
+            "positions": position_stats(combined_rows),
         }
         built["pass"] = judge(built)
         report_rules.append(built)
@@ -425,6 +544,7 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
         "risk": risk, "capital": capital, "before": before,
         "side": side, "filters": filters or ["none"],
         "market": os.path.abspath(market) if market else None,
+        "max_trades_per_day": max_trades_per_day,
         "inplay_skipped": skipped,
         "symbols": [item["symbol"] for item in loaded],
         "costs": dict((k, str(v)) for k, v in costs.RATES.items()),
@@ -433,7 +553,7 @@ def run_loaded(loaded, tm, risk=500, capital=100000, side="buy", filters=None,
 
 
 def run_folder(folder, risk=500, capital=100000, symbols=None, before=None,
-               side="buy", filters=None, market=None, ruleset=None, tm=None):
+               side="buy", filters=None, market=None, ruleset=None, max_trades_per_day=None, tm=None):
     """Every *.algotest.json in folder -> the report dict (rules sorted by net R)."""
     tm = tm or load_timemachine()
     filters = list(filters or [])
@@ -444,7 +564,7 @@ def run_folder(folder, risk=500, capital=100000, symbols=None, before=None,
             raise BacktestError("--filter market needs --market FILE")
         _sym, market_sessions, _short = load_sessions(market, tm, before)
     return run_loaded(loaded, tm, risk, capital, side, filters, market_sessions,
-                      ruleset, before, folder, market)
+                      ruleset, before, folder, market, max_trades_per_day)
 
 
 def _pct(rate):
@@ -475,6 +595,15 @@ def _pass_line(check):
     return "  FAIL: %s" % "; ".join(check["reasons"])
 
 
+def _position_line(stats):
+    stats = stats or {"avg_rupees": None, "peak_open": 0}
+    if stats["avg_rupees"] is None:
+        avg = "n/a"
+    else:
+        avg = format(stats["avg_rupees"], ",.2f")
+    return "  positions: average Rs %s, peak open %d" % (avg, stats["peak_open"])
+
+
 def _side_text(side):
     return {"buy": "long only", "sell": "short only", "both": "long and short"}[side]
 
@@ -492,6 +621,9 @@ def table(report, summary=False):
     if "inplay" in filters:
         lines.append("In play skipped the first %d sessions of each stock (%d sessions)." % (
             INPLAY_WARMUP, report.get("inplay_skipped") or 0))
+    if report.get("max_trades_per_day"):
+        lines.append("At most %d entries a day, the earliest first, ties broken by symbol." % (
+            report["max_trades_per_day"],))
     sections = [("ALL", None)]
     if not summary:
         sections += [(sym, sym) for sym in report["symbols"]]
@@ -513,6 +645,7 @@ def table(report, summary=False):
             lines.append(_line("first half", block["first_half"]))
             lines.append(_line("second half", block["second_half"]))
             if sym is None:
+                lines.append(_position_line(rule.get("positions")))
                 lines.append(_pass_line(rule["pass"]))
     return lines
 
@@ -537,6 +670,8 @@ def main(argv=None):
     p.add_argument("--filter", default="none",
                    help="none, inplay, market, or a comma list such as inplay,market")
     p.add_argument("--market", help="AlgoTest NIFTY file used when the filter includes market")
+    p.add_argument("--max-trades-per-day", type=int, default=None,
+                   help="take only the first N entries of each day, across all stocks")
     p.add_argument("--summary", action="store_true",
                    help="print only the ALL block and the pass check")
     p.add_argument("--write", default=os.path.join("trader", "backtest.json"),
@@ -549,7 +684,8 @@ def main(argv=None):
     try:
         filters = parse_filters(args.filter)
         report = run_folder(args.folder, args.risk, args.capital, symbols, args.before,
-                            args.side, filters, args.market)
+                            args.side, filters, args.market,
+                            max_trades_per_day=args.max_trades_per_day)
         write_report(args.write, report)
     except (OSError, ValueError, BacktestError, algotest_to_yahoo.ConvertError) as e:
         print("backtest.py: %s" % e, file=sys.stderr)
