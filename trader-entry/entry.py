@@ -376,7 +376,7 @@ def r2(x):
 
 
 def evaluate(chart, now_utc, setup="orb", or_minutes=15, interval="5m", level=None,
-             min_volume_x=None, cfg=None):
+             min_volume_x=None, cfg=None, offline=False):
     """Pure function: the setup's status at now_utc from one session's bars."""
     cfg = cfg or dict(DEFAULTS)
     if interval not in INTERVALS:
@@ -395,7 +395,8 @@ def evaluate(chart, now_utc, setup="orb", or_minutes=15, interval="5m", level=No
            "interval": interval, "or_minutes": or_minutes, "now": local.strftime("%Y-%m-%d %H:%M:%S"), "status": "waiting",
            "phase": "", "reason": "", "opening_range": None, "level": None, "trigger": None,
            "last": None, "forming": None, "min_volume_x": min_volume_x,
-           "prev_close": chart.get("prev_close"), "calendar_known": day.year in CALENDAR_YEARS, "_bars": []}
+           "prev_close": chart.get("prev_close"), "calendar_known": day.year in CALENDAR_YEARS,
+           "_offline": bool(offline), "_bars": []}
     dt = chart.get("data_time")
     res["data_time"] = to_ist(utc_of(dt)).strftime("%Y-%m-%d %H:%M:%S") if dt else None
     ok, why = trading_day(day)
@@ -566,8 +567,9 @@ def describe(res):
     """Plain lines for a person."""
     when = datetime.datetime.strptime(res["now"], "%Y-%m-%d %H:%M:%S")
     bars = "5-minute" if res["interval"] == "5m" else "1-minute"
-    head = "%s  %s %s IST  %s on %s bars (Yahoo, free, can lag)" % (
-        res["symbol"], when.strftime("%a %Y-%m-%d"), when.strftime("%H:%M"), setup_name(res), bars)
+    head = "%s  %s %s IST  %s on %s bars (%s)" % (
+        res["symbol"], when.strftime("%a %Y-%m-%d"), when.strftime("%H:%M"), setup_name(res), bars,
+        "saved file" if res.get("_offline") else "Yahoo, free, can lag")
     if res.get("data_time") and res["data_time"] <= res["now"] and res["data_time"][:10] == res["date"]:
         head += ", data to %s" % res["data_time"][11:]
     out = [head]
@@ -761,7 +763,7 @@ def _opts(a, cfg):
     if a.level is not None and a.level <= 0:
         raise EntryError("--level must be a price above 0")
     return {"setup": a.setup, "or_minutes": a.or_minutes, "interval": a.interval, "level": a.level,
-            "min_volume_x": a.min_volume_x, "cfg": cfg}
+            "min_volume_x": a.min_volume_x, "cfg": cfg, "offline": bool(a.offline)}
 
 
 def _load(a, sym, now):
