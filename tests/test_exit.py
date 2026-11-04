@@ -53,7 +53,7 @@ class Math(unittest.TestCase):
         self.assertEqual(p["target"], Decimal("23030.40"))
         self.assertEqual(p["reward_risk"], Decimal("1.00"))
         self.assertEqual(p["target_label"], "1R (one times the risk)")
-        self.assertIn("22950.1", p["stop_detail"])
+        self.assertIn("= ₹22,950.10", p["stop_detail"])
 
     def test_the_default_2r(self):
         p = c(22990.25, "or-mid")

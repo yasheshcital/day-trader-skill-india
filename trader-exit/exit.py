@@ -261,7 +261,7 @@ def compute(entry, stop_rule, stop_param, target_rule, target_param, or_high=Non
         if stop_rule == "or_mid":
             raw = (oh + ol) / 2
             label = "opening-range midpoint"
-            detail = "(%s + %s) / 2 = ₹%s" % (money(oh), money(ol), num(raw))
+            detail = "(%s + %s) / 2 = %s" % (money(oh), money(ol), money(raw))
         else:
             raw, label = ol, "opening-range low"
     elif stop_rule == "price":

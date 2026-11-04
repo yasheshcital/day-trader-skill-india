@@ -8,6 +8,7 @@ from _load import load
 nse = load("india", "nse_market")
 entry = load("trader-entry", "entry")
 exitp = load("trader-exit", "exit")
+tm = load("trader-timemachine", "timemachine")
 
 DT = datetime.datetime
 DAY = datetime.date(2026, 1, 2)  # Friday, and not a weekend
@@ -55,6 +56,7 @@ class NseMarket(unittest.TestCase):
     def test_entry_uses_the_same_holiday_list(self):
         self.assertEqual(entry.NSE_HOLIDAYS, nse.NSE_HOLIDAYS)
         self.assertEqual(exitp.NSE_HOLIDAYS, nse.NSE_HOLIDAYS)
+        self.assertEqual(tm.NSE_HOLIDAYS, nse.NSE_HOLIDAYS)
         self.assertEqual(nse.NSE_HOLIDAYS.get("2026-11-10"), "Diwali Balipratipada")
 
     def test_guru_nanak_and_christmas_are_closed_and_the_monday_before_is_open(self):

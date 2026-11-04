@@ -38,10 +38,31 @@ class Repo(unittest.TestCase):
                        if os.path.isfile(os.path.join(ROOT, d, "SKILL.md")))
         self.assertEqual(found, sorted(SKILLS))
 
-    def test_root_matches_the_reel(self):
+    def _root_names(self):
         # .gitignore starts with ".git", so name it outright. .git itself stays hidden.
-        root = sorted(d for d in os.listdir(ROOT) if d == ".gitignore" or not d.startswith(".git"))
-        self.assertEqual(root, sorted([".claude-plugin", ".gitignore", "india", "LICENSE", "README.md", "tests"] + SKILLS))
+        # trader/ is runtime output (gitignored) and must not change this check.
+        return sorted(d for d in os.listdir(ROOT)
+                      if d != "trader" and (d == ".gitignore" or not d.startswith(".git")))
+
+    def test_root_matches_the_reel(self):
+        self.assertEqual(self._root_names(),
+                         sorted([".claude-plugin", ".gitignore", "india", "LICENSE", "README.md", "tests"] + SKILLS))
+
+    def test_a_trader_folder_does_not_change_the_root_check(self):
+        path = os.path.join(ROOT, "trader")
+        existed = os.path.isdir(path)
+        os.makedirs(path, exist_ok=True)
+        marker = os.path.join(path, "probe.txt")
+        with open(marker, "w") as fh:
+            fh.write("runtime")
+        try:
+            self.assertIn("trader", os.listdir(ROOT))
+            self.assertEqual(self._root_names(),
+                             sorted([".claude-plugin", ".gitignore", "india", "LICENSE", "README.md", "tests"] + SKILLS))
+        finally:
+            os.remove(marker)
+            if not existed:
+                os.rmdir(path)
 
     def test_frontmatter_name_and_description(self):
         for s in SKILLS:
