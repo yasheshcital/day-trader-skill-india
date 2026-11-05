@@ -102,10 +102,14 @@ class ChunksAndDepth(unittest.TestCase):
             first = start if start >= floor else floor
             return [_bar(first, 10)]
 
-        found = kh.probe_depth(fetch, datetime.date(2020, 6, 1), 100)
+        found, kept, gaps = kh.probe_depth(fetch, datetime.date(2020, 6, 1), 100)
         self.assertEqual(found, floor)
+        self.assertTrue(kept)
+        self.assertEqual(gaps, [])
+        # Two empty windows end the walk. The one before them still has data.
         self.assertLess(seen[-1][1], floor)
-        self.assertGreaterEqual(seen[-2][1], floor)
+        self.assertLess(seen[-2][1], floor)
+        self.assertGreaterEqual(seen[-3][1], floor)
 
     def test_stamps_are_ist_starts(self):
         first = kh.parse_kite_stamp("2020-04-10T09:15:00+0530")
@@ -231,19 +235,115 @@ class Download(unittest.TestCase):
         self.assertEqual(len(rows), 2)
         self.assertIn("5minute span accepted: 50 days", lines)
 
-    def test_resume_skips_a_finished_chunk_and_does_not_duplicate(self):
+    def test_three_windows_of_history_make_four_calls(self):
+        # Three data windows, then empty windows. One empty window is not the
+        # end: a suspension can leave a single window blank, so the walk stops
+        # after two. The data windows are kept, and they are not fetched again.
+        seen = []
         root = tempfile.mkdtemp()
-        progress = {"depth": {"RELIANCE|5minute": "2020-01-01"}, "spans": {}, "done": [{
-            "symbol": "RELIANCE", "interval": "5minute",
-            "start": "2020-01-01", "end": "2020-04-09", "candles": 1,
-        }]}
-        kh.save_progress(os.path.join(root, "progress.json"), progress)
-        kh.write_bars(kh.bar_path(root, "5minute", "RELIANCE"), [_bar(datetime.date(2020, 1, 2), 10)])
+
+        def send(method, url, fields, headers):
+            seen.append(url)
+            if len(seen) <= 3:
+                day = datetime.date(2020, 4, len(seen))
+                payload = {"status": "success", "data": {"candles": [
+                    ["%sT09:15:00+0530" % day.isoformat(), 10, 10, 10, 10, 1],
+                ]}}
+                return 200, _body(payload)
+            return 200, _body(EMPTY_HISTORY)
+
+        lines = []
+        client = self._client(send, lines)
+        client.spans["day"] = 30
+        progress = {"depth": {}, "spans": {}, "done": []}
+        writes = {"n": 0}
+        reads = {"n": 0}
+        real_write = kh.write_bars
+        real_read = kh.read_bars
+
+        def counting_write(path, rows):
+            writes["n"] += 1
+            return real_write(path, rows)
+
+        def counting_read(path):
+            reads["n"] += 1
+            return real_read(path)
+
+        kh.write_bars = counting_write
+        kh.read_bars = counting_read
+        try:
+            rows, gaps = kh.download_symbol(
+                client, progress, root, "RELIANCE", "738561", "day",
+                datetime.date(2020, 6, 1), lambda: None)
+        finally:
+            kh.write_bars = real_write
+            kh.read_bars = real_read
+        self.assertEqual(reads["n"], 0)
+        self.assertEqual(len(seen), 3 + kh.EMPTY_STOP)
+        self.assertEqual(kh.EMPTY_STOP, 2)
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(gaps, [])
+        self.assertEqual(writes["n"], 1)
+        self.assertFalse(os.path.isfile(kh.part_path(root, "day", "RELIANCE")))
+        self.assertEqual(
+            [row["datetime_start_ist"] for row in kh.read_bars(kh.bar_path(root, "day", "RELIANCE"))],
+            [row["datetime_start_ist"] for row in rows])
+
+    def test_one_empty_window_between_data_is_a_gap(self):
         seen = []
 
         def send(method, url, fields, headers):
             seen.append(url)
-            return 200, _body(SAMPLE_HISTORY)
+            n = len(seen)
+            if n in (1, 3):
+                day = datetime.date(2020, 4, n)
+                payload = {"status": "success", "data": {"candles": [
+                    ["%sT09:15:00+0530" % day.isoformat(), 10, 10, 10, 10, 1],
+                ]}}
+                return 200, _body(payload)
+            return 200, _body(EMPTY_HISTORY)
+
+        root = tempfile.mkdtemp()
+        client = self._client(send, [])
+        client.spans["day"] = 30
+        progress = {"depth": {}, "spans": {}, "done": []}
+        rows, gaps = kh.download_symbol(
+            client, progress, root, "RELIANCE", "738561", "day",
+            datetime.date(2020, 6, 1), lambda: None)
+        self.assertEqual(len(seen), 5)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(len(gaps), 1)
+        checks = kh.check_rows("RELIANCE", "day", rows, gaps)
+        gap_rows = [row for row in checks if row["check"] == "gap"]
+        self.assertEqual(len(gap_rows), 1)
+        self.assertIn("..", gap_rows[0]["date"])
+
+    def test_resume_skips_a_finished_chunk_and_does_not_duplicate(self):
+        root = tempfile.mkdtemp()
+        today = datetime.date(2020, 6, 1)
+        span = 100
+        done_start = today - datetime.timedelta(days=span - 1)
+        progress = {"depth": {}, "spans": {}, "done": [{
+            "symbol": "RELIANCE", "interval": "5minute",
+            "start": done_start.isoformat(), "end": today.isoformat(), "candles": 1,
+        }]}
+        kh.save_progress(os.path.join(root, "progress.json"), progress)
+        part = kh.part_path(root, "5minute", "RELIANCE")
+        kh.append_part(part, [_bar(done_start, 10)])
+        seen = []
+        order = []
+        real_read = kh.read_bars
+
+        def send(method, url, fields, headers):
+            order.append("http")
+            seen.append(url)
+            if len(seen) == 1:
+                return 200, _body(SAMPLE_HISTORY)
+            return 200, _body(EMPTY_HISTORY)
+
+        def counting_read(path):
+            order.append("read")
+            return real_read(path)
 
         lines = []
         client = self._client(send, lines)
@@ -252,20 +352,64 @@ class Download(unittest.TestCase):
         def save():
             kh.save_progress(os.path.join(root, "progress.json"), loaded)
 
-        rows = kh.download_symbol(
-            client, loaded, root, "RELIANCE", "738561", "5minute",
-            datetime.date(2020, 4, 10), save)
-        self.assertEqual(len(seen), 1)
-        self.assertIn("2020-04-10", seen[0])
-        self.assertNotIn("from=2020-01-01", seen[0])
+        kh.read_bars = counting_read
+        try:
+            rows, _gaps = kh.download_symbol(
+                client, loaded, root, "RELIANCE", "738561", "5minute", today, save)
+        finally:
+            kh.read_bars = real_read
+        self.assertEqual(order[0], "read")
+        self.assertNotIn("read", order[1:])
+        self.assertTrue(seen)
+        self.assertTrue(all(("from=%s" % done_start.isoformat()) not in url for url in seen))
         stamps = [row["datetime_start_ist"] for row in rows]
-        self.assertEqual(stamps, [
-            "2020-01-02 09:15:00", "2020-04-10 09:15:00", "2020-04-10 09:20:00"])
+        self.assertIn(done_start.strftime("%Y-%m-%d 09:15:00"), stamps)
+        self.assertIn("2020-04-10 09:15:00", stamps)
+        self.assertIn("2020-04-10 09:20:00", stamps)
         self.assertEqual(len(stamps), len(set(stamps)))
+        self.assertFalse(os.path.isfile(part))
         with open(os.path.join(root, "progress.json"), encoding="utf-8") as fh:
             text = fh.read()
         self.assertNotIn(ACCESS_TOKEN, text)
         self.assertNotIn(API_SECRET, text)
+
+    def test_progress_is_saved_every_25_requests_and_at_symbol_end(self):
+        calls = {"n": 0}
+
+        def send(method, url, fields, headers):
+            calls["n"] += 1
+            if calls["n"] <= 30:
+                day = datetime.date(2020, 1, 1) + datetime.timedelta(days=calls["n"])
+                payload = {"status": "success", "data": {"candles": [
+                    ["%sT09:15:00+0530" % day.isoformat(), 1, 1, 1, 1, 1],
+                ]}}
+                return 200, _body(payload)
+            return 200, _body(EMPTY_HISTORY)
+
+        root = tempfile.mkdtemp()
+        client = self._client(send, [])
+        client.spans["day"] = 1
+        progress = {"depth": {}, "spans": {}, "done": []}
+        saves = []
+
+        def save():
+            saves.append(client.http)
+
+        rows, _gaps = kh.download_symbol(
+            client, progress, root, "RELIANCE", "738561", "day",
+            datetime.date(2020, 3, 1), save)
+        self.assertEqual(calls["n"], 32)
+        self.assertEqual(saves, [25, 32])
+        self.assertEqual(len(rows), 30)
+        self.assertLess(len(saves), calls["n"])
+
+    def test_part_file_appends_chunks_without_rereading(self):
+        root = tempfile.mkdtemp()
+        path = kh.part_path(root, "day", "RELIANCE")
+        kh.append_part(path, [_bar(datetime.date(2020, 1, 2), 10)])
+        kh.append_part(path, [_bar(datetime.date(2020, 1, 3), 11)])
+        rows = kh.read_bars(path)
+        self.assertEqual([row["close"] for row in rows], [10.0, 11.0])
 
     def test_overlap_keeps_the_first_row(self):
         root = tempfile.mkdtemp()
@@ -296,11 +440,10 @@ class Download(unittest.TestCase):
         rc = kh.run(["AAA", "BBB"], "minute", root, today, send, "", "", None, None,
                     lines.append, dry_run=True)
         self.assertEqual(rc, 0)
-        one = kh.estimate_requests(today, kh.HORIZON["minute"], 60, True, False)
-        total = one["probe"] * 2 + one["download"] * 2 + 1
+        one = kh.estimate_requests(today, kh.HORIZON["minute"], 60)
+        total = one * 2 + 1
         self.assertIn("dry run: 2 symbols, interval minute, span 60 days", lines[0])
-        self.assertIn("requests %d (1 instruments, %d probe, %d download)" % (
-            total, one["probe"] * 2, one["download"] * 2), lines)
+        self.assertIn("requests %d (1 instruments, %d history)" % (total, one * 2), lines)
         self.assertIn("2015-01-01", " ".join(lines))
 
     def test_alias_and_checks(self):

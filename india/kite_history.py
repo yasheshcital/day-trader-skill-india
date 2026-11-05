@@ -10,8 +10,10 @@ sent as the Authorization header and are never written under this repo.
 data/ is gitignored.
 
 Kite stamps the start of each candle in +05:30. Files keep that start time.
-A stopped run continues from data/kite/progress.json. --dry-run prints the
-request count and the estimated time and does not call the API.
+The walk backward from today is the download: each non-empty window is kept,
+and a symbol stops after two empty windows in a row. A stopped run continues
+from data/kite/progress.json and the symbol's .part.csv.gz. --dry-run prints
+the request count and the estimated time and does not call the API.
 
 Nothing here places an order. Standard library only.
 """
@@ -41,13 +43,13 @@ RETRY_429 = 3
 RETRY_5XX = 3
 API = "https://api.kite.trade"
 INSTRUMENTS_URL = API + "/instruments/NSE"
-# Minute data was backfilled to about early 2015. Day candles go to the late 1990s.
-# A dry run with no saved depth uses these, and says so.
-HORIZON = {
-    "minute": datetime.date(2015, 1, 1),
-    "5minute": datetime.date(2015, 1, 1),
-    "day": datetime.date(1996, 1, 1),
-}
+# Minute data was backfilled to about early 2015. When a symbol's depth is not
+# known yet, a dry run assumes 10 years of 5-minute bars and 20 years of dailies.
+HORIZON = {"minute": datetime.date(2015, 1, 1)}
+ASSUMED_YEARS = {"5minute": 10, "day": 20}
+# One empty window can be a suspension. Two in a row ends the walk.
+EMPTY_STOP = 2
+PROGRESS_EVERY = 25
 MOVE_LIMIT = 0.20
 SESSION_BARS_5M = 75
 
@@ -117,31 +119,47 @@ def chunk_spans(start, end, max_days):
     return spans
 
 
-def count_probe(today, span, earliest):
-    """How many windows a depth probe makes, including the empty one that stops it."""
+def _years_before(day, years):
+    try:
+        return day.replace(year=day.year - years)
+    except ValueError:
+        return day.replace(year=day.year - years, day=28)
+
+
+def assumed_earliest(interval, today):
+    """Depth used by --dry-run when this symbol has not been walked yet."""
+    years = ASSUMED_YEARS.get(interval)
+    if years:
+        return _years_before(today, years)
+    return HORIZON.get(interval, _years_before(today, 10))
+
+
+def count_walk(today, span, earliest, empties=EMPTY_STOP):
+    """Requests for one symbol: history windows plus the empty ones that stop it.
+
+    A window whose end is before `earliest` is empty. Data windows reset that run.
+    """
     end = today
     n = 0
+    empty_run = 0
     while n < 2000:
         start = end - datetime.timedelta(days=span - 1)
         n += 1
         if end < earliest:
-            return n
+            empty_run += 1
+            if empty_run >= empties:
+                return n
+        else:
+            empty_run = 0
         end = start - datetime.timedelta(days=1)
         if end.year < 1990:
-            return n
+            return n + max(0, empties - empty_run)
     return n
 
 
-def estimate_requests(today, earliest, span, probe, instruments):
-    """Download chunks, plus a probe when the depth is not known yet."""
-    downloads = len(chunk_spans(earliest, today, span))
-    probes = count_probe(today, span, earliest) if probe else 0
-    return {
-        "probe": probes,
-        "download": downloads,
-        "instruments": 1 if instruments else 0,
-        "total": probes + downloads + (1 if instruments else 0),
-    }
+def estimate_requests(today, earliest, span):
+    """One backward walk. There is no second download pass."""
+    return count_walk(today, span, earliest)
 
 
 def format_eta(seconds):
@@ -394,27 +412,51 @@ class Client(object):
         raise KiteError("gave up shrinking the %s span" % interval)
 
 
-def probe_depth(fetch, today, span):
-    """Earliest candle date. `fetch(start, end)` returns rows or [].
+def gap_windows(windows):
+    """Empty windows that have candles on both sides. `windows` is newest first."""
+    chrono = list(reversed(windows))
+    gaps = []
+    for i, item in enumerate(chrono):
+        start, end, has = item
+        if has:
+            continue
+        older = any(prev[2] for prev in chrono[:i])
+        newer = any(nxt[2] for nxt in chrono[i + 1:])
+        if older and newer:
+            gaps.append((start, end))
+    return gaps
 
-    Steps back one span at a time. The window that comes back empty stops it.
+
+def probe_depth(fetch, today, span):
+    """Walk backward and keep every row. Stops after two empty windows.
+
+    `fetch(start, end)` returns rows or []. Returns (earliest date or None, rows, gaps).
     """
     end = today
     earliest = None
+    kept = []
+    windows = []
+    empty_run = 0
     guard = 0
     while guard < 2000:
         guard += 1
         start = end - datetime.timedelta(days=span - 1)
         rows = fetch(start, end)
-        if not rows:
-            return earliest
-        first = min(row["start"].date() for row in rows)
-        if earliest is None or first < earliest:
-            earliest = first
+        windows.append((start, end, bool(rows)))
+        if rows:
+            empty_run = 0
+            kept.extend(rows)
+            first = min(row["start"].date() for row in rows)
+            if earliest is None or first < earliest:
+                earliest = first
+        else:
+            empty_run += 1
+            if empty_run >= EMPTY_STOP:
+                break
         end = start - datetime.timedelta(days=1)
         if end.year < 1990:
-            return earliest
-    return earliest
+            break
+    return earliest, kept, gap_windows(windows)
 
 
 def parse_instruments(text):
@@ -554,20 +596,24 @@ def _atomic(path, write_fn):
     os.replace(tmp, path)
 
 
+def _bar_record(row):
+    return {
+        "datetime_start_ist": row["datetime_start_ist"],
+        "open": _plain(row["open"]),
+        "high": _plain(row["high"]),
+        "low": _plain(row["low"]),
+        "close": _plain(row["close"]),
+        "volume": _plain(row["volume"]),
+    }
+
+
 def write_bars(path, rows):
     def write(tmp):
         with gzip.open(tmp, "wt", encoding="utf-8", newline="") as fh:
             writer = csv.DictWriter(fh, fieldnames=BAR_FIELDS, lineterminator="\n", extrasaction="ignore")
             writer.writeheader()
             for row in rows:
-                writer.writerow({
-                    "datetime_start_ist": row["datetime_start_ist"],
-                    "open": _plain(row["open"]),
-                    "high": _plain(row["high"]),
-                    "low": _plain(row["low"]),
-                    "close": _plain(row["close"]),
-                    "volume": _plain(row["volume"]),
-                })
+                writer.writerow(_bar_record(row))
     _atomic(path, write)
 
 
@@ -575,6 +621,27 @@ def bar_path(root, interval, symbol):
     if "/" in symbol or "\\" in symbol:
         raise KiteError("symbol is not a file name: %s" % symbol)
     return os.path.join(root, interval, symbol + ".csv.gz")
+
+
+def part_path(root, interval, symbol):
+    final = bar_path(root, interval, symbol)
+    return final[:-len(".csv.gz")] + ".part.csv.gz"
+
+
+def append_part(path, rows):
+    """Append one chunk. Do not read the file."""
+    if not rows:
+        return
+    folder = os.path.dirname(path)
+    if folder and not os.path.isdir(folder):
+        os.makedirs(folder)
+    new_file = not os.path.isfile(path)
+    with gzip.open(path, "at", encoding="utf-8", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=BAR_FIELDS, lineterminator="\n", extrasaction="ignore")
+        if new_file:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow(_bar_record(row))
 
 
 def append_bars(path, rows):
@@ -608,14 +675,22 @@ def depth_key(symbol, interval):
 
 
 def chunk_covered(progress, symbol, interval, start, end):
+    return covered_candles(progress, symbol, interval, start, end) is not None
+
+
+def covered_candles(progress, symbol, interval, start, end):
+    """Candle count when a finished chunk covers the window, else None."""
     start_s = start.isoformat()
     end_s = end.isoformat()
+    found = None
     for row in progress.get("done") or []:
         if row.get("symbol") != symbol or row.get("interval") != interval:
             continue
         if row.get("start") <= start_s and row.get("end") >= end_s:
-            return True
-    return False
+            candles = row.get("candles") or 0
+            if found is None or candles > found:
+                found = candles
+    return found
 
 
 def mark_chunk(progress, symbol, interval, start, end, candles):
@@ -653,7 +728,7 @@ def session_checks(rows, interval):
     return short, moves
 
 
-def check_rows(symbol, interval, rows):
+def check_rows(symbol, interval, rows, gaps=None):
     short, moves = session_checks(rows, interval)
     out = []
     if interval == "5minute":
@@ -671,6 +746,13 @@ def check_rows(symbol, interval, rows):
             "symbol": symbol, "check": "day_move", "date": day.isoformat(),
             "bars": "", "prev_close": _plain(prev_close), "close": _plain(close),
             "change": "%.4f" % change,
+        })
+    for start, end in gaps or []:
+        out.append({
+            "symbol": symbol, "check": "gap",
+            "date": "%s..%s" % (start.isoformat(), end.isoformat()),
+            "bars": str((end - start).days + 1),
+            "prev_close": "", "close": "", "change": "",
         })
     return out
 
@@ -722,59 +804,90 @@ def _saved_depth_any(progress, name, interval):
 
 
 def download_symbol(client, progress, root, symbol, token, interval, today, save):
-    """Probe, then download every unfinished chunk. Returns the merged rows."""
-    known, probed = _saved_depth(progress, symbol, interval)
-    if probed:
-        earliest = known
-    else:
-        earliest = client_probe(client, token, interval, today)
-        progress["depth"][depth_key(symbol, interval)] = earliest.isoformat() if earliest else ""
-        progress["spans"][interval] = client.spans[interval]
-        save()
-    if earliest is None or earliest > today:
-        return []
-    span = client.spans[interval]
-    cursor = earliest
-    path = bar_path(root, interval, symbol)
-    while cursor <= today:
-        span = client.spans[interval]
-        chunk_end = cursor + datetime.timedelta(days=span - 1)
-        if chunk_end > today:
-            chunk_end = today
-        if chunk_covered(progress, symbol, interval, cursor, chunk_end):
-            cursor = chunk_end + datetime.timedelta(days=1)
-            continue
-        rows, actual_start, actual_end = client.window(token, interval, cursor, chunk_end, "start")
-        if rows:
-            append_bars(path, rows)
-        mark_chunk(progress, symbol, interval, actual_start, actual_end, len(rows))
-        progress["spans"][interval] = client.spans[interval]
-        save()
-        cursor = actual_end + datetime.timedelta(days=1)
-    if not os.path.isfile(path):
-        return []
-    return read_bars(path)
+    """Walk backward from today. The windows it fetches are the download.
 
+    Rows stay in memory and are written once, when the symbol is done. Each new
+    chunk is also appended to the .part file without reading it. `save` runs
+    after every 25 requests and at the end of the symbol. Returns (rows, gaps).
+    """
+    saved_at = [client.http]
 
-def client_probe(client, token, interval, today):
-    """Depth probe through the client, so a rejected span is halved and retried."""
+    def persist(force=False):
+        if force or client.http - saved_at[0] >= PROGRESS_EVERY:
+            save()
+            saved_at[0] = client.http
+
+    part = part_path(root, interval, symbol)
+    final = bar_path(root, interval, symbol)
+    changed = os.path.isfile(part)
+    index = {}
+    if os.path.isfile(final):
+        for row in read_bars(final):
+            index[row["datetime_start_ist"]] = row
+    if os.path.isfile(part):
+        for row in read_bars(part):
+            stamp = row["datetime_start_ist"]
+            if stamp not in index:
+                index[stamp] = row
+    windows = []
     end = today
-    earliest = None
+    empty_run = 0
     guard = 0
     while guard < 2000:
         guard += 1
         span = client.spans[interval]
         start = end - datetime.timedelta(days=span - 1)
+        known = covered_candles(progress, symbol, interval, start, end)
+        if known is not None:
+            has = known > 0
+            windows.append((start, end, has))
+            if has:
+                empty_run = 0
+            else:
+                empty_run += 1
+                if empty_run >= EMPTY_STOP:
+                    break
+            end = start - datetime.timedelta(days=1)
+            if end.year < 1990:
+                break
+            continue
         rows, actual_start, actual_end = client.window(token, interval, start, end, "end")
-        if not rows:
-            return earliest
-        first = min(row["start"].date() for row in rows)
-        if earliest is None or first < earliest:
-            earliest = first
+        mark_chunk(progress, symbol, interval, actual_start, actual_end, len(rows))
+        progress["spans"][interval] = client.spans[interval]
+        fresh = []
+        for row in rows:
+            key = row["datetime_start_ist"]
+            if key not in index:
+                index[key] = row
+                fresh.append(row)
+        if fresh:
+            append_part(part, fresh)
+            changed = True
+        windows.append((actual_start, actual_end, bool(rows)))
+        persist(False)
+        if rows:
+            empty_run = 0
+        else:
+            empty_run += 1
+            if empty_run >= EMPTY_STOP:
+                break
         end = actual_start - datetime.timedelta(days=1)
         if end.year < 1990:
-            return earliest
-    return earliest
+            break
+    key = depth_key(symbol, interval)
+    if index:
+        earliest = min(row["start"].date() for row in index.values())
+        progress["depth"][key] = earliest.isoformat()
+    elif not os.path.isfile(final):
+        progress["depth"][key] = ""
+    persist(True)
+    gaps = gap_windows(windows)
+    rows_out = [index[stamp] for stamp in sorted(index)]
+    if changed and rows_out:
+        write_bars(final, rows_out)
+    if changed and os.path.isfile(part):
+        os.remove(part)
+    return rows_out, gaps
 
 
 def gather_names(universe, symbols_file, indices):
@@ -791,29 +904,29 @@ def gather_names(universe, symbols_file, indices):
 def dry_run_lines(names, interval, today, progress, root):
     span = int((progress.get("spans") or {}).get(interval) or MAX_DAYS[interval])
     need_instruments = not os.path.isfile(instruments_path(root, today))
-    probe = 0
-    download = 0
+    history = 0
     assumed = 0
+    horizon = assumed_earliest(interval, today)
     for name in names:
         known, probed = _saved_depth_any(progress, name, interval)
         if probed and known:
-            download += len(chunk_spans(known, today, span))
+            history += count_walk(today, span, known)
         elif probed:
             continue
         else:
             assumed += 1
-            horizon = HORIZON[interval]
-            probe += count_probe(today, span, horizon)
-            download += len(chunk_spans(horizon, today, span))
-    total = probe + download + (1 if need_instruments else 0)
+            history += count_walk(today, span, horizon)
+    total = history + (1 if need_instruments else 0)
     lines = [
         "dry run: %d symbols, interval %s, span %d days" % (len(names), interval, span),
     ]
     if assumed:
-        lines.append("%d symbols have no saved depth; estimating from %s" % (
-            assumed, HORIZON[interval].isoformat()))
-    lines.append("requests %d (%d instruments, %d probe, %d download)" % (
-        total, 1 if need_instruments else 0, probe, download))
+        years = ASSUMED_YEARS.get(interval)
+        note = " (%d years)" % years if years else ""
+        lines.append("%d symbols have no saved depth; estimating from %s%s" % (
+            assumed, horizon.isoformat(), note))
+    lines.append("requests %d (%d instruments, %d history)" % (
+        total, 1 if need_instruments else 0, history))
     lines.append("at %g requests/second, about %s" % (RATE, format_eta(total / RATE)))
     return lines
 
@@ -841,10 +954,11 @@ def run(names, interval, root, today, send, api_key, access_token, bucket, sleep
         save_progress(progress_path, progress)
     client = Client(send, api_key, access_token, bucket, sleep, log)
     apply_saved_spans(client, progress)
-    # The estimate is replaced as each symbol's real depth is known. It only
-    # feeds the "remaining" half of the progress line.
-    client.planned = estimate_requests(
-        today, HORIZON[interval], client.spans[interval], True, True)["total"] * max(1, len(names))
+    # The estimate only feeds the "remaining" half of the progress line.
+    client.planned = count_walk(
+        today, client.spans[interval], assumed_earliest(interval, today)) * max(1, len(names))
+    if not os.path.isfile(instruments_path(root, today)):
+        client.planned += 1
     instruments = load_instruments(root, today, client)
     resolved = []
     seen_tokens = set()
@@ -860,8 +974,8 @@ def run(names, interval, root, today, send, api_key, access_token, bucket, sleep
         resolved.append((tradingsymbol, token))
     records = []
     for symbol, token in resolved:
-        rows = download_symbol(client, progress, root, symbol, token, interval, today, save)
-        records.extend(check_rows(symbol, interval, rows))
+        rows, gaps = download_symbol(client, progress, root, symbol, token, interval, today, save)
+        records.extend(check_rows(symbol, interval, rows, gaps))
     report = os.path.join(root, "reports", "%s-checks.csv" % interval)
     write_checks(report, records)
     log("wrote %s" % report)
