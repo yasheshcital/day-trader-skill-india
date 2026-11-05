@@ -10,10 +10,13 @@ sent as the Authorization header and are never written under this repo.
 data/ is gitignored.
 
 Kite stamps the start of each candle in +05:30. Files keep that start time.
-The walk backward from today is the download: each non-empty window is kept,
-and a symbol stops after two empty windows in a row. A stopped run continues
-from data/kite/progress.json and the symbol's .part.csv.gz. --dry-run prints
-the request count and the estimated time and does not call the API.
+The walk backward from --to is the download: each non-empty window is kept,
+and a symbol stops after two empty windows in a row. --to defaults to the
+last finished NSE session (today at or after 15:45 IST, otherwise the previous
+trading day). A session that is still open is not written. A stopped run
+continues from data/kite/progress.json and the symbol's .part.csv.gz.
+--dry-run prints the request count and the estimated time and does not call
+the API.
 
 Nothing here places an order. Standard library only.
 """
@@ -34,6 +37,7 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
 from india import kite_login
+from india import nse_market
 
 # Days Kite accepts in one request. If a span is rejected, it is halved.
 MAX_DAYS = {"day": 2000, "5minute": 100, "minute": 60}
@@ -52,6 +56,9 @@ EMPTY_STOP = 2
 PROGRESS_EVERY = 25
 MOVE_LIMIT = 0.20
 SESSION_BARS_5M = 75
+# The cash session ends at 15:30. A file may include today only after 15:45 IST,
+# so the closing candle has had time to arrive.
+SETTLED = datetime.time(15, 45)
 
 # The four broad indices, plus the NIFTY sector indices. The name on the left
 # of INDEX_ALIASES is the one people type; the value is Kite's tradingsymbol
@@ -124,6 +131,53 @@ def _years_before(day, years):
         return day.replace(year=day.year - years)
     except ValueError:
         return day.replace(year=day.year - years, day=28)
+
+
+def now_ist(now=None):
+    """Naive IST. `now` is already IST when a test passes one in."""
+    if now is not None:
+        return now
+    return nse_market.to_ist(datetime.datetime.utcnow())
+
+
+def previous_trading_day(day):
+    """The NSE session before `day`. Weekends and NSE_HOLIDAYS are skipped."""
+    cursor = day - datetime.timedelta(days=1)
+    for _ in range(20):
+        ok, _reason = nse_market.trading_day(cursor)
+        if ok:
+            return cursor
+        cursor -= datetime.timedelta(days=1)
+    raise KiteError("no NSE session before %s" % day.isoformat())
+
+
+def default_to(now):
+    """Last finished session. `now` is a naive IST datetime.
+
+    Today, once the clock is at or after 15:45 on a trading day. Otherwise the
+    previous trading day.
+    """
+    if isinstance(now, datetime.datetime):
+        day = now.date()
+        clock = now.time()
+    else:
+        day = now
+        clock = SETTLED
+    ok, _reason = nse_market.trading_day(day)
+    if ok and clock >= SETTLED:
+        return day
+    return previous_trading_day(day)
+
+
+def parse_day(text):
+    raw = (text or "").strip()
+    try:
+        day = datetime.date.fromisoformat(raw)
+    except ValueError:
+        raise KiteError("--to must be YYYY-MM-DD, not %r" % (text,))
+    if day.isoformat() != raw:
+        raise KiteError("--to must be YYYY-MM-DD, not %r" % (text,))
+    return day
 
 
 def assumed_earliest(interval, today):
@@ -803,12 +857,50 @@ def _saved_depth_any(progress, name, interval):
     return None, False
 
 
-def download_symbol(client, progress, root, symbol, token, interval, today, save):
-    """Walk backward from today. The windows it fetches are the download.
+def finished_rows(rows, interval, to_date, now):
+    """Drop sessions after `to_date`, and an unfinished session dated today.
+
+    Returns (kept, partial). `partial` is true when today's session was still
+    open, so the chunk that held it must not be marked done. `now` is naive IST.
+    """
+    if not rows:
+        return [], False
+    by_date = {}
+    for row in rows:
+        by_date.setdefault(row["start"].date(), []).append(row)
+    last = max(by_date)
+    drop = set()
+    for day in by_date:
+        if day > to_date:
+            drop.add(day)
+    partial = False
+    today = now.date() if isinstance(now, datetime.datetime) else None
+    clock = now.time() if isinstance(now, datetime.datetime) else SETTLED
+    if today is not None and last == today and today in by_date:
+        bars = by_date[today]
+        if interval == "5minute" and len(bars) < SESSION_BARS_5M:
+            drop.add(today)
+            partial = True
+        elif interval == "day" and clock < SETTLED:
+            drop.add(today)
+            partial = True
+    if today is not None and today in drop and today == last:
+        bars = by_date.get(today) or []
+        if interval == "5minute" and len(bars) < SESSION_BARS_5M:
+            partial = True
+        elif interval == "day" and clock < SETTLED:
+            partial = True
+    kept = [row for row in rows if row["start"].date() not in drop]
+    return kept, partial
+
+
+def download_symbol(client, progress, root, symbol, token, interval, today, save, now=None):
+    """Walk backward from `today` (`--to`). The windows it fetches are the download.
 
     Rows stay in memory and are written once, when the symbol is done. Each new
     chunk is also appended to the .part file without reading it. `save` runs
-    after every 25 requests and at the end of the symbol. Returns (rows, gaps).
+    after every 25 requests and at the end of the symbol. An open session is
+    left out of the file and its chunk is not marked done. Returns (rows, gaps).
     """
     saved_at = [client.http]
 
@@ -852,10 +944,12 @@ def download_symbol(client, progress, root, symbol, token, interval, today, save
                 break
             continue
         rows, actual_start, actual_end = client.window(token, interval, start, end, "end")
-        mark_chunk(progress, symbol, interval, actual_start, actual_end, len(rows))
+        kept, partial = finished_rows(rows, interval, today, now)
+        if not partial:
+            mark_chunk(progress, symbol, interval, actual_start, actual_end, len(kept))
         progress["spans"][interval] = client.spans[interval]
         fresh = []
-        for row in rows:
+        for row in kept:
             key = row["datetime_start_ist"]
             if key not in index:
                 index[key] = row
@@ -863,28 +957,34 @@ def download_symbol(client, progress, root, symbol, token, interval, today, save
         if fresh:
             append_part(part, fresh)
             changed = True
-        windows.append((actual_start, actual_end, bool(rows)))
+        windows.append((actual_start, actual_end, bool(kept)))
         persist(False)
-        if rows:
+        if kept:
             empty_run = 0
-        else:
+        elif not partial:
             empty_run += 1
             if empty_run >= EMPTY_STOP:
                 break
         end = actual_start - datetime.timedelta(days=1)
         if end.year < 1990:
             break
-    key = depth_key(symbol, interval)
-    if index:
-        earliest = min(row["start"].date() for row in index.values())
-        progress["depth"][key] = earliest.isoformat()
-    elif not os.path.isfile(final):
-        progress["depth"][key] = ""
-    persist(True)
     gaps = gap_windows(windows)
     rows_out = [index[stamp] for stamp in sorted(index)]
+    filtered, _partial_file = finished_rows(rows_out, interval, today, now)
+    if [row["datetime_start_ist"] for row in filtered] != [row["datetime_start_ist"] for row in rows_out]:
+        changed = True
+    rows_out = filtered
+    key = depth_key(symbol, interval)
+    if rows_out:
+        earliest = min(row["start"].date() for row in rows_out)
+        progress["depth"][key] = earliest.isoformat()
+    elif changed or not os.path.isfile(final):
+        progress["depth"][key] = ""
+    persist(True)
     if changed and rows_out:
         write_bars(final, rows_out)
+    elif changed and os.path.isfile(final):
+        os.remove(final)
     if changed and os.path.isfile(part):
         os.remove(part)
     return rows_out, gaps
@@ -918,7 +1018,8 @@ def dry_run_lines(names, interval, today, progress, root):
             history += count_walk(today, span, horizon)
     total = history + (1 if need_instruments else 0)
     lines = [
-        "dry run: %d symbols, interval %s, span %d days" % (len(names), interval, span),
+        "dry run: %d symbols, interval %s, span %d days, through %s" % (
+            len(names), interval, span, today.isoformat()),
     ]
     if assumed:
         years = ASSUMED_YEARS.get(interval)
@@ -939,24 +1040,27 @@ def apply_saved_spans(client, progress):
                 client.announced.add(interval)
 
 
-def run(names, interval, root, today, send, api_key, access_token, bucket, sleep, log, dry_run=False):
+def run(names, interval, root, today, send, api_key, access_token, bucket, sleep, log,
+        dry_run=False, to_date=None, now=None):
     if interval not in MAX_DAYS:
         raise KiteError("interval must be day, 5minute or minute, not %r" % (interval,))
     if not names:
         raise KiteError("no symbols. Pass --universe, --symbols-file, or --indices")
+    end = to_date or today
     progress_path = os.path.join(root, "progress.json")
     progress = load_progress(progress_path)
     if dry_run:
-        for line in dry_run_lines(names, interval, today, progress, root):
+        for line in dry_run_lines(names, interval, end, progress, root):
             log(line)
         return 0
     def save():
         save_progress(progress_path, progress)
+    log("through %s" % end.isoformat())
     client = Client(send, api_key, access_token, bucket, sleep, log)
     apply_saved_spans(client, progress)
     # The estimate only feeds the "remaining" half of the progress line.
     client.planned = count_walk(
-        today, client.spans[interval], assumed_earliest(interval, today)) * max(1, len(names))
+        end, client.spans[interval], assumed_earliest(interval, end)) * max(1, len(names))
     if not os.path.isfile(instruments_path(root, today)):
         client.planned += 1
     instruments = load_instruments(root, today, client)
@@ -974,7 +1078,8 @@ def run(names, interval, root, today, send, api_key, access_token, bucket, sleep
         resolved.append((tradingsymbol, token))
     records = []
     for symbol, token in resolved:
-        rows, gaps = download_symbol(client, progress, root, symbol, token, interval, today, save)
+        rows, gaps = download_symbol(
+            client, progress, root, symbol, token, interval, end, save, now)
         records.extend(check_rows(symbol, interval, rows, gaps))
     report = os.path.join(root, "reports", "%s-checks.csv" % interval)
     write_checks(report, records)
@@ -983,7 +1088,7 @@ def run(names, interval, root, today, send, api_key, access_token, bucket, sleep
 
 
 def main(argv=None, send=None, today=None, bucket=None, sleep=None, log=None,
-         cred_path=None, token_path=None):
+         cred_path=None, token_path=None, now=None):
     import argparse
     parser = argparse.ArgumentParser(description="Download Kite historical candles. Nothing is placed.")
     parser.add_argument("--universe", help="NSE constituents CSV with a Symbol column")
@@ -991,22 +1096,28 @@ def main(argv=None, send=None, today=None, bucket=None, sleep=None, log=None,
     parser.add_argument("--indices", default=",".join(DEFAULT_INDICES),
                         help="comma separated index names. Default is the four broad indices and the NIFTY sector indices.")
     parser.add_argument("--interval", required=True, choices=INTERVALS)
+    parser.add_argument("--to", help="last session to keep, YYYY-MM-DD. Default is the last finished NSE session.")
     parser.add_argument("--data", default=DEFAULT_ROOT, help="output root (default data/kite)")
     parser.add_argument("--dry-run", action="store_true", help="print the request count and stop")
     args = parser.parse_args(argv)
-    day = today or datetime.date.today()
+    if now is None and today is not None:
+        now = datetime.datetime.combine(today, SETTLED)
+    clock = now_ist(now)
+    day = clock.date()
     emit = log or (lambda line: print(line))
     try:
+        to_date = parse_day(args.to) if args.to else default_to(clock)
         names = gather_names(args.universe, args.symbols_file, args.indices)
         if args.dry_run:
-            return run(names, args.interval, args.data, day, send, "", "", None, None, emit, dry_run=True)
+            return run(names, args.interval, args.data, day, send, "", "", None, None, emit,
+                       dry_run=True, to_date=to_date, now=clock)
         api_key, _secret = kite_login.load_credentials(cred_path or kite_login.CRED_PATH)
         access_token = kite_login.load_token(token_path or kite_login.TOKEN_PATH, day)
         sender = send or kite_login.urlopen_send
         limiter = bucket or TokenBucket(RATE)
         pause = sleep or time.sleep
         return run(names, args.interval, args.data, day, sender, api_key, access_token,
-                   limiter, pause, emit, dry_run=False)
+                   limiter, pause, emit, dry_run=False, to_date=to_date, now=clock)
     except LoginExpired as exc:
         print("kite_history.py: %s" % exc, file=sys.stderr)
         return 1

@@ -446,6 +446,96 @@ class Download(unittest.TestCase):
         self.assertIn("requests %d (1 instruments, %d history)" % (total, one * 2), lines)
         self.assertIn("2015-01-01", " ".join(lines))
 
+    def test_default_to_is_the_last_finished_session(self):
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 5, 12, 40)), datetime.date(2026, 11, 4))
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 5, 15, 44)), datetime.date(2026, 11, 4))
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 5, 15, 45)), datetime.date(2026, 11, 5))
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 5, 16, 0)), datetime.date(2026, 11, 5))
+        # Saturday, after the close, is still not a session.
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 7, 16, 0)), datetime.date(2026, 11, 6))
+        # 2026-11-10 is an NSE holiday, so Wednesday morning stops on Monday.
+        self.assertEqual(kh.default_to(datetime.datetime(2026, 11, 11, 12, 40)), datetime.date(2026, 11, 9))
+
+    def _clock_run(self, now, interval, candles):
+        root = tempfile.mkdtemp()
+        floor = datetime.date(2026, 11, 1)
+        seen = []
+
+        def send(method, url, fields, headers):
+            seen.append(url)
+            if "historical" not in url:
+                return 200, INSTRUMENTS.encode("utf-8")
+            query = kh.urllib.parse.parse_qs(kh.urllib.parse.urlparse(url).query)
+            end = datetime.date.fromisoformat(query["to"][0][:10])
+            if end < floor:
+                return 200, _body(EMPTY_HISTORY)
+            payload = {"status": "success", "data": {"candles": candles}}
+            return 200, _body(payload)
+
+        to_date = kh.default_to(now)
+        rc = kh.run(
+            ["RELIANCE"], interval, root, now.date(), send, API_KEY, ACCESS_TOKEN,
+            OpenBucket(), lambda _s: None, lambda _line: None,
+            to_date=to_date, now=now)
+        self.assertEqual(rc, 0)
+        path = kh.bar_path(root, interval, "RELIANCE")
+        rows = kh.read_bars(path) if os.path.isfile(path) else []
+        progress = kh.load_progress(os.path.join(root, "progress.json"))
+        ends = []
+        for url in seen:
+            if "historical" not in url:
+                continue
+            query = kh.urllib.parse.parse_qs(kh.urllib.parse.urlparse(url).query)
+            ends.append(query["to"][0][:10])
+        return rows, progress, ends
+
+    def test_run_at_1240_ist_stores_nothing_for_today(self):
+        now = datetime.datetime(2026, 11, 5, 12, 40)
+        partial = []
+        start = datetime.datetime(2026, 11, 5, 9, 15)
+        for i in range(10):
+            stamp = start + datetime.timedelta(minutes=5 * i)
+            partial.append([stamp.strftime("%Y-%m-%dT%H:%M:%S+0530"), 10, 10, 10, 10, 1])
+        previous = ["2026-11-04T09:15:00+0530", 9, 9, 9, 9, 1]
+        candles = [previous] + partial
+
+        rows, progress, ends = self._clock_run(now, "5minute", candles)
+        self.assertEqual(max(ends), "2026-11-04")
+        self.assertEqual([row["datetime_start_ist"][:10] for row in rows], ["2026-11-04"])
+        self.assertFalse(any(row["end"] >= "2026-11-04" for row in progress["done"]))
+
+        daily = [
+            ["2026-11-04T00:00:00+0530", 9, 9, 9, 9, 1],
+            ["2026-11-05T00:00:00+0530", 10, 10, 10, 10, 1],
+        ]
+        rows, progress, ends = self._clock_run(now, "day", daily)
+        self.assertEqual(max(ends), "2026-11-04")
+        self.assertEqual([row["datetime_start_ist"][:10] for row in rows], ["2026-11-04"])
+        self.assertFalse(any(row["end"] >= "2026-11-04" for row in progress["done"]))
+
+    def test_run_at_1600_ist_stores_the_full_day(self):
+        now = datetime.datetime(2026, 11, 5, 16, 0)
+        start = datetime.datetime(2026, 11, 5, 9, 15)
+        full = []
+        for i in range(75):
+            stamp = start + datetime.timedelta(minutes=5 * i)
+            full.append([stamp.strftime("%Y-%m-%dT%H:%M:%S+0530"), 10, 11, 9, 10, 1])
+        rows, progress, ends = self._clock_run(now, "5minute", full)
+        self.assertIn("2026-11-05", ends)
+        self.assertEqual(len(rows), 75)
+        self.assertEqual(set(row["datetime_start_ist"][:10] for row in rows), set(["2026-11-05"]))
+        self.assertEqual(rows[0]["datetime_start_ist"], "2026-11-05 09:15:00")
+        self.assertEqual(rows[-1]["datetime_start_ist"], "2026-11-05 15:25:00")
+        self.assertTrue(any(
+            row["end"] == "2026-11-05" and row["candles"] == 75 for row in progress["done"]))
+
+        daily = [["2026-11-05T00:00:00+0530", 10, 11, 9, 10, 1]]
+        rows, progress, ends = self._clock_run(now, "day", daily)
+        self.assertIn("2026-11-05", ends)
+        self.assertEqual([row["datetime_start_ist"][:10] for row in rows], ["2026-11-05"])
+        self.assertTrue(any(
+            row["end"] == "2026-11-05" and row["candles"] == 1 for row in progress["done"]))
+
     def test_alias_and_checks(self):
         rows = kh.parse_instruments(INSTRUMENTS)
         self.assertEqual(kh.lookup_instrument("NIFTY SMALLCAP 100", rows), ("260873", "NIFTY SMLCAP 100"))

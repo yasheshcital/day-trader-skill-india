@@ -40,9 +40,17 @@ class Repo(unittest.TestCase):
 
     def _root_names(self):
         # .gitignore starts with ".git", so name it outright. .git itself stays hidden.
-        # trader/ is runtime output (gitignored) and must not change this check.
+        # trader/ and data/ are runtime output (gitignored) and must not change this check.
+        ignored = set()
+        gitignore = os.path.join(ROOT, ".gitignore")
+        if os.path.isfile(gitignore):
+            with open(gitignore, encoding="utf-8") as fh:
+                for line in fh:
+                    text = line.strip()
+                    if text and not text.startswith("#"):
+                        ignored.add(text.rstrip("/"))
         return sorted(d for d in os.listdir(ROOT)
-                      if d != "trader" and (d == ".gitignore" or not d.startswith(".git")))
+                      if d not in ignored and (d == ".gitignore" or not d.startswith(".git")))
 
     def test_root_matches_the_reel(self):
         self.assertEqual(self._root_names(),
