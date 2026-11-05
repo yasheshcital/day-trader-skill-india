@@ -9,6 +9,11 @@ grid of rules. Nothing is placed.
     python3 india/backtest.py tests/fixtures/india/nifty50 --side both --filter none --summary
     python3 india/backtest.py tests/fixtures/india/nifty50 --side both --filter inplay,market \
         --market tests/fixtures/india/NIFTY-2026-08-05_2026-11-03-5m.algotest.json --summary
+    python3 india/backtest.py data/kite/5minute
+
+A folder of Kite 5-minute .csv.gz files is read the same way. Kite stamps the
+start of the bar; those stamps are shifted to the bar end and then through the
+AlgoTest converter, so the sessions match an AlgoTest file of the same bars.
 
 Entry window: 09:30, or the end of the opening range when that is later, through
 14:30. Flat by 15:10. Each trade risks --risk rupees (default 500) in whole
@@ -39,6 +44,7 @@ if _ROOT not in sys.path:
 
 from india import algotest_to_yahoo
 from india import costs
+from india import kite_history
 
 OR_MINUTES = (15, 30)
 STOPS = ("or_mid", "or_low")
@@ -130,6 +136,40 @@ def load_sessions(path, tm, before=None):
     _meta, bars, _dropped = tm.parse_bars(result, FAR_FUTURE)
     full, short = tm.full_sessions(tm.split_sessions(bars), before or AFTER_ALL)
     return sym, full, short
+
+
+def kite_end_label(start_ist, minutes=5):
+    """Kite stamps the candle start. AlgoTest stamps the bar end."""
+    return start_ist + datetime.timedelta(minutes=minutes)
+
+
+def load_kite_sessions(path, tm, before=None):
+    """One Kite SYMBOL.csv.gz of 5-minute bars -> the same sessions as AlgoTest.
+
+    Each start is shifted to the bar end, then through the AlgoTest converter,
+    which shifts it back to the start the time machine stores.
+    """
+    symbol = kite_history.symbol_from_path(path)
+    candles = []
+    for row in kite_history.read_bars(path):
+        end = kite_end_label(row["start"])
+        candles.append({
+            "datetime": end.strftime("%Y-%m-%dT%H:%M:%S"),
+            "open": row["open"],
+            "high": row["high"],
+            "low": row["low"],
+            "close": row["close"],
+            "volume": row["volume"],
+        })
+    try:
+        doc, _report = algotest_to_yahoo.to_yahoo(
+            {"underlying": symbol, "candles": candles}, symbol, interval="5m", label="end")
+    except algotest_to_yahoo.ConvertError as exc:
+        raise BacktestError("%s: %s" % (os.path.basename(path), exc))
+    result = doc["chart"]["result"][0]
+    _meta, bars, _dropped = tm.parse_bars(result, FAR_FUTURE)
+    full, short = tm.full_sessions(tm.split_sessions(bars), before or AFTER_ALL)
+    return symbol, full, short
 
 
 def flat_slot(tm):
@@ -544,26 +584,34 @@ def history_from(rows):
     }
 
 
+def _add_loaded(loaded, seen, sym, sessions, short, path, wanted):
+    if wanted is not None and sym not in wanted:
+        return
+    if sym in seen:
+        raise BacktestError("two files for %s" % sym)
+    seen.add(sym)
+    loaded.append({"symbol": sym, "path": path, "sessions": sessions, "short": short})
+
+
 def load_folder(folder, tm, symbols=None, before=None):
-    """Every *.algotest.json in folder, non-recursive, sorted by symbol."""
+    """Every *.algotest.json or Kite *.csv.gz in folder, non-recursive, sorted by symbol."""
     if not os.path.isdir(folder):
         raise BacktestError("no folder %s" % folder)
-    paths = sorted(glob.glob(os.path.join(folder, "*.algotest.json")))
-    if not paths:
-        raise BacktestError("no .algotest.json files in %s" % folder)
+    algo = sorted(glob.glob(os.path.join(folder, "*.algotest.json")))
+    kite = sorted(glob.glob(os.path.join(folder, "*.csv.gz")))
+    if not algo and not kite:
+        raise BacktestError("no .algotest.json or .csv.gz files in %s" % folder)
     wanted = None
     if symbols:
         wanted = set(s.strip().upper() for s in symbols if s.strip())
     loaded = []
     seen = set()
-    for path in paths:
+    for path in algo:
         sym, sessions, short = load_sessions(path, tm, before)
-        if wanted is not None and sym not in wanted:
-            continue
-        if sym in seen:
-            raise BacktestError("two files for %s" % sym)
-        seen.add(sym)
-        loaded.append({"symbol": sym, "path": path, "sessions": sessions, "short": short})
+        _add_loaded(loaded, seen, sym, sessions, short, path, wanted)
+    for path in kite:
+        sym, sessions, short = load_kite_sessions(path, tm, before)
+        _add_loaded(loaded, seen, sym, sessions, short, path, wanted)
     if wanted is not None:
         missing = sorted(wanted - seen)
         if missing:
