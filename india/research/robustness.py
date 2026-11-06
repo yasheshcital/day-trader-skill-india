@@ -901,9 +901,12 @@ def install(path, section, rows):
         text += "\n"
     start = text.find("\n## Attempt 10\n")
     forward = text.find("\n## Forward test\n")
+    later = text.find("\n## Attempt 11\n")
     block = "\n" + section.rstrip() + "\n\n"
     if start != -1 and (forward == -1 or start < forward):
         end = forward if forward != -1 else len(text)
+        if later != -1 and later > start and later < end:
+            end = later
         text = text[:start] + block + text[end:]
     elif forward != -1:
         text = text[:forward] + block + text[forward:]

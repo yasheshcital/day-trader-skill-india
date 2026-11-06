@@ -21,6 +21,18 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 10 | 2026-11-06 | engulf-low / hold-20 keeps a market-adjusted excess over a same-month random entry. | excess vs same-month random, monthly t, top 100, 10-slot portfolio | point-in-time turnover, 2005-01-01 to 2024-12-31, dividends excluded | 2,337 | +0.154% | -0.26 | FAIL |
 | 10 | 2026-11-06 | bb-squeeze / sma20-close keeps a market-adjusted excess over a same-month random entry. | excess vs same-month random, monthly t, top 100, 10-slot portfolio | point-in-time turnover, 2005-01-01 to 2024-12-31, dividends excluded | 3,273 | +0.607% | +1.37 | FAIL |
 | 10 | 2026-11-06 | sma20-touch / sma20-close keeps a market-adjusted excess over a same-month random entry. | excess vs same-month random, monthly t, top 100, 10-slot portfolio | point-in-time turnover, 2005-01-01 to 2024-12-31, dividends excluded | 36,324 | +0.199% | +0.08 | FAIL |
+| 11 | 2026-11-06 | turtle 20/10 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 15,341 | +12.403% | +0.03 | FAIL |
+| 11 | 2026-11-06 | turtle 55/20 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 8,577 | +13.913% | +0.72 | FAIL |
+| 11 | 2026-11-06 | turtle 55/20 up clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 7,265 | +13.586% | +0.51 | FAIL |
+| 11 | 2026-11-06 | mom 12-1 K20 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 4,754 | +34.958% | +4.47 | FAIL |
+| 11 | 2026-11-06 | mom 12-1 K30 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 7,124 | +33.073% | +4.42 | FAIL |
+| 11 | 2026-11-06 | mom 12-1 K20 above200 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 3,654 | +35.442% | +4.82 | PASS |
+| 11 | 2026-11-06 | 52w-high K20 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 4,754 | +21.660% | +2.03 | FAIL |
+| 11 | 2026-11-06 | 52w-high K30 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 7,124 | +21.306% | +2.10 | FAIL |
+| 11 | 2026-11-06 | 52w-high K20 above200 clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 3,654 | +21.821% | +2.32 | FAIL |
+| 11 | 2026-11-06 | faber 10m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 183 | +11.128% | -0.84 | FAIL |
+| 11 | 2026-11-06 | faber 8m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 173 | +11.247% | -0.80 | FAIL |
+| 11 | 2026-11-06 | faber 12m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 190 | +10.326% | -1.03 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -216,6 +228,110 @@ sma20-touch / sma20-close
   FAIL: excess t +0.08 is not above 2; neighbours 0 of 2, need 2; CAGR +4.374% is below NIFTY +12.835% plus 3
 
 Candidates that pass: 0 of 4.
+
+
+## Attempt 11
+
+Rules fixed on 2026-11-06, before the run.
+
+Hypothesis: one of twelve published variants, run through the shared harness, beats buying NIFTY 50 on the pass mark below. The catalogue is india/research/STRATEGIES.md. Attempts 1 to 10 already tested the opening-range family and the single technical-signal family.
+
+Common rules. Universe each day: the 200 symbols with the highest average close times volume over the previous 60 sessions, using only earlier bars and never a window that crosses a break. A trade or a holding that would cross a break is closed at the last close of the old segment. The last session of the window is the end of the loaded segment, so open holdings are sold at that close. The first 250 sessions of a segment produce no trade signal. Market type is india/research/regime.py, known before the open. Data is read through india/research/data.py. The window is 2005-01-01 through 2024-12-31. Dates from 2025-01-01 on are not requested. Dividends are excluded for every book and for NIFTY. The book and the NIFTY benchmark both start by buying at the first session's open, with no cost on that initial buy, and are marked at the close.
+
+Idle cash is held in the NIFTY 50 price series, not at 0, so a book that is only partly invested is still compared with the market. Delivery costs from signal_lab.py (check your broker) are charged on stock buys and stock sells. They are not charged on the idle sleeve. A trade strategy has a Rs 10,00,000 book and at most 10 positions of Rs 1,00,000. When more signals than free slots fall on one open, the highest 60-session turnover before that open is taken, ties broken by symbol name. One position per symbol. A portfolio strategy puts the whole book into the selected names in equal weight at the next session's open after the month-end close. Costs are charged only on the shares that are actually bought or sold. Rounding residual stays in NIFTY.
+
+Turtle, trade. Enter the next open after a close above the prior 20-session or 55-session high (today is not inside that high). The stop is the entry minus 2 ATR20 from the signal day: a gap through it fills at the open, and a low through it fills at the stop. A close below the prior 10-session or 20-session low exits at the next open. The stop is taken first when both happen on the same day. Variants: turtle 20/10, turtle 55/20, and turtle 55/20 up. The up variant is an entry filter only: the regime of the entry day must be up, and a later change of regime does not close the trade.
+
+Cross-sectional momentum, portfolio, monthly. Rank by the close 21 sessions before the month-end divided by the close 252 sessions before it, minus one, inside one segment. Variants: K=20, K=30, and K=20 only when the NIFTY month-end close is above its 200-day average of closes through that day (otherwise the whole book is NIFTY). That average test is not the regime slope. Variant names: mom 12-1 K20, mom 12-1 K30, mom 12-1 K20 above200. When fewer than K names qualify, those names share the book equally.
+
+52-week-high momentum, portfolio, monthly. Rank by the month-end close divided by the prior 252-session high. Variant names: 52w-high K20, 52w-high K30, and 52w-high K20 above200, the last with the same 200-day NIFTY filter.
+
+Faber timing, portfolio on NIFTY 50 itself. Hold NIFTY when the month-end close is above the average of the last N month-end closes, including that close. Otherwise cash at 0, which is the exception to the idle-NIFTY rule. Buying or selling that index position pays delivery costs. Variant names: faber 10m, faber 8m, faber 12m. Before a full average exists the book stays in cash. Faber has no stock universe, so its large-cap excess is its own excess.
+
+Reports. CAGR over 365.25-day years, max drawdown, CAGR divided by the absolute max drawdown, worst calendar year, and each year's return. The same figures for NIFTY 50 buy-and-hold, price only. Monthly excess is the book's month-end to month-end percent return minus NIFTY's over the same dates, and the t-statistic is the one-sample t of those monthly excesses. Decades are 2005-2014 and 2015-2024 by the month-end year. Market type is the regime of the first session of the month. Large caps rerun the variant on the top 100 by the same 60-session turnover; Faber has no stock book, so its large-cap excess is its own excess.
+
+Random baseline, 100 seeded runs, seed 20261106 plus an offset per variant. A portfolio run keeps the same rebalance dates, the same K, and the same NIFTY filter, and draws random members of that day's universe who can be bought on the rebalance open in the same segment. A turtle run replaces each real entry with one random eligible entry from the same calendar month and applies the same stop and channel exit; the up-only variant draws only from entry days whose regime is up. A Faber run, each month, holds NIFTY or cash with equal probability. The book beats a run when its CAGR is strictly higher.
+
+Pass mark, fixed before this run and used from attempt 11 on, separate from attempts 1 to 10: monthly excess t above 3; average excess above 0 in both decades and in up, down, and sideways months; beats at least 95 of 100 random runs; large-cap excess above 0; and either CAGR at least NIFTY plus 3 percentage points with max drawdown no more than 10 percentage points worse than NIFTY, or CAGR at least NIFTY's with CAGR / |max drawdown| at least 1.5 times NIFTY's. A value sitting on the boundary still passes.
+
+Dividends are excluded. The summary columns are CAGR, max drawdown, CAGR / |max drawdown|, worst year, monthly excess, t, both decades, each market type, the large-cap excess, and random beats. In the experiments table the two return columns are CAGR and the monthly t, not R. A portfolio trades cell counts selected names across rebalance dates. A Faber trades cell counts months held.
+
+variant | CAGR | max DD | CAGR/|DD| | worst year | excess | t | 2005-14 | 2015-24 | up | down | sideways | large | beats | result
+NIFTY 50 | +12.929% | -59.856% | 0.216 | -51.794% | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | 
+turtle 20/10 | +12.403% | -66.708% | 0.186 | -61.866% | +0.005% | +0.03 | +0.120% | -0.111% | +0.047% | -0.493% | +0.238% | -0.074% | 33/100 | FAIL
+turtle 55/20 | +13.913% | -65.032% | 0.214 | -56.775% | +0.096% | +0.72 | +0.272% | -0.080% | +0.191% | -0.660% | +0.308% | -0.006% | 19/100 | FAIL
+turtle 55/20 up | +13.586% | -61.591% | 0.221 | -53.437% | +0.057% | +0.51 | +0.167% | -0.052% | +0.085% | -0.024% | -0.003% | +0.051% | 25/100 | FAIL
+mom 12-1 K20 | +34.958% | -73.213% | 0.477 | -68.898% | +1.667% | +4.47 | +1.805% | +1.528% | +2.142% | -1.134% | +1.892% | +0.753% | 100/100 | FAIL
+mom 12-1 K30 | +33.073% | -71.287% | 0.464 | -66.104% | +1.520% | +4.42 | +1.674% | +1.367% | +1.926% | -0.812% | +1.664% | +0.657% | 100/100 | FAIL
+mom 12-1 K20 above200 | +35.442% | -70.072% | 0.506 | -63.093% | +1.661% | +4.82 | +1.959% | +1.362% | +2.124% | +0.006% | +0.950% | +0.795% | 100/100 | PASS
+52w-high K20 | +21.660% | -59.526% | 0.364 | -52.855% | +0.635% | +2.03 | +0.782% | +0.489% | +0.836% | -0.618% | +0.792% | +0.088% | 89/100 | FAIL
+52w-high K30 | +21.306% | -60.641% | 0.351 | -53.252% | +0.608% | +2.10 | +0.773% | +0.443% | +0.774% | -0.416% | +0.725% | +0.185% | 90/100 | FAIL
+52w-high K20 above200 | +21.821% | -65.517% | 0.333 | -57.633% | +0.678% | +2.32 | +0.961% | +0.396% | +0.844% | -0.011% | +0.509% | +0.221% | 85/100 | FAIL
+faber 10m | +11.128% | -29.871% | 0.373 | -22.935% | -0.218% | -0.84 | -0.005% | -0.430% | +0.020% | -1.074% | -0.574% | -0.218% | 96/100 | FAIL
+faber 8m | +11.247% | -29.871% | 0.377 | -16.345% | -0.214% | -0.80 | -0.070% | -0.359% | -0.022% | -0.943% | -0.473% | -0.214% | 97/100 | FAIL
+faber 12m | +10.326% | -38.082% | 0.271 | -28.891% | -0.288% | -1.03 | -0.302% | -0.275% | -0.022% | -1.074% | -0.840% | -0.288% | 98/100 | FAIL
+
+turtle 20/10 | +12.403% | -66.708% | 0.186 | -61.866% | +0.005% | +0.03 | +0.120% | -0.111% | +0.047% | -0.493% | +0.238% | -0.074% | 33/100 | FAIL
+  2005-2014 +0.120%, 2015-2024 -0.111%, up +0.047%, down -0.493%, sideways +0.238%, large -0.074%, months 240
+  years: 2005 +41.519%, 2006 +24.263%, 2007 +60.255%, 2008 -61.866%, 2009 +152.283%, 2010 +15.723%, 2011 -25.964%, 2012 +17.949%, 2013 +9.072%, 2014 +39.605%, 2015 -5.321%, 2016 -0.616%, 2017 +30.180%, 2018 -0.236%, 2019 +9.154%, 2020 +13.580%, 2021 +24.850%, 2022 -0.708%, 2023 +21.345%, 2024 +8.898%
+  FAIL: excess t +0.03 is not above 3; 2015-2024 excess -0.111% is not above 0; down -0.493% is not above 0; beats random 33 of 100, need 95; large-cap excess -0.074% is not above 0; neither path clears: CAGR +12.403% vs NIFTY +12.929%, max DD -66.708% vs -59.856%, ratio 0.186 vs 0.216
+
+turtle 55/20 | +13.913% | -65.032% | 0.214 | -56.775% | +0.096% | +0.72 | +0.272% | -0.080% | +0.191% | -0.660% | +0.308% | -0.006% | 19/100 | FAIL
+  2005-2014 +0.272%, 2015-2024 -0.080%, up +0.191%, down -0.660%, sideways +0.308%, large -0.006%, months 240
+  years: 2005 +61.206%, 2006 +32.746%, 2007 +49.777%, 2008 -56.775%, 2009 +123.062%, 2010 +19.441%, 2011 -25.549%, 2012 +22.054%, 2013 +11.013%, 2014 +39.776%, 2015 -3.400%, 2016 +1.436%, 2017 +28.259%, 2018 +0.583%, 2019 +9.191%, 2020 +13.775%, 2021 +24.455%, 2022 +0.045%, 2023 +21.598%, 2024 +9.257%
+  FAIL: excess t +0.72 is not above 3; 2015-2024 excess -0.080% is not above 0; down -0.660% is not above 0; beats random 19 of 100, need 95; large-cap excess -0.006% is not above 0; neither path clears: CAGR +13.913% vs NIFTY +12.929%, max DD -65.032% vs -59.856%, ratio 0.214 vs 0.216
+
+turtle 55/20 up | +13.586% | -61.591% | 0.221 | -53.437% | +0.057% | +0.51 | +0.167% | -0.052% | +0.085% | -0.024% | -0.003% | +0.051% | 25/100 | FAIL
+  2005-2014 +0.167%, 2015-2024 -0.052%, up +0.085%, down -0.024%, sideways -0.003%, large +0.051%, months 240
+  years: 2005 +61.206%, 2006 +32.746%, 2007 +49.777%, 2008 -53.437%, 2009 +75.436%, 2010 +24.447%, 2011 -23.386%, 2012 +21.357%, 2013 +16.968%, 2014 +34.376%, 2015 -2.780%, 2016 +3.181%, 2017 +26.017%, 2018 +0.752%, 2019 +6.475%, 2020 +16.031%, 2021 +23.186%, 2022 +2.439%, 2023 +22.745%, 2024 +9.994%
+  FAIL: excess t +0.51 is not above 3; 2015-2024 excess -0.052% is not above 0; down -0.024% is not above 0; sideways -0.003% is not above 0; beats random 25 of 100, need 95; neither path clears: CAGR +13.586% vs NIFTY +12.929%, max DD -61.591% vs -59.856%, ratio 0.221 vs 0.216
+
+mom 12-1 K20 | +34.958% | -73.213% | 0.477 | -68.898% | +1.667% | +4.47 | +1.805% | +1.528% | +2.142% | -1.134% | +1.892% | +0.753% | 100/100 | FAIL
+  2005-2014 +1.805%, 2015-2024 +1.528%, up +2.142%, down -1.134%, sideways +1.892%, large +0.753%, months 240
+  years: 2005 +123.756%, 2006 +128.519%, 2007 +133.480%, 2008 -68.898%, 2009 +83.669%, 2010 +29.386%, 2011 -14.789%, 2012 +62.898%, 2013 +11.876%, 2014 +102.917%, 2015 +1.958%, 2016 +6.879%, 2017 +95.854%, 2018 -4.978%, 2019 +12.399%, 2020 +38.706%, 2021 +97.839%, 2022 +3.412%, 2023 +65.431%, 2024 +34.696%
+  FAIL: down -1.134% is not above 0
+
+mom 12-1 K30 | +33.073% | -71.287% | 0.464 | -66.104% | +1.520% | +4.42 | +1.674% | +1.367% | +1.926% | -0.812% | +1.664% | +0.657% | 100/100 | FAIL
+  2005-2014 +1.674%, 2015-2024 +1.367%, up +1.926%, down -0.812%, sideways +1.664%, large +0.657%, months 240
+  years: 2005 +116.997%, 2006 +123.009%, 2007 +122.681%, 2008 -66.104%, 2009 +84.532%, 2010 +27.674%, 2011 -19.205%, 2012 +55.300%, 2013 +13.842%, 2014 +100.875%, 2015 +8.920%, 2016 +5.061%, 2017 +79.551%, 2018 -4.547%, 2019 +11.892%, 2020 +34.856%, 2021 +85.803%, 2022 +0.319%, 2023 +65.282%, 2024 +34.378%
+  FAIL: down -0.812% is not above 0
+
+mom 12-1 K20 above200 | +35.442% | -70.072% | 0.506 | -63.093% | +1.661% | +4.82 | +1.959% | +1.362% | +2.124% | +0.006% | +0.950% | +0.795% | 100/100 | PASS
+  2005-2014 +1.959%, 2015-2024 +1.362%, up +2.124%, down +0.006%, sideways +0.950%, large +0.795%, months 240
+  years: 2005 +123.756%, 2006 +128.519%, 2007 +133.480%, 2008 -63.093%, 2009 +93.046%, 2010 +29.396%, 2011 -17.578%, 2012 +74.544%, 2013 +6.269%, 2014 +102.915%, 2015 -12.663%, 2016 +24.036%, 2017 +78.785%, 2018 +0.112%, 2019 +10.393%, 2020 +44.240%, 2021 +97.843%, 2022 +0.725%, 2023 +52.165%, 2024 +34.694%
+  PASS
+
+52w-high K20 | +21.660% | -59.526% | 0.364 | -52.855% | +0.635% | +2.03 | +0.782% | +0.489% | +0.836% | -0.618% | +0.792% | +0.088% | 89/100 | FAIL
+  2005-2014 +0.782%, 2015-2024 +0.489%, up +0.836%, down -0.618%, sideways +0.792%, large +0.088%, months 240
+  years: 2005 +59.606%, 2006 +97.275%, 2007 +107.647%, 2008 -52.855%, 2009 +57.388%, 2010 +20.078%, 2011 -16.529%, 2012 +29.071%, 2013 +16.843%, 2014 +40.541%, 2015 -0.273%, 2016 +16.291%, 2017 +27.113%, 2018 -5.242%, 2019 -0.195%, 2020 +45.344%, 2021 +56.511%, 2022 -12.956%, 2023 +36.218%, 2024 +30.007%
+  FAIL: excess t +2.03 is not above 3; down -0.618% is not above 0; beats random 89 of 100, need 95
+
+52w-high K30 | +21.306% | -60.641% | 0.351 | -53.252% | +0.608% | +2.10 | +0.773% | +0.443% | +0.774% | -0.416% | +0.725% | +0.185% | 90/100 | FAIL
+  2005-2014 +0.773%, 2015-2024 +0.443%, up +0.774%, down -0.416%, sideways +0.725%, large +0.185%, months 240
+  years: 2005 +59.775%, 2006 +94.212%, 2007 +91.597%, 2008 -53.252%, 2009 +62.752%, 2010 +19.548%, 2011 -16.838%, 2012 +35.957%, 2013 +20.427%, 2014 +38.427%, 2015 +2.110%, 2016 +19.308%, 2017 +30.765%, 2018 -4.501%, 2019 +3.673%, 2020 +30.448%, 2021 +47.226%, 2022 -9.743%, 2023 +38.583%, 2024 +23.068%
+  FAIL: excess t +2.10 is not above 3; down -0.416% is not above 0; beats random 90 of 100, need 95
+
+52w-high K20 above200 | +21.821% | -65.517% | 0.333 | -57.633% | +0.678% | +2.32 | +0.961% | +0.396% | +0.844% | -0.011% | +0.509% | +0.221% | 85/100 | FAIL
+  2005-2014 +0.961%, 2015-2024 +0.396%, up +0.844%, down -0.011%, sideways +0.509%, large +0.221%, months 240
+  years: 2005 +59.606%, 2006 +97.275%, 2007 +107.647%, 2008 -57.633%, 2009 +73.351%, 2010 +20.084%, 2011 -17.833%, 2012 +50.664%, 2013 +18.967%, 2014 +40.488%, 2015 -5.929%, 2016 +14.445%, 2017 +24.996%, 2018 -4.001%, 2019 -2.241%, 2020 +35.397%, 2021 +56.485%, 2022 -8.240%, 2023 +35.819%, 2024 +30.021%
+  FAIL: excess t +2.32 is not above 3; down -0.011% is not above 0; beats random 85 of 100, need 95
+
+faber 10m | +11.128% | -29.871% | 0.373 | -22.935% | -0.218% | -0.84 | -0.005% | -0.430% | +0.020% | -1.074% | -0.574% | -0.218% | 96/100 | FAIL
+  2005-2014 -0.005%, 2015-2024 -0.430%, up +0.020%, down -1.074%, sideways -0.574%, large -0.218%, months 240
+  years: 2005 +36.209%, 2006 +39.834%, 2007 +54.765%, 2008 -22.935%, 2009 +49.334%, 2010 +17.947%, 2011 -14.254%, 2012 +1.930%, 2013 -2.167%, 2014 +31.388%, 2015 -8.625%, 2016 -0.038%, 2017 +22.964%, 2018 -7.652%, 2019 -0.357%, 2020 +18.066%, 2021 +24.119%, 2022 -2.988%, 2023 +14.708%, 2024 +8.805%
+  FAIL: excess t -0.84 is not above 3; 2005-2014 excess -0.005% is not above 0; 2015-2024 excess -0.430% is not above 0; down -1.074% is not above 0; sideways -0.574% is not above 0; large-cap excess -0.218% is not above 0; neither path clears: CAGR +11.128% vs NIFTY +12.929%, max DD -29.871% vs -59.856%, ratio 0.373 vs 0.216
+
+faber 8m | +11.247% | -29.871% | 0.377 | -16.345% | -0.214% | -0.80 | -0.070% | -0.359% | -0.022% | -0.943% | -0.473% | -0.214% | 97/100 | FAIL
+  2005-2014 -0.070%, 2015-2024 -0.359%, up -0.022%, down -0.943%, sideways -0.473%, large -0.214%, months 240
+  years: 2005 +23.881%, 2006 +27.842%, 2007 +54.765%, 2008 -16.345%, 2009 +49.334%, 2010 +17.947%, 2011 -11.080%, 2012 +5.221%, 2013 -4.988%, 2014 +31.388%, 2015 -7.974%, 2016 +5.151%, 2017 +22.728%, 2018 -6.962%, 2019 -0.151%, 2020 +18.066%, 2021 +24.119%, 2022 -2.988%, 2023 +14.708%, 2024 +10.972%
+  FAIL: excess t -0.80 is not above 3; 2005-2014 excess -0.070% is not above 0; 2015-2024 excess -0.359% is not above 0; up -0.022% is not above 0; down -0.943% is not above 0; sideways -0.473% is not above 0; large-cap excess -0.214% is not above 0; neither path clears: CAGR +11.247% vs NIFTY +12.929%, max DD -29.871% vs -59.856%, ratio 0.377 vs 0.216
+
+faber 12m | +10.326% | -38.082% | 0.271 | -28.891% | -0.288% | -1.03 | -0.302% | -0.275% | -0.022% | -1.074% | -0.840% | -0.288% | 98/100 | FAIL
+  2005-2014 -0.302%, 2015-2024 -0.275%, up -0.022%, down -1.074%, sideways -0.840%, large -0.288%, months 240
+  years: 2005 +36.209%, 2006 +39.834%, 2007 +54.765%, 2008 -28.891%, 2009 +16.729%, 2010 +17.947%, 2011 -14.254%, 2012 +1.929%, 2013 -2.168%, 2014 +31.388%, 2015 -4.624%, 2016 -0.038%, 2017 +28.646%, 2018 -1.682%, 2019 -0.437%, 2020 +18.066%, 2021 +24.119%, 2022 +0.180%, 2023 +14.708%, 2024 +8.805%
+  FAIL: excess t -1.03 is not above 3; 2005-2014 excess -0.302% is not above 0; 2015-2024 excess -0.275% is not above 0; up -0.022% is not above 0; down -1.074% is not above 0; sideways -0.840% is not above 0; large-cap excess -0.288% is not above 0; neither path clears: CAGR +10.326% vs NIFTY +12.929%, max DD -38.082% vs -59.856%, ratio 0.271 vs 0.216
+
+Variants that pass: 1 of 12.
 
 
 ## Forward test
