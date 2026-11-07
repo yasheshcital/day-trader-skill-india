@@ -60,6 +60,12 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 14 | 2026-11-07 | rev K10 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 988 | +0.325% | +1.32 | FAIL |
 | 14 | 2026-11-07 | rev K20 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 988 | +0.374% | +3.03 | FAIL |
 | 14 | 2026-11-07 | rev K10 above200 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 753 | +0.236% | +0.14 | FAIL |
+| 15 | 2026-11-07 | index rsi2 < 5 pooled, positive on 28 of 39. | delivery costs on the index price, Rs 1,00,000 | every NIFTY daily file, 2005-01-01 to 2024-12-31 | 6,333 | +0.291% | -2.43 | FAIL |
+| 15 | 2026-11-07 | index rsi2 < 10 pooled, positive on 25 of 39. | delivery costs on the index price, Rs 1,00,000 | every NIFTY daily file, 2005-01-01 to 2024-12-31 | 11,949 | +0.162% | -3.05 | FAIL |
+| 15 | 2026-11-07 | index rsi2 < 10 down2 pooled, positive on 26 of 39. | delivery costs on the index price, Rs 1,00,000 | every NIFTY daily file, 2005-01-01 to 2024-12-31 | 10,632 | +0.145% | -3.05 | FAIL |
+| 15 | 2026-11-07 | RSI portfolio, Rs 10,00,000, 10 slots. No pass mark. | harness delivery costs, cash at 0 and cash in NIFTY | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31 | see section | see section | see section | REPORT |
+| 15 | 2026-11-07 | RSI stress: slippage, next close, RSI3, SMA10, SMA100. No pass mark. | delivery costs, t versus same-month random | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31 | see section | see section | see section | REPORT |
+| 15 | 2026-11-07 | holdout rsi2 < 5, per trade, through 2026-11-04. | attempt 14 rule, delivery costs, final=True once | top 200, 2025-01-01 to 2026-11-04 | 2,422 | +0.327% | +1.42 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -594,6 +600,194 @@ rev K10 above200 FAIL: t vs random +0.14 is not above 3; 2015-2024 -0.030% is no
 
 The survivorship figure is printed beside each result and is not subtracted.
 Variants that pass: 3 of 12.
+
+
+## Attempt 15
+
+Rules fixed on 2026-11-07, before the run.
+
+This attempt checks the three RSI(2) variants that passed attempt 14. The signal, the exit, and the delivery cost are the attempt 14 functions. Nothing in the pass mark is moved to fit a result. Parts 2 and 3 have no pass mark. They are reports. Parts 1 and 4 are judged.
+
+1. Survivorship-free index test, 2005-01-01 through 2024-12-31. Every daily file in data/kite/day whose symbol starts with NIFTY is a series: NIFTY 50, NIFTY BANK, the sector indices, and the factor indices. A file that does not load is omitted. A file that loads and never trades counts as not positive. There is no stock universe. Each index is traded as its own price, with signal_lab.delivery on Rs 1,00,000, as a cash ETF. The three variants are rsi2 < 5, rsi2 < 10, and rsi2 < 10 down2, through follow.scan_signals. The market adjustment is the NIFTY 50 price return from the entry open to the exit open, minus nothing else. Excess for a trade is its percent return after costs minus that NIFTY return. A trade with no NIFTY bar on an end date stays in the average and stays out of the t. The t is the one-sample t of the mean excess in each calendar month. Pooled avg is the equal-weight mean of every trade of that variant across indices. Pooled t groups those same trades by month, averages inside the month, then takes the t across months. Positive means the index average after costs is strictly above 0. Each variant is judged on its own. A variant passes when its pooled average is above 0, its pooled excess t is above 2, and the average is positive on at least 2/3 of the loaded indices. Exactly 2/3 passes. Part 1 passes only when all three variants pass. Dates from 2025-01-01 on are not requested.
+
+2. Portfolio, same window, the attempt 14 stock universe (top 200 by prior 60-session turnover on the signal day). Capital is Rs 10,00,000. At most 10 positions. Each new order is sized so the buy plus the buy-side delivery costs fit in Rs 1,00,000, using harness.shares_for. The book then pays harness.trade_cost on the buy and on the sell, which is the same delivery schedule as signal_lab.delivery (STT on both sides, stamp on the buy, the DP charge on the sell). When more new signals share an entry day than there are free slots, the lowest RSI(2) is taken first, then the highest 60-session turnover inside the signal segment, then the symbol name. A name already held is not a new slot. A name sold at the open is not bought again that day. The exit is the attempt 14 exit, so it is an open. Turnover that is missing inside the segment sorts after every name that has one. An exit that is not a NIFTY session is sold on the next NIFTY session at the same stock fill. Two books: idle cash earns 0, and idle cash is the NIFTY 50 price sleeve (funded with no cost, the harness Book). The invested share is the stock mark at the close divided by total equity, averaged over sessions. The NIFTY sleeve is not counted as invested. Trades per year are entries divided by the calendar span in 365.25-day years. NIFTY 50 buy-and-hold is the price path from the first open to each close, no costs and no dividends. Reported for each variant and each cash treatment: CAGR, max drawdown, worst year, yearly returns, average invested share, trades per year, and the NIFTY path on the same dates.
+
+3. Stress, in sample, on rsi2 < 5 and rsi2 < 10, plus three neighbours of rsi2 < 10. (a) 0.1% extra slippage: the buy fill is the entry times 1.001 and the sell fill is the exit times 0.999, then delivery costs on those fills. (b) The entry is the close of the next session instead of its open. The exit walk is unchanged, so a close above SMA5 on the entry session sells at the following open, and the time stop is still the open five sessions after that entry session. The NIFTY return for a close entry starts at the NIFTY close of the entry day. (c) Each neighbour changes one piece of rsi2 < 10 and leaves the other pieces: RSI(3) below 10 with SMA200 and the SMA5 exit; RSI(2) below 10 with the exit on a close above SMA10; RSI(2) below 10 with the trend filter SMA100 instead of SMA200. The random baseline is 100 runs, seed 20261106 + 30000 + variant index times 1000 + the run index. Each run picks a same-month entry of the same symbol that was in the top 200 that day, and applies that variant's own entry price, slippage, and exit. The t is the attempt 14 t: market-adjusted excess versus those random entries, one mean per month. No pass mark.
+
+4. One holdout, after parts 1 to 3. final=True, logged once. The rule is rsi2 < 5 exactly as in attempt 14: same signal, next-open entry, SMA5 exit or the open after five sessions, delivery costs, top 200 on the signal day. Entries from 2025-01-01 through the last date in the NIFTY 50 daily file. Indicator warmup before 2025 is used and is not a trade. A signal whose entry open falls on or after 2025-01-01 is a holdout trade even when the signal close was in 2024. The per-trade excess is the return after costs minus the NIFTY 50 price return over the same entry open to exit open. It is not versus a random entry. The t is the one-sample t of the monthly mean excess. The portfolio in part 2 is run on the same entries, starting from fresh cash on the first holdout session, both cash treatments. PASS, on the per-trade series only: average return after costs above 0, and that market-adjusted excess t above 2. The portfolio numbers are recorded beside it and are not part of the pass line. The rule is not changed after this run.
+
+Results.
+
+Part 1. Index files, one table per variant.
+
+index | trades | avg after costs | excess vs NIFTY | t
+NIFTY 200 | 188 | +0.295% | -0.120% | -1.68
+NIFTY 50 | 209 | +0.152% | -0.239% | -1039.18
+NIFTY 500 | 189 | +0.247% | -0.161% | -2.56
+NIFTY ALPHA 50 | 164 | +0.319% | +0.124% | -0.11
+NIFTY ALPHALOWVOL | 172 | +0.231% | -0.152% | -1.72
+NIFTY AUTO | 150 | +0.228% | -0.039% | -0.65
+NIFTY BANK | 205 | +0.741% | +0.168% | +1.96
+NIFTY CONSR DURBL | 188 | -0.004% | +0.008% | -0.64
+NIFTY ENERGY | 168 | +0.113% | -0.074% | -0.23
+NIFTY FIN SERVICE | 196 | +0.883% | +0.279% | +0.83
+NIFTY FMCG | 162 | -0.123% | -0.329% | -1.31
+NIFTY HEALTHCARE | 138 | -0.045% | +0.012% | -0.14
+NIFTY IT | 123 | +0.173% | -0.064% | +0.47
+NIFTY LOW VOL 50 | 199 | -0.246% | -0.275% | -3.80
+NIFTY MEDIA | 140 | -0.017% | -0.138% | -0.31
+NIFTY METAL | 143 | +0.073% | -0.493% | -0.56
+NIFTY MIDCAP 100 | 168 | +0.525% | +0.066% | +0.20
+NIFTY MIDCAP 150 | 178 | +0.314% | -0.090% | -1.03
+NIFTY OIL AND GAS | 155 | +0.586% | +0.358% | +0.28
+NIFTY PHARMA | 154 | -0.591% | -0.529% | -1.59
+NIFTY PSU BANK | 173 | +0.623% | +0.045% | +0.68
+NIFTY PVT BANK | 168 | +0.818% | +0.496% | +1.40
+NIFTY REALTY | 117 | +1.661% | +1.150% | +2.54
+NIFTY SMLCAP 100 | 160 | +0.290% | -0.039% | -0.54
+NIFTY SMLCAP 250 | 172 | +0.394% | +0.004% | -0.62
+NIFTY100 ALPHA 30 | 172 | +0.314% | -0.105% | -1.51
+NIFTY100 EQL WGT | 183 | +0.313% | +0.005% | -0.59
+NIFTY100 LOWVOL30 | 192 | -0.167% | -0.318% | -3.63
+NIFTY100 QUALTY30 | 140 | -0.274% | -0.400% | -4.27
+NIFTY200 ALPHA 30 | 170 | +0.646% | +0.277% | +0.58
+NIFTY200 QUALTY30 | 173 | -0.342% | -0.223% | -2.31
+NIFTY200 VALUE 30 | 120 | +1.039% | -0.192% | -0.85
+NIFTY200MOMENTM30 | 162 | +0.800% | +0.388% | +2.19
+NIFTY50 EQL WGT | 39 | +0.661% | -0.361% | -2.46
+NIFTY50 VALUE 20 | 157 | -0.061% | -0.301% | -3.23
+NIFTY500 LMS EQL | 167 | +0.316% | -0.181% | -1.23
+NIFTY500 LOWVOL50 | 194 | -0.108% | -0.474% | -4.07
+NIFTY500 VALUE 50 | 133 | +0.861% | -0.110% | -0.19
+NIFTY500MOMENTM50 | 152 | +0.513% | +0.124% | -0.22
+POOLED rsi2 < 5 | 6,333 | +0.291% | -0.050% | -2.43 | positive 28 of 39 | FAIL
+
+index | trades | avg after costs | excess vs NIFTY | t
+NIFTY 200 | 373 | +0.093% | -0.150% | -2.75
+NIFTY 50 | 388 | -0.011% | -0.239% | -1471.94
+NIFTY 500 | 366 | +0.007% | -0.226% | -4.33
+NIFTY ALPHA 50 | 312 | +0.232% | +0.132% | +0.27
+NIFTY ALPHALOWVOL | 327 | +0.087% | -0.150% | -2.27
+NIFTY AUTO | 324 | +0.207% | -0.095% | -0.60
+NIFTY BANK | 378 | +0.546% | +0.082% | +1.11
+NIFTY CONSR DURBL | 329 | -0.236% | -0.236% | -1.32
+NIFTY ENERGY | 306 | +0.068% | -0.130% | -1.57
+NIFTY FIN SERVICE | 377 | +0.508% | +0.040% | -0.01
+NIFTY FMCG | 339 | -0.086% | -0.411% | -2.03
+NIFTY HEALTHCARE | 273 | -0.042% | -0.049% | -0.44
+NIFTY IT | 282 | +0.262% | -0.113% | -0.17
+NIFTY LOW VOL 50 | 355 | -0.198% | -0.258% | -4.24
+NIFTY MEDIA | 261 | -0.126% | -0.166% | -0.31
+NIFTY METAL | 276 | +0.387% | +0.007% | +1.36
+NIFTY MIDCAP 100 | 328 | +0.024% | -0.235% | -1.89
+NIFTY MIDCAP 150 | 320 | +0.077% | -0.126% | -1.25
+NIFTY OIL AND GAS | 296 | +0.288% | +0.041% | -0.68
+NIFTY PHARMA | 303 | -0.489% | -0.450% | -1.74
+NIFTY PSU BANK | 298 | +0.682% | +0.074% | +0.61
+NIFTY PVT BANK | 330 | +0.648% | +0.391% | +1.66
+NIFTY REALTY | 218 | +0.825% | +0.398% | +1.36
+NIFTY SMLCAP 100 | 311 | -0.129% | -0.353% | -1.73
+NIFTY SMLCAP 250 | 293 | -0.048% | -0.272% | -1.71
+NIFTY100 ALPHA 30 | 315 | +0.367% | -0.052% | -1.52
+NIFTY100 EQL WGT | 342 | +0.257% | -0.005% | -0.84
+NIFTY100 LOWVOL30 | 334 | -0.129% | -0.261% | -3.42
+NIFTY100 QUALTY30 | 260 | -0.144% | -0.327% | -4.34
+NIFTY200 ALPHA 30 | 304 | +0.661% | +0.292% | +0.73
+NIFTY200 QUALTY30 | 336 | -0.102% | -0.219% | -3.46
+NIFTY200 VALUE 30 | 234 | +0.714% | +0.040% | -0.82
+NIFTY200MOMENTM30 | 305 | +0.621% | +0.269% | +1.23
+NIFTY50 EQL WGT | 77 | +0.461% | -0.322% | -3.17
+NIFTY50 VALUE 20 | 295 | -0.065% | -0.254% | -3.65
+NIFTY500 LMS EQL | 304 | +0.210% | -0.074% | -0.70
+NIFTY500 LOWVOL50 | 339 | -0.160% | -0.314% | -3.52
+NIFTY500 VALUE 50 | 242 | +0.506% | -0.046% | -0.33
+NIFTY500MOMENTM50 | 299 | +0.156% | +0.054% | +0.38
+POOLED rsi2 < 10 | 11,949 | +0.162% | -0.097% | -3.05 | positive 25 of 39 | FAIL
+
+index | trades | avg after costs | excess vs NIFTY | t
+NIFTY 200 | 333 | +0.056% | -0.187% | -3.16
+NIFTY 50 | 344 | +0.040% | -0.239% | -1505.54
+NIFTY 500 | 326 | +0.005% | -0.248% | -4.70
+NIFTY ALPHA 50 | 272 | +0.302% | +0.163% | +0.52
+NIFTY ALPHALOWVOL | 295 | +0.091% | -0.180% | -2.15
+NIFTY AUTO | 285 | +0.105% | -0.090% | -0.18
+NIFTY BANK | 340 | +0.482% | +0.068% | +1.14
+NIFTY CONSR DURBL | 285 | -0.202% | -0.231% | -1.61
+NIFTY ENERGY | 276 | +0.021% | -0.156% | -1.66
+NIFTY FIN SERVICE | 334 | +0.461% | +0.041% | +0.12
+NIFTY FMCG | 302 | -0.121% | -0.420% | -1.91
+NIFTY HEALTHCARE | 249 | -0.122% | -0.086% | -0.07
+NIFTY IT | 252 | +0.194% | -0.175% | -1.01
+NIFTY LOW VOL 50 | 323 | -0.155% | -0.247% | -3.88
+NIFTY MEDIA | 234 | -0.107% | -0.275% | -0.91
+NIFTY METAL | 242 | +0.346% | -0.128% | +0.81
+NIFTY MIDCAP 100 | 288 | +0.091% | -0.167% | -1.70
+NIFTY MIDCAP 150 | 286 | +0.085% | -0.159% | -1.31
+NIFTY OIL AND GAS | 257 | +0.199% | +0.016% | -0.88
+NIFTY PHARMA | 276 | -0.542% | -0.452% | -1.66
+NIFTY PSU BANK | 264 | +0.700% | +0.021% | +0.46
+NIFTY PVT BANK | 294 | +0.637% | +0.440% | +1.30
+NIFTY REALTY | 199 | +0.701% | +0.317% | +1.09
+NIFTY SMLCAP 100 | 273 | -0.154% | -0.336% | -1.71
+NIFTY SMLCAP 250 | 255 | -0.141% | -0.318% | -1.91
+NIFTY100 ALPHA 30 | 280 | +0.337% | -0.039% | -1.54
+NIFTY100 EQL WGT | 313 | +0.246% | -0.016% | -0.89
+NIFTY100 LOWVOL30 | 307 | -0.159% | -0.249% | -2.95
+NIFTY100 QUALTY30 | 236 | -0.188% | -0.383% | -4.44
+NIFTY200 ALPHA 30 | 266 | +0.636% | +0.309% | +1.08
+NIFTY200 QUALTY30 | 304 | -0.163% | -0.230% | -3.37
+NIFTY200 VALUE 30 | 210 | +0.793% | +0.081% | -0.34
+NIFTY200MOMENTM30 | 272 | +0.641% | +0.323% | +1.82
+NIFTY50 EQL WGT | 70 | +0.430% | -0.293% | -2.90
+NIFTY50 VALUE 20 | 255 | -0.137% | -0.274% | -3.87
+NIFTY500 LMS EQL | 264 | +0.219% | -0.078% | -0.73
+NIFTY500 LOWVOL50 | 297 | -0.149% | -0.431% | -3.82
+NIFTY500 VALUE 50 | 202 | +0.622% | -0.070% | -0.47
+NIFTY500MOMENTM50 | 272 | +0.187% | +0.096% | +0.28
+POOLED rsi2 < 10 down2 | 10,632 | +0.145% | -0.111% | -3.05 | positive 26 of 39 | FAIL
+
+Part 1 FAIL: rsi2 < 5: pooled excess t -2.43 is not above 2; rsi2 < 10: pooled excess t -3.05 is not above 2; positive on 25 of 39 indices, need at least 2/3; rsi2 < 10 down2: pooled excess t -3.05 is not above 2
+
+Part 2. Portfolio. No pass mark.
+variant | cash | CAGR | max DD | worst year | invested | trades/year
+rsi2 < 5 | cash 0 | +6.924% | -28.698% | -14.226% | +25.518% | +423.02
+rsi2 < 5 | cash in NIFTY | +14.782% | -60.269% | -52.505% | +15.943% | +423.02
+rsi2 < 10 | cash 0 | +6.333% | -37.244% | -32.561% | +40.719% | +576.34
+rsi2 < 10 | cash in NIFTY | +12.134% | -63.273% | -55.536% | +30.353% | +576.34
+rsi2 < 10 down2 | cash 0 | +6.779% | -30.327% | -25.495% | +34.826% | +556.88
+rsi2 < 10 down2 | cash in NIFTY | +13.300% | -62.366% | -54.449% | +24.368% | +556.88
+NIFTY 50 | price only | +12.929% | -59.856% | -51.794% | +100.000% | n/a
+rsi2 < 5, cash 0 years: 2005 +17.263%, 2006 -2.521%, 2007 +38.640%, 2008 -14.226%, 2009 +40.541%, 2010 +14.086%, 2011 -8.167%, 2012 +6.115%, 2013 +4.744%, 2014 +16.061%, 2015 +8.882%, 2016 +4.209%, 2017 +9.745%, 2018 -3.016%, 2019 +4.319%, 2020 -1.323%, 2021 +4.285%, 2022 -1.047%, 2023 +13.735%, 2024 +1.219%
+rsi2 < 5, cash in NIFTY years: 2005 +38.584%, 2006 +20.793%, 2007 +71.163%, 2008 -52.505%, 2009 +102.724%, 2010 +24.207%, 2011 -25.087%, 2012 +28.225%, 2013 +7.744%, 2014 +37.131%, 2015 +0.897%, 2016 +3.658%, 2017 +31.446%, 2018 +1.745%, 2019 +13.096%, 2020 +17.406%, 2021 +24.609%, 2022 +4.159%, 2023 +23.372%, 2024 +8.834%
+rsi2 < 10, cash 0 years: 2005 +20.797%, 2006 -12.769%, 2007 +33.686%, 2008 -32.561%, 2009 +54.984%, 2010 +17.220%, 2011 -14.065%, 2012 +10.367%, 2013 +3.238%, 2014 +24.970%, 2015 +8.677%, 2016 +6.370%, 2017 +16.545%, 2018 -8.352%, 2019 +4.966%, 2020 -0.387%, 2021 +6.522%, 2022 -4.134%, 2023 +19.398%, 2024 +2.677%
+rsi2 < 10, cash in NIFTY years: 2005 +34.844%, 2006 +0.164%, 2007 +57.300%, 2008 -55.536%, 2009 +80.651%, 2010 +24.832%, 2011 -26.367%, 2012 +28.156%, 2013 +3.988%, 2014 +42.404%, 2015 +3.903%, 2016 +4.768%, 2017 +34.879%, 2018 -1.390%, 2019 +12.437%, 2020 +17.015%, 2021 +23.395%, 2022 +2.103%, 2023 +26.554%, 2024 +9.175%
+rsi2 < 10 down2, cash 0 years: 2005 +25.851%, 2006 -7.844%, 2007 +33.558%, 2008 -25.495%, 2009 +46.773%, 2010 +19.661%, 2011 -10.373%, 2012 +5.775%, 2013 +4.174%, 2014 +18.846%, 2015 +9.447%, 2016 +4.924%, 2017 +14.434%, 2018 -6.455%, 2019 +5.633%, 2020 -0.795%, 2021 +7.535%, 2022 -2.593%, 2023 +14.470%, 2024 +0.992%
+rsi2 < 10 down2, cash in NIFTY years: 2005 +45.550%, 2006 +7.776%, 2007 +60.309%, 2008 -54.449%, 2009 +85.487%, 2010 +26.993%, 2011 -25.425%, 2012 +25.262%, 2013 +6.001%, 2014 +38.001%, 2015 +3.783%, 2016 +3.901%, 2017 +33.667%, 2018 +0.148%, 2019 +13.121%, 2020 +16.397%, 2021 +24.437%, 2022 +2.810%, 2023 +24.411%, 2024 +8.821%
+NIFTY 50 years: 2005 +36.370%, 2006 +39.834%, 2007 +54.765%, 2008 -51.794%, 2009 +75.762%, 2010 +17.947%, 2011 -24.618%, 2012 +27.697%, 2013 +6.755%, 2014 +31.388%, 2015 -4.061%, 2016 +3.013%, 2017 +28.646%, 2018 +3.151%, 2019 +12.022%, 2020 +14.902%, 2021 +24.119%, 2022 +4.329%, 2023 +20.028%, 2024 +8.805%
+Part 2 report. No pass mark was set.
+
+Part 3. Stress. No pass mark.
+variant | trades | avg after costs | t vs random
+rsi2 < 5 slip | 30,513 | +0.367% | +20.87
+rsi2 < 10 slip | 60,373 | +0.202% | +13.63
+rsi2 < 5 close | 30,513 | +0.591% | +21.51
+rsi2 < 10 close | 60,373 | +0.503% | +17.24
+rsi3 < 10 | 20,007 | +0.639% | +21.32
+exit sma10 | 60,373 | +0.488% | +14.64
+sma100 filter | 48,940 | +0.480% | +13.63
+Part 3 report. No pass mark was set.
+
+Part 4. Holdout rsi2 < 5, 2025-01-01 to 2026-11-04.
+per trade | 2,422 | +0.327% | +0.236% | +1.42
+variant | cash | CAGR | max DD | worst year | invested | trades/year
+rsi2 < 5 | cash 0 | +1.956% | -17.249% | +1.717% | +57.253% | +437.00
+rsi2 < 5 | cash in NIFTY | -0.889% | -19.189% | -3.496% | +58.819% | +437.00
+NIFTY 50 | price only | +0.740% | -15.560% | -8.301% | +100.000% | n/a
+rsi2 < 5, cash 0 years: 2025 +1.717%, 2026 +1.878%
+rsi2 < 5, cash in NIFTY years: 2025 +1.935%, 2026 -3.496%
+NIFTY 50 years: 2025 +10.542%, 2026 -8.301%
+Part 4 FAIL: market-adjusted excess t +1.42 is not above 2
+The holdout rule was not changed after the run.
 
 
 ## Forward test
