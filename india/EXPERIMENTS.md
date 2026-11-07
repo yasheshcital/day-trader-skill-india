@@ -45,6 +45,21 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 12 | 2026-11-07 | vwap 1.5 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 22,424 | -0.038 | -0.082 | FAIL |
 | 12 | 2026-11-07 | vwap 2.0 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 11,001 | -0.034 | -0.073 | FAIL |
 | 12 | 2026-11-07 | vwap 2.5 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 5,701 | -0.021 | -0.056 | FAIL |
+| 13 | 2026-11-07 | gap cont 3 clears the attempt 13 intraday pass mark. | big-gap continuation, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 9,196 | +0.041 | -0.068 | FAIL |
+| 13 | 2026-11-07 | gap cont 4 clears the attempt 13 intraday pass mark. | big-gap continuation, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 4,866 | -0.004 | -0.103 | FAIL |
+| 13 | 2026-11-07 | gap cont 3 vol clears the attempt 13 intraday pass mark. | big-gap continuation, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 4,326 | -0.028 | -0.120 | FAIL |
+| 14 | 2026-11-07 | rsi2 < 5 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 30,513 | +0.568% | +21.37 | PASS |
+| 14 | 2026-11-07 | rsi2 < 10 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 60,373 | +0.403% | +13.63 | PASS |
+| 14 | 2026-11-07 | rsi2 < 10 down2 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 52,023 | +0.425% | +13.37 | PASS |
+| 14 | 2026-11-07 | ibs < 0.2 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 126,464 | +0.150% | +0.80 | FAIL |
+| 14 | 2026-11-07 | ibs < 0.1 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 29,236 | +0.133% | +1.65 | FAIL |
+| 14 | 2026-11-07 | ibs < 0.2 nifty clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | NIFTY 50 daily price, delivery costs, Rs 1,00,000, 2005-01-01 to 2024-12-31 | 727 | -0.035% | -1.88 | FAIL |
+| 14 | 2026-11-07 | soup 20 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 39,790 | -0.410% | +12.19 | FAIL |
+| 14 | 2026-11-07 | soup 10 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 62,797 | -0.396% | +14.60 | FAIL |
+| 14 | 2026-11-07 | soup 55 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, daily, 2005-01-01 to 2024-12-31 | 19,269 | -0.447% | +6.21 | FAIL |
+| 14 | 2026-11-07 | rev K10 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 988 | +0.325% | +1.32 | FAIL |
+| 14 | 2026-11-07 | rev K20 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 988 | +0.374% | +3.03 | FAIL |
+| 14 | 2026-11-07 | rev K10 above200 clears the attempt 14 swing pass mark. | short swing, delivery costs, Rs 1,00,000, next open | top 200 by prior 60-session turnover, Monday book, 2005-01-01 to 2024-12-31 | 753 | +0.236% | +0.14 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -475,6 +490,110 @@ vwap 2.5 sideways FAIL: avg R after costs -0.056 is below +0.10; 2015-2019 -0.07
   years: 2015 -0.090, 2016 -0.067, 2017 -0.139, 2018 -0.017, 2019 -0.100, 2020 -0.048, 2022 -0.019, 2023 -0.121, 2024 +0.126
 
 Variants that pass: 0 of 12.
+
+
+## Attempt 13
+
+Rules fixed on 2026-11-07, before the run.
+
+hypothesis found in attempt 12 data (gap GO 3 lost to random same-day entries); must clear the full pass mark.
+
+Hypothesis: one of the three big-gap continuation variants clears the attempt 12 pass mark on 2015-2024. The attempt 12 gap GO 3 rule entered on the first close beyond the opening range and lost to a random bar on the same day. This attempt enters only at the 09:30 close, in the gap's direction, and it must beat a non-gap day as well as a random bar. The full pass mark applies. It is not lowered because the idea came from the earlier sample.
+
+Common rules. Bar labels are the bar end, same as attempt 12. A session is used only when every bar from 09:15 to 15:10 is present. The gap is the 09:20 bar's open divided by the previous session's daily close, minus 1, and the previous close is the previous daily row in the same segment. A threshold uses >=, so a gap of exactly 3% or exactly 4% counts. Direction is long when the gap is positive and short when it is negative. A gap of zero does not trade. The entry is the 09:30 bar's close, and only when that close is still strictly beyond the previous close in the gap's direction. The stop is the opposite extreme of the bars ending 09:20, 09:25 and 09:30: the low for a long, the high for a short. The entry bar is inside that range, and it is not scanned for the stop. Exit at the 15:10 close. There is no target.
+
+R is |entry - stop|. A trade risks Rs 2,000 and is capped at Rs 5,00,000 of entry value, in whole shares. One tick of slippage, from nse_market.tick_for, is charged on the entry and on the exit. Costs are the india/costs.py intraday schedule. R before is after the tick and before charges. R after is after the tick and the charges. A later bar that opens through the stop fills at the open. Otherwise a touch fills at the stop.
+
+Universe: each day, the 200 symbols with the highest average close times volume over the previous 20 sessions, and those 20 sessions must sit in one segment. Large caps are the top 100 by that same average. Market type is india/research/regime.py, known before the open. The window is 2015-01-01 through 2024-12-31. Dates from 2025-01-01 on are not requested.
+
+Volume variant. The opening volume is the sum of volume on bars ending 09:20 through 09:30. It must be at least 2 times the average opening volume of the previous 10 usable sessions in the same segment. Exactly 2 times passes. Fewer than 10 prior sessions in the segment skips the day. A new segment starts the count again.
+
+Two baselines, 100 seeded runs. The same-day baseline keeps the symbol, the day, the direction and the stop distance, and enters at a random bar ending 09:30 through 14:30. Its seed is 20261106 + variant index * 1000 + the run index. The non-gap baseline uses the same symbol on a random usable day in the same calendar month whose absolute gap is strictly below 0.5%. Exactly 0.5% is not eligible. The entry is that day's 09:30 close, the direction is random, the stop is that day's own 09:15-09:30 extreme, and the exit is 15:10. Its seed is the same-day seed plus 500. A month with no non-gap day leaves that trade out of the non-gap t. The trade still counts in the average R. Excess R is R after costs minus the mean of the random Rs. The t-statistic is the one-sample t of the mean excess in each calendar month. Both excesses and both t values are reported. The pass mark uses the non-gap t.
+
+Pass mark, the same as attempt 12, fixed before this run: average R after costs and slippage at least +0.10; at least 300 trades on at least 100 distinct days; t versus the non-gap baseline above 3; average R after costs above 0 in 2015-2019 and in 2020-2024; above 0 on up, down, and sideways days; above 0 in large caps; and at least 2 of the 3 variants have non-gap t above 2. A value on a stated boundary passes. An empty bucket does not.
+
+Variants. (a) gap cont 3, absolute gap at least 3%. (b) gap cont 4, absolute gap at least 4%. (c) gap cont 3 vol, the 3% rule plus the opening-volume multiple. A day can qualify for more than one variant. Each variant is scored on its own trades.
+
+Results.
+variant | trades | days | win | R before | R after | excess same | t same | excess non-gap | t non-gap | 2015-19 | 2020-24 | up | down | sideways | large | result
+gap cont 3 | 9,196 | 1918 | 25.9% | +0.041 | -0.068 | +0.019 | -0.24 | +0.022 | -0.25 | -0.162 | -0.012 | -0.065 | -0.154 | +0.019 | +0.040 | FAIL
+gap cont 4 | 4,866 | 1444 | 25.2% | -0.004 | -0.103 | -0.016 | +0.39 | -0.014 | +1.07 | -0.196 | -0.050 | -0.022 | -0.374 | +0.039 | +0.040 | FAIL
+gap cont 3 vol | 4,326 | 1692 | 28.3% | -0.028 | -0.120 | +0.029 | +0.38 | +0.024 | +0.23 | -0.185 | -0.069 | -0.087 | -0.370 | -0.034 | +0.008 | FAIL
+
+gap cont 3 FAIL: avg R after costs -0.068 is below +0.10; t vs non-gap -0.25 is not above 3; 2015-2019 -0.162 is not above 0; 2020-2024 -0.012 is not above 0; up -0.065 is not above 0; down -0.154 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.039, 2016 -0.312, 2017 -0.104, 2018 -0.514, 2019 +0.275, 2020 -0.033, 2021 -0.173, 2022 +0.121, 2023 -0.151, 2024 +0.106
+gap cont 4 FAIL: avg R after costs -0.103 is below +0.10; t vs non-gap +1.07 is not above 3; 2015-2019 -0.196 is not above 0; 2020-2024 -0.050 is not above 0; up -0.022 is not above 0; down -0.374 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.084, 2016 -0.367, 2017 -0.106, 2018 -0.628, 2019 +0.216, 2020 -0.238, 2021 +0.036, 2022 +0.290, 2023 -0.098, 2024 +0.200
+gap cont 3 vol FAIL: avg R after costs -0.120 is below +0.10; t vs non-gap +0.23 is not above 3; 2015-2019 -0.185 is not above 0; 2020-2024 -0.069 is not above 0; up -0.087 is not above 0; down -0.370 is not above 0; sideways -0.034 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 -0.387, 2016 -0.250, 2017 -0.096, 2018 -0.428, 2019 +0.214, 2020 -0.175, 2021 +0.032, 2022 -0.258, 2023 -0.132, 2024 +0.164
+
+Variants that pass: 0 of 3.
+
+
+## Attempt 14
+
+Rules fixed on 2026-11-07, before the run.
+
+Hypothesis: one short-swing family clears the pass mark below on 2005-2024. Signals use the close. The buy is the next session's open, in the same segment. Every signal is its own round trip, including one that overlaps another open trade. Long only. Delivery costs are signal_lab.delivery on a Rs 1,00,000 notional, in whole shares. A price that does not fit one share is skipped. Dividends are excluded.
+
+Universe for the stock rules: the 200 names with the highest average close times volume over the 60 sessions before the signal day, one segment only. Large caps are the top 100 by that average on the signal day. A random entry instead requires the name to be in the top 200 on the entry day, because that is what is known at the open, and the signal condition is not required. Market type is india/research/regime.py on the entry date, from earlier NIFTY closes only. The window is 2005-01-01 through 2024-12-31. An exit that would need a session after 2024-12-31 is skipped. Dates from 2025-01-01 on are not requested.
+
+RSI(2). Wilder RSI from ta.rsi_series, period 2. SMA200 and SMA5 are ta.sma_series on the same segment. Buy when the close is strictly above SMA200 and RSI(2) is strictly below the threshold. Exit at the next open after a close strictly above that session's SMA5. The entry session's close can be the trigger, which sells at the following open. If no close does that, sell at the open five sessions after the entry session. Variants: rsi2 < 5; rsi2 < 10; rsi2 < 10 down2, which also requires the signal close and the close before it to each be strictly below the close before them.
+
+IBS. IBS is (close - low) / (high - low). A bar with high equal to low has no IBS and no signal. Buy when the close is strictly above SMA200 and IBS is strictly below the threshold. Exit at the next open after a close strictly above the prior session's high, or at the open five sessions after the entry. Variants: ibs < 0.2; ibs < 0.1; ibs < 0.2 nifty. The third trades the NIFTY 50 index itself, price only, no futures and no futures charges. The same delivery cost and Rs 1,00,000 notional are applied to the index points, as a NIFTYBEES-like cash book. Its large-cap average is its own average return. Its random entries are other NIFTY sessions in the same month.
+
+Turtle soup. The prior low is the lowest low of the N sessions before the signal day, today not included. Buy when today's low is strictly below that prior low and today's close is strictly back above it. The stop is the signal day's low. The next open must be strictly above that low, otherwise the trade is skipped. The target is the entry plus 2 times (entry - stop). On the entry day and the two following sessions, a gap through the stop fills at the open, a low through the stop fills at the stop, and a high through the target fills at the target. The stop is taken before the target on the same day. If neither is hit, sell at the open three sessions after the entry. Variants: soup 20, soup 10, soup 55.
+
+Short-term reversal, a portfolio. Every Monday, rank the top 200 by the 5-session return ending at the previous session: that close divided by the close five sessions before it, minus 1. Monday's own close is not in the rank. Buy the K worst at Monday's open, equal weight, each name sized by delivery() at Rs 1,00,000. Sell at the next Monday's open. The next Monday is the next session that falls on a Monday. A name must have both opens in the same segment. When fewer than K names qualify, those names are the book. A week with no name is skipped. Each week is its own round trip: the book is sold and, if it qualifies again, bought again, so costs apply both times. Variants: rev K10; rev K20; rev K10 above200, which is taken only when the previous session's NIFTY close is strictly above the 200-day average of NIFTY closes through that previous session. This is a level test, not the regime slope. When the filter fails, the week is omitted, not scored as zero. The average return is the mean of the weekly book returns. The large-cap figure is the mean of those weekly returns computed from only the picked names that were in the top 100 that Monday. A week with no large-cap name stays out of that bucket.
+
+Random baseline, 100 seeded runs, seed 20261106 + variant index * 1000 + the run index. For a stock or index trade, each run picks a random eligible entry in the same calendar month and applies that variant's own exit. A turtle draw whose previous-day low is not below the open is dropped from the mean. For the Monday book, each run picks K random eligible names that Monday and holds them to the same next Monday. The market adjustment is the NIFTY price return over the same window: entry open to the exit open when the exit is an open, and entry open to the NIFTY close of the exit day when the exit is a stop or a target. Excess is (trade return - NIFTY return) minus the mean of that figure on the random entries. On the Monday book the window matches, so NIFTY cancels and the excess is the book minus the random book. The t-statistic is the one-sample t of the mean excess in each calendar month of the entry date.
+
+Pass mark, fixed before this run: average raw return after costs above 0; t versus random above 3, on the market-adjusted excess; raw return above 0 in 2005-2014 and in 2015-2024; above 0 on up, down, and sideways entries; above 0 in large caps; and at least 2 of the 3 variants in the family have t above 2. A value on a stated boundary passes where the word is 'at least'. The averages here are strict. An empty bucket does not. The survivorship bias is not subtracted. Next to each result, the measured annual survivorship bias (random K=30 CAGR minus the NIFTY 200 price CAGR, from survivorship.py on this same 2005-2024 window) is scaled to the variant's average holding length in calendar days: (1 + annual) ** (days / 365.25) - 1. The scaled figure is printed and is not used in the pass test.
+
+In the experiments table, the two return columns are the average percent return after costs and the market-adjusted t. The printed summary is the long table.
+
+Results.
+variant | trades | days | avg return | excess | t | 2005-14 | 2015-24 | up | down | sideways | large | hold days | bias over hold | result
+rsi2 < 5 | 30,513 | 4027 | +0.568% | +1.057% | +21.37 | +0.555% | +0.581% | +0.558% | +0.023% | +0.875% | +0.641% | 4.71 | +0.080% | PASS
+rsi2 < 10 | 60,373 | 4568 | +0.403% | +0.741% | +13.63 | +0.415% | +0.392% | +0.388% | +0.129% | +0.628% | +0.446% | 4.71 | +0.080% | PASS
+rsi2 < 10 down2 | 52,023 | 4472 | +0.425% | +0.755% | +13.37 | +0.436% | +0.415% | +0.406% | +0.160% | +0.677% | +0.472% | 4.73 | +0.080% | PASS
+ibs < 0.2 | 126,464 | 4854 | +0.150% | +0.048% | +0.80 | +0.189% | +0.110% | +0.122% | -0.002% | +0.440% | +0.146% | 5.56 | +0.094% | FAIL
+ibs < 0.1 | 29,236 | 4394 | +0.133% | +0.084% | +1.65 | +0.089% | +0.185% | +0.096% | +0.073% | +0.466% | +0.145% | 5.68 | +0.096% | FAIL
+ibs < 0.2 nifty | 727 | 727 | -0.035% | -0.000% | -1.88 | -0.046% | -0.025% | -0.053% | n/a | +0.263% | -0.035% | 4.89 | +0.083% | FAIL
+soup 20 | 39,790 | 4312 | -0.410% | +0.330% | +12.19 | -0.580% | -0.244% | -0.370% | -0.707% | -0.285% | -0.357% | 2.18 | +0.037% | FAIL
+soup 10 | 62,797 | 4725 | -0.396% | +0.295% | +14.60 | -0.548% | -0.246% | -0.370% | -0.636% | -0.285% | -0.342% | 2.11 | +0.036% | FAIL
+soup 55 | 19,269 | 3236 | -0.447% | +0.359% | +6.21 | -0.589% | -0.308% | -0.367% | -0.774% | -0.314% | -0.360% | 2.24 | +0.038% | FAIL
+rev K10 | 988 | 988 | +0.325% | +0.117% | +1.32 | +0.472% | +0.176% | +0.164% | +0.691% | +0.729% | +0.375% | 7.39 | +0.125% | FAIL
+rev K20 | 988 | 988 | +0.374% | +0.173% | +3.03 | +0.481% | +0.267% | +0.225% | +0.551% | +0.902% | +0.349% | 7.39 | +0.125% | FAIL
+rev K10 above200 | 753 | 753 | +0.236% | +0.025% | +0.14 | +0.497% | -0.030% | +0.164% | n/a | +1.125% | +0.195% | 7.39 | +0.125% | FAIL
+
+rsi2 < 5 PASS. survivorship bias +6.377% a year, +0.080% over 4.71 holding days (not subtracted).
+  years: 2005 +0.378%, 2006 +0.109%, 2007 +0.987%, 2008 -1.219%, 2009 +1.798%, 2010 +0.742%, 2011 -0.423%, 2012 +0.378%, 2013 +0.243%, 2014 +1.176%, 2015 +0.783%, 2016 -0.167%, 2017 +0.915%, 2018 -0.138%, 2019 +0.353%, 2020 -0.217%, 2021 +1.083%, 2022 +0.452%, 2023 +0.862%, 2024 +0.793%
+rsi2 < 10 PASS. survivorship bias +6.377% a year, +0.080% over 4.71 holding days (not subtracted).
+  years: 2005 +0.320%, 2006 -0.065%, 2007 +0.952%, 2008 -1.499%, 2009 +1.434%, 2010 +0.574%, 2011 -0.601%, 2012 +0.441%, 2013 +0.088%, 2014 +0.919%, 2015 +0.544%, 2016 -0.104%, 2017 +0.665%, 2018 -0.217%, 2019 +0.218%, 2020 -0.060%, 2021 +0.740%, 2022 +0.088%, 2023 +0.787%, 2024 +0.538%
+rsi2 < 10 down2 PASS. survivorship bias +6.377% a year, +0.080% over 4.73 holding days (not subtracted).
+  years: 2005 +0.288%, 2006 +0.007%, 2007 +0.998%, 2008 -1.280%, 2009 +1.517%, 2010 +0.579%, 2011 -0.639%, 2012 +0.407%, 2013 +0.116%, 2014 +0.879%, 2015 +0.577%, 2016 -0.141%, 2017 +0.657%, 2018 -0.242%, 2019 +0.251%, 2020 +0.012%, 2021 +0.771%, 2022 +0.109%, 2023 +0.846%, 2024 +0.548%
+ibs < 0.2 FAIL: t vs random +0.80 is not above 3; down -0.002% is not above 0; family variants with t above 2: 0 of 3, need 2. survivorship bias +6.377% a year, +0.094% over 5.56 holding days (not subtracted).
+  years: 2005 +0.348%, 2006 +0.030%, 2007 +0.837%, 2008 -2.586%, 2009 +0.978%, 2010 +0.019%, 2011 -1.075%, 2012 +0.165%, 2013 -0.144%, 2014 +0.480%, 2015 -0.024%, 2016 -0.193%, 2017 +0.297%, 2018 -0.617%, 2019 -0.032%, 2020 +0.347%, 2021 +0.359%, 2022 -0.391%, 2023 +0.549%, 2024 +0.153%
+ibs < 0.1 FAIL: t vs random +1.65 is not above 3; family variants with t above 2: 0 of 3, need 2. survivorship bias +6.377% a year, +0.096% over 5.68 holding days (not subtracted).
+  years: 2005 +0.335%, 2006 -0.328%, 2007 +0.701%, 2008 -2.354%, 2009 +0.686%, 2010 -0.107%, 2011 -1.351%, 2012 +0.318%, 2013 -0.132%, 2014 +0.505%, 2015 +0.171%, 2016 -0.043%, 2017 +0.459%, 2018 -0.868%, 2019 +0.256%, 2020 +0.414%, 2021 +0.361%, 2022 -0.072%, 2023 +0.524%, 2024 +0.106%
+ibs < 0.2 nifty FAIL: avg return after costs -0.035% is not above 0; t vs random -1.88 is not above 3; 2005-2014 -0.046% is not above 0; 2015-2024 -0.025% is not above 0; up -0.053% is not above 0; down n/a is not above 0; large caps -0.035% is not above 0; family variants with t above 2: 0 of 3, need 2. survivorship bias +6.377% a year, +0.083% over 4.89 holding days (not subtracted).
+  years: 2005 -0.373%, 2006 +0.076%, 2007 +0.692%, 2008 -3.364%, 2009 +0.209%, 2010 -0.182%, 2011 -0.768%, 2012 +0.180%, 2013 -0.254%, 2014 +0.339%, 2015 -0.194%, 2016 -0.379%, 2017 +0.073%, 2018 -0.617%, 2019 +0.084%, 2020 -0.494%, 2021 +0.826%, 2022 -0.434%, 2023 -0.006%, 2024 +0.206%
+soup 20 FAIL: avg return after costs -0.410% is not above 0; 2005-2014 -0.580% is not above 0; 2015-2024 -0.244% is not above 0; up -0.370% is not above 0; down -0.707% is not above 0; sideways -0.285% is not above 0; large caps -0.357% is not above 0. survivorship bias +6.377% a year, +0.037% over 2.18 holding days (not subtracted).
+  years: 2005 -0.081%, 2006 -0.642%, 2007 -1.306%, 2008 -1.441%, 2009 +0.051%, 2010 -0.157%, 2011 -0.541%, 2012 -0.361%, 2013 -0.486%, 2014 -0.009%, 2015 +0.062%, 2016 -0.339%, 2017 +0.148%, 2018 -0.401%, 2019 -0.403%, 2020 -1.036%, 2021 -0.124%, 2022 -0.028%, 2023 -0.123%, 2024 -0.040%
+soup 10 FAIL: avg return after costs -0.396% is not above 0; 2005-2014 -0.548% is not above 0; 2015-2024 -0.246% is not above 0; up -0.370% is not above 0; down -0.636% is not above 0; sideways -0.285% is not above 0; large caps -0.342% is not above 0. survivorship bias +6.377% a year, +0.036% over 2.11 holding days (not subtracted).
+  years: 2005 -0.366%, 2006 -0.672%, 2007 -0.911%, 2008 -1.330%, 2009 -0.108%, 2010 -0.271%, 2011 -0.630%, 2012 -0.357%, 2013 -0.444%, 2014 +0.021%, 2015 -0.057%, 2016 -0.311%, 2017 +0.034%, 2018 -0.345%, 2019 -0.422%, 2020 -0.586%, 2021 -0.196%, 2022 -0.239%, 2023 -0.013%, 2024 -0.209%
+soup 55 FAIL: avg return after costs -0.447% is not above 0; 2005-2014 -0.589% is not above 0; 2015-2024 -0.308% is not above 0; up -0.367% is not above 0; down -0.774% is not above 0; sideways -0.314% is not above 0; large caps -0.360% is not above 0. survivorship bias +6.377% a year, +0.038% over 2.24 holding days (not subtracted).
+  years: 2005 +0.156%, 2006 -0.611%, 2007 -1.498%, 2008 -1.357%, 2009 +0.116%, 2010 +0.041%, 2011 -0.344%, 2012 -0.388%, 2013 -0.545%, 2014 +0.156%, 2015 +0.095%, 2016 -0.520%, 2017 +0.370%, 2018 -0.275%, 2019 -0.397%, 2020 -2.015%, 2021 -0.018%, 2022 +0.096%, 2023 -0.011%, 2024 +0.105%
+rev K10 FAIL: t vs random +1.32 is not above 3; family variants with t above 2: 1 of 3, need 2. survivorship bias +6.377% a year, +0.125% over 7.39 holding days (not subtracted).
+  years: 2005 +1.339%, 2006 +0.841%, 2007 +0.953%, 2008 -1.714%, 2009 +2.786%, 2010 +0.456%, 2011 -0.290%, 2012 +0.143%, 2013 -0.693%, 2014 +1.126%, 2015 +0.175%, 2016 +0.033%, 2017 +0.418%, 2018 -0.139%, 2019 -1.100%, 2020 +1.043%, 2021 +0.447%, 2022 +0.049%, 2023 +0.535%, 2024 +0.268%
+rev K20 FAIL: family variants with t above 2: 1 of 3, need 2. survivorship bias +6.377% a year, +0.125% over 7.39 holding days (not subtracted).
+  years: 2005 +1.149%, 2006 +0.752%, 2007 +1.018%, 2008 -1.704%, 2009 +2.461%, 2010 +0.346%, 2011 -0.528%, 2012 +0.453%, 2013 -0.193%, 2014 +1.238%, 2015 +0.123%, 2016 +0.353%, 2017 +0.625%, 2018 -0.078%, 2019 -0.744%, 2020 +0.780%, 2021 +0.561%, 2022 +0.121%, 2023 +0.612%, 2024 +0.313%
+rev K10 above200 FAIL: t vs random +0.14 is not above 3; 2015-2024 -0.030% is not above 0; down n/a is not above 0; family variants with t above 2: 1 of 3, need 2. survivorship bias +6.377% a year, +0.125% over 7.39 holding days (not subtracted).
+  years: 2005 +1.339%, 2006 +0.287%, 2007 +0.953%, 2008 -3.848%, 2009 +3.400%, 2010 +0.480%, 2011 -0.809%, 2012 -0.438%, 2013 -1.559%, 2014 +1.126%, 2015 -0.394%, 2016 -0.399%, 2017 +0.344%, 2018 -0.975%, 2019 -1.395%, 2020 +0.621%, 2021 +0.447%, 2022 +0.217%, 2023 +0.502%, 2024 +0.225%
+
+The survivorship figure is printed beside each result and is not subtracted.
+Variants that pass: 3 of 12.
 
 
 ## Forward test
