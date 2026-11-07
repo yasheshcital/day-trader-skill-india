@@ -66,6 +66,19 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 15 | 2026-11-07 | RSI portfolio, Rs 10,00,000, 10 slots. No pass mark. | harness delivery costs, cash at 0 and cash in NIFTY | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31 | see section | see section | see section | REPORT |
 | 15 | 2026-11-07 | RSI stress: slippage, next close, RSI3, SMA10, SMA100. No pass mark. | delivery costs, t versus same-month random | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31 | see section | see section | see section | REPORT |
 | 15 | 2026-11-07 | holdout rsi2 < 5, per trade, through 2026-11-04. | attempt 14 rule, delivery costs, final=True once | top 200, 2025-01-01 to 2026-11-04 | 2,422 | +0.327% | +1.42 | FAIL |
+| 16 | 2026-11-07 | pairs same. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 486 | +0.550% | +0.21 | FAIL |
+| 16 | 2026-11-07 | pairs any. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 769 | +0.029% | -0.62 | FAIL |
+| 16 | 2026-11-07 | pairs z. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1,070 | +0.493% | +1.28 | FAIL |
+| 16 | 2026-11-07 | grail adx30. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 12,888 | -0.430% | -0.11 | FAIL |
+| 16 | 2026-11-07 | grail adx25. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 21,758 | -0.515% | -0.19 | FAIL |
+| 16 | 2026-11-07 | grail adx30 sma200. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 11,042 | -0.401% | +2.06 | FAIL |
+| 16 | 2026-11-07 | tom. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 239 | +0.556% | +2.41 | FAIL |
+| 16 | 2026-11-07 | expiry week. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 240 | +0.130% | +0.65 | FAIL |
+| 16 | 2026-11-07 | after expiry. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 240 | +0.231% | +0.85 | FAIL |
+| 16 | 2026-11-07 | m1 momentum. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 13,604 | +0.798% | +19.53 | FAIL |
+| 16 | 2026-11-07 | m2 regime. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 28,851 | +0.600% | +21.17 | PASS |
+| 16 | 2026-11-07 | m3 book. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | see section | +15.184% | +1.80 | FAIL |
+| 16 | 2026-11-07 | holdout m2 regime. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 1,603 | +0.079% | +0.78 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -788,6 +801,164 @@ rsi2 < 5, cash in NIFTY years: 2025 +1.935%, 2026 -3.496%
 NIFTY 50 years: 2025 +10.542%, 2026 -8.301%
 Part 4 FAIL: market-adjusted excess t +1.42 is not above 2
 The holdout rule was not changed after the run.
+
+
+## Attempt 16
+
+Rules fixed on 2026-11-07, before the run.
+
+Four families on 2005-01-01 through 2024-12-31. No 5-minute bars are used. Dates from 2025-01-01 on are not requested until a variant passes, and then only in the one holdout load. Dividends are excluded. Nothing is placed. Spot prices are the futures proxy for every futures rule, and the report says so.
+
+Futures costs, check your broker. Brokerage Rs 20 an order. STT 0.05% of sell value. Exchange 0.00173% of both sides. SEBI 0.0001% of both sides. Stamp 0.002% of buy value. GST 18% of brokerage plus exchange plus SEBI. STT and stamp are outside the GST base. One extra round trip per leg is charged for each month-end strictly after the entry date and on or before the exit date. A pair that opens and closes in the same month pays no rollover.
+
+1. Pairs. Market-neutral, both legs treated as stock futures. Universe on the formation date: the top 200 by prior 60-session turnover. Industry is the Industry column of india/universe/nifty500.csv. A blank industry is not a match. Rs 1,00,000 notional per leg, so the per-trade average is on Rs 2,00,000 gross. Every 6 months, on the first NIFTY session of January and of July, form on the sessions from the same month a year earlier up to the session before the formation date. A name must have a close on every one of those sessions, inside one segment, and there must be at least 120 of them. Both prices are divided by their first formation close. The score is the sum of squared differences. The formation mean and the population standard deviation of that normalised gap are saved. The next window runs until the day before the next formation date. Marks use sessions where both names have a close. (a) The 20 same-industry pairs with the smallest score. Open when the live gap is strictly more than 2 standard deviations from the formation mean. Long the cheaper normalised price, short the dearer, at that close. Close when the raw normalised gap crosses zero, or at the last common close of the window. A standard deviation of 0 opens nothing. Exactly 2 standard deviations does not open. (b) The same rule with any industry allowed. (c) The same 20 same-industry pairs as (a). The z-score is the population z-score of the log price ratio over the 60 closes ending that day. Enter at the close when the absolute z is strictly above 2, short the richer name. Exit at the close when the absolute z is strictly above 4 (checked first), or when z crosses 0, or at the close of day 20 counting the entry session as day 1. One position per pair. The portfolio funds 20 slots from Rs 10,00,000, so each leg of each slot is Rs 25,000, including a slot that is flat. Idle cash earns 0. The market beta is the OLS slope, with an intercept, of the book's daily percent change on NIFTY's close-to-close percent change, using only days when a pair is open. The monthly t is the one-sample t of the book's month-end percent returns. Decades and market types are the mean per-trade return by the entry date. Large caps, both legs in the top 100 that day, are reported and are not a pass clause.
+
+2. Holy Grail, stocks, daily, delivery costs, Rs 1,00,000 a trade, top 200 on the pullback day. ADX(14) and +DI and -DI are Wilder. EMA20 is ta.ema_series. The pullback day has ADX strictly above the threshold, +DI strictly above -DI, and a low at or below EMA20 with a high at or above it. The next session buys on a stop one tick, from nse_market.tick_for, above that day's high. An open at or above the stop fills at the open. Otherwise a high at or above the stop fills at the stop. No fill, no trade. The protective stop is the pullback day's low. The target is the fill plus 2 times (fill minus that low). A gap through the stop fills at the open, a low through the stop fills at the stop, and the stop is taken before the target. If neither is hit, sell at the close of the 10th session, counting the entry session as day 1. A trade that would need a later session is skipped. Variants: ADX above 30; ADX above 25; ADX above 30 and the pullback close strictly above SMA200. Exactly 30 fails the first and the third. Random entries, 100 runs, seed 20261106 + 50000 + variant index times 1000 + the run index, are same-month top-200 days of the same symbol. The signal is not required. The same stop, target and 10-day exit are applied from that day. The t is the attempt 14 market-adjusted t versus those entries.
+
+3. Calendar on NIFTY 50, futures costs, one lot of 75. The return is the rupee P&L divided by 75 times the entry price. (a) Turn of the month: long from the close of the session before the last session of the month to the close of the third session of the next month. (b) Expiry week: long from the Monday open of the expiry week to the expiry close. Expiry is the last Thursday, or the previous NIFTY session when that Thursday is not a session. The Monday, when it is not a session, moves to the next session that is still on or before the expiry. Expiry-day changes after 2024 are outside this window, and a holdout of this rule keeps the last-Thursday definition. (c) The week after expiry: long from that next Monday's open to that Friday's close, moving either end onto a NIFTY session inside the week. The baseline is 100 other windows in the same calendar year with the same session count, not starting on the real entry date. Seed 20261106 + 70000 + variant index times 1000, then the event index. The average that must be above 0 is the trade's own return after costs. The monthly t is the one-sample t of (that return minus the mean of the same-year random windows). A year with no other window leaves the trade in the average and out of the t. Decades and market types use the trade's own return and the entry date's regime.
+
+4. Mixes. (m1) rsi2 < 5, the attempt 14 rule, and the signal-day name is in the top 30% of that day's top 200 by 12-1 momentum. 12-1 is the close 21 sessions before the signal divided by the close 252 sessions before it, minus 1, inside one segment. The count is n times 30 divided by 100, truncating. Ties break on the symbol name. (m2) rsi2 < 5 only when the entry date's market type is up or sideways. Hypothesis from attempt 14's weak down bucket: the down average was the weak one, so this mix does not trade a down entry. An empty down bucket is reported and is not a failure. (m3) One Rs 10,00,000 book in two halves of Rs 5,00,000. The first half is rsi2 < 5 with 5 slots of Rs 1,00,000, lowest RSI then highest turnover, and a name sold at the open is not bought again that day. The second half is rev K20: every Monday, the 20 worst 5-session returns in the top 200, sold and bought again the next Monday so both costs apply. Each half parks idle cash in the NIFTY price with no funding cost. The same name may sit in both halves. The correlation is the Pearson correlation of the two halves' month-end percent returns.
+
+Pass marks, fixed before this run. Holy Grail uses the attempt 14 judge: average after costs above 0, t versus random above 3, both decades, up, down, sideways, large caps, and at least 2 of the 3 variants with t above 2. Pairs and calendar: average after costs above 0, monthly t above 3, above 0 in both decades and in each market type, and at least 2 of the 3 variants with t above 2. Large caps and the pairs beta are not pass clauses. m1 and m2 use the attempt 14 trade clauses and are not a three-variant family, so the 2-of-3 count is not applied. m2 does not require a down average. m3 uses the attempt 11 path against NIFTY 50 buy-and-hold: excess t above 3, both decades, each market type, large-cap excess above 0, beats 95 of 100 random books, and either the drawdown path or the calmar path. The m3 random book keeps the same dates and replaces the names. A boundary stated as above is strict. At least 2 of 3 passes when the count is exactly 2. An empty required bucket fails.
+
+5. Every variant that PASSES gets one automatic holdout, after the in-sample run. One load_context with final=True, logged once, from 2025-01-01 through the last NIFTY 50 daily date. Warmup before 2025 is used and is not a trade. An entry on or after 2025-01-01 counts. The signal rules are unchanged. Holdout PASS is average after costs above 0 and t above 2, and nothing else. For Holy Grail, m1 and m2 the holdout t is the one-sample t of the monthly mean of (return after costs minus the NIFTY price return over the trade), not versus a random entry. For pairs the holdout t is the same monthly book t. For calendar it is the same excess t versus same-year random windows. For m3 the average is the mean monthly book return and the t is the t of monthly excess versus NIFTY. The rule is not changed after the holdout. STRATEGIES.md is updated from these results at the end.
+
+Results.
+
+Spot prices are the futures proxy.
+
+Pairs. Per-trade average on Rs 2,00,000. Beta is not a pass clause.
+variant | trades | avg | beta | t | 2005-2014 | 2015-2024 | up | down | sideways | large | CAGR | max DD | result
+pairs same | 486 | +0.550% | +0.01 | +0.21 | +1.037% | +0.254% | -0.112% | +2.577% | +0.819% | +0.995% | +0.094% | -10.567% | FAIL
+pairs any | 769 | +0.029% | +0.01 | -0.62 | -0.054% | +0.091% | -0.377% | +0.623% | +1.336% | -0.151% | -0.938% | -20.849% | FAIL
+pairs z | 1,070 | +0.493% | +0.01 | +1.28 | +1.183% | +0.062% | -0.148% | +1.117% | +1.761% | +0.578% | +0.664% | -6.692% | FAIL
+pairs same FAIL: monthly t +0.21 is not above 3; up -0.112% is not above 0; family variants with t above 2: 0 of 3, need 2
+pairs any FAIL: monthly t -0.62 is not above 3; 2005-2014 -0.054% is not above 0; up -0.377% is not above 0; family variants with t above 2: 0 of 3, need 2
+pairs z FAIL: monthly t +1.28 is not above 3; up -0.148% is not above 0; family variants with t above 2: 0 of 3, need 2
+
+Holy Grail.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | large | result
+grail adx30 | 12,888 | -0.430% | -0.11 | -0.611% | -0.193% | -0.506% | -0.426% | +0.016% | -0.488% | FAIL
+grail adx25 | 21,758 | -0.515% | -0.19 | -0.691% | -0.297% | -0.568% | -0.597% | -0.156% | -0.516% | FAIL
+grail adx30 sma200 | 11,042 | -0.401% | +2.06 | -0.623% | -0.121% | -0.440% | -0.417% | -0.116% | -0.450% | FAIL
+grail adx30 FAIL: avg return after costs -0.430% is not above 0; t vs random -0.11 is not above 3; 2005-2014 -0.611% is not above 0; 2015-2024 -0.193% is not above 0; up -0.506% is not above 0; down -0.426% is not above 0; large caps -0.488% is not above 0; family variants with t above 2: 1 of 3, need 2
+grail adx25 FAIL: avg return after costs -0.515% is not above 0; t vs random -0.19 is not above 3; 2005-2014 -0.691% is not above 0; 2015-2024 -0.297% is not above 0; up -0.568% is not above 0; down -0.597% is not above 0; sideways -0.156% is not above 0; large caps -0.516% is not above 0; family variants with t above 2: 1 of 3, need 2
+grail adx30 sma200 FAIL: avg return after costs -0.401% is not above 0; t vs random +2.06 is not above 3; 2005-2014 -0.623% is not above 0; 2015-2024 -0.121% is not above 0; up -0.440% is not above 0; down -0.417% is not above 0; sideways -0.116% is not above 0; large caps -0.450% is not above 0; family variants with t above 2: 1 of 3, need 2
+
+Calendar. The t is versus same-year random windows.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | result
+tom | 239 | +0.556% | +2.41 | +0.810% | +0.301% | +0.499% | +1.188% | +0.260% | FAIL
+expiry week | 240 | +0.130% | +0.65 | +0.323% | -0.064% | -0.007% | +0.997% | -0.042% | FAIL
+after expiry | 240 | +0.231% | +0.85 | +0.328% | +0.135% | +0.240% | +0.541% | -0.097% | FAIL
+tom FAIL: monthly t +2.41 is not above 3; family variants with t above 2: 1 of 3, need 2
+expiry week FAIL: monthly t +0.65 is not above 3; 2015-2024 -0.064% is not above 0; up -0.007% is not above 0; sideways -0.042% is not above 0; family variants with t above 2: 1 of 3, need 2
+after expiry FAIL: monthly t +0.85 is not above 3; sideways -0.097% is not above 0; family variants with t above 2: 1 of 3, need 2
+
+Mixes.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | large | result
+m1 momentum | 13,604 | +0.798% | +19.53 | +0.806% | +0.790% | +0.849% | -0.009% | +0.969% | +0.930% | FAIL
+m2 regime | 28,851 | +0.600% | +21.17 | +0.584% | +0.615% | +0.558% | n/a | +0.875% | +0.656% | PASS
+m3 book | CAGR +15.184% | max DD -65.143% | excess +0.201% | t +1.80 | beats 100 | corr +0.94 | FAIL
+m1 momentum FAIL: down -0.009% is not above 0
+m2 regime PASS.
+m3 book FAIL: excess t +1.80 is not above 3; neither path clears: CAGR +15.184% vs NIFTY +12.929%, max DD -65.143% vs -59.856%, ratio 0.233 vs 0.216
+
+Holdout.
+m2 regime | avg +0.079% | t +0.78 | FAIL
+m2 regime FAIL: t +0.78 is not above 2
+
+Bucket list.
+# Strategy catalogue
+
+Attempts 1 to 10 tested two families. Attempts 1 to 8 are the opening-range breakout family. Attempts 9 and 10 are the single technical-signal family (one entry rule, one exit rule, scored one trade at a time and then as a 10-slot book). Attempt 11 is the first batch on the shared harness in `harness.py`. A later batch keeps the same pass mark.
+
+Dividends are excluded. Nothing here places an order.
+
+Tiers are filled from the attempt results. Bucket means an in-sample PASS and a holdout PASS. Watch means an in-sample PASS whose holdout average after costs is positive and whose holdout t is not above 2. Investing is a real edge kept for the later investing phase. Near-miss is close and closed is the rest. The source table below is the bibliography.
+
+## Bucket
+
+In-sample PASS and holdout PASS.
+
+None yet.
+
+## Watch
+
+In-sample PASS, holdout average after costs above 0, t not above 2.
+
+| Name | Attempt | Note |
+|---|---|---|
+| rsi2 < 5 | 14, 15 | In-sample PASS. Holdout average after costs +0.327% and excess t +1.42. |
+| m2 regime | 16 | PASS Holdout FAIL, avg +0.079%, t +0.78. |
+
+## Investing
+
+A real edge, for the later investing phase.
+
+| Name | Attempt | Note |
+|---|---|---|
+| mom 12-1 K20 above200 | 11 | PASS in-sample, but inflated by survivorship bias; real NIFTY200 Momentum 30 TRI: 18.8% CAGR vs NIFTY 50 TRI 13.6% since Apr 2005 (HDFC MF, Jul 2026) |
+
+## Near-miss
+
+Close to a pass, and not in the buckets above.
+
+| Name | Attempt | Note |
+|---|---|---|
+| rev K20 | 14 | Cleared every attempt 14 clause except the family gate, 1 of 3 with t above 2. |
+| Faber timing | 11 | faber 10m, faber 8m and faber 12m. The monthly t was negative. |
+
+## Closed
+
+Tested and not in a bucket above.
+
+| Name | Attempt | Note |
+|---|---|---|
+| Opening-range breakout | 1-8 | The intraday opening-range family. |
+| 20d-high / sma20-close and engulf-low / hold-20 | 9 | In-sample PASS. No 2025 holdout was run. |
+| Attempt 10 single signals | 10 | The remaining entry and exit pairs. |
+| Turtle, 52-week high, mom 12-1 K20, mom 12-1 K30 | 11 | Failed the attempt 11 path. The above-200 momentum book is in Investing. |
+| Attempt 12 intraday batch | 12 | 0 of 12 passed. |
+| Big-gap continuation | 13 | 0 of 3 passed. |
+| rsi2 < 10 and rsi2 < 10 down2 | 14, 15 | In-sample PASS. The holdout was rsi2 < 5 only, and the index test failed. |
+| IBS, turtle soup, rev K10, rev K10 above200 | 14 | Failed the attempt 14 mark. rev K20 is the near-miss. |
+| Index RSI(2) | 15 | The survivorship-free index test failed on the pooled excess t. |
+| pairs same | 16 | FAIL |
+| pairs any | 16 | FAIL |
+| pairs z | 16 | FAIL |
+| grail adx30 | 16 | FAIL |
+| grail adx25 | 16 | FAIL |
+| grail adx30 sma200 | 16 | FAIL |
+| tom | 16 | FAIL |
+| expiry week | 16 | FAIL |
+| after expiry | 16 | FAIL |
+| m1 momentum | 16 | FAIL |
+| m3 book | 16 | FAIL |
+
+## Sources
+
+| Strategy | Source | Horizon | Status | Attempt |
+|---|---|---|---|---|
+| Turtle breakout | Richard Dennis and William Eckhardt, the 1983 rules, published by Curtis Faith, Way of the Turtle (2007) | daily | batch 1 | 11 |
+| Cross-sectional momentum | Jegadeesh and Titman (1993), Journal of Finance, "Returns to Buying Winners and Selling Losers" | monthly | batch 1 | 11 |
+| 52-week-high momentum | George and Hwang (2004), Journal of Finance | monthly | batch 1 | 11 |
+| Minervini trend template + VCP | Mark Minervini, Trade Like a Stock Market Wizard (2013), trend template and volatility contraction | daily | not started | |
+| Weinstein stage analysis | Stan Weinstein, Secrets for Profiting in Bull and Bear Markets (1988) | weekly and daily | not started | |
+| Darvas box | Nicolas Darvas, How I Made $2,000,000 in the Stock Market (1960) | daily | not started | |
+| Time-series momentum / Faber 10-month timing | Moskowitz, Ooi and Pedersen (2012) for time-series momentum; Meb Faber, "A Quantitative Approach to Tactical Asset Allocation" (2007), for the 10-month average | monthly | batch 1 (Faber timing); full TSMOM not started | 11 |
+| Connors RSI(2) | Larry Connors, Short Term Trading Strategies That Work (2008) | daily | not started | |
+| IBS | (close - low) / (high - low). Larry Connors, and the 2013 Pagonidis note "The IBS Effect" | daily | not started | |
+| Short-term reversal | Jegadeesh (1990), Journal of Finance | daily to monthly | not started | |
+| Pairs trading | Gatev, Goetzmann and Rouwenhorst (2006), Review of Financial Studies | daily | not started | |
+| Turtle Soup | Raschke and Connors, Street Smarts (1996) | daily | not started | |
+| Crabel NR7/NR4 | Toby Crabel, Day Trading with Short Term Price Patterns and Opening Range Breakout (1990) | daily | not started | |
+| Raschke Holy Grail | Linda Raschke, Street Smarts (1996), the ADX pullback | daily | not started | |
+| Intraday momentum (Gao et al. 2018) | Gao, Han, Li and Zhou (2018), Journal of Financial Economics, "Market intraday momentum" | intraday | not started | |
+| Gap and go vs gap fade | Practitioner opening-gap pattern. No single paper | intraday | not started | |
+| VWAP reversion | Berkowitz, Logue and Noser (1988) introduced VWAP. Reversion to it is a practitioner intraday strategy | intraday | not started | |
+| Turn of the month | Ariel (1987), Journal of Financial Economics | daily, around month-end | not started | |
+| F&O expiry week | NSE monthly derivatives expiry, the last Thursday. An India calendar effect | daily, expiry week | not started | |
+| Volatility-regime switching | Hamilton (1989); Moreira and Muir (2017), "Volatility-Managed Portfolios" | daily to monthly | not started | |
 
 
 ## Forward test
