@@ -33,6 +33,18 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 11 | 2026-11-06 | faber 10m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 183 | +11.128% | -0.84 | FAIL |
 | 11 | 2026-11-06 | faber 8m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 173 | +11.247% | -0.80 | FAIL |
 | 11 | 2026-11-06 | faber 12m clears the attempt 11 pass mark against NIFTY buy-and-hold. | harness batch 1, delivery costs, idle cash in NIFTY except Faber | top 200 by prior 60-session turnover, 2005-01-01 to 2024-12-31, dividends excluded | 190 | +10.326% | -1.03 | FAIL |
+| 12 | 2026-11-07 | nifty mom always clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | NIFTY 50 5-minute, one lot of 75, 2015-01-01 to 2024-12-31 | 2,429 | +0.035 | -0.212 | FAIL |
+| 12 | 2026-11-07 | nifty mom abs 0.25 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | NIFTY 50 5-minute, one lot of 75, 2015-01-01 to 2024-12-31 | 1,420 | +0.056 | -0.190 | FAIL |
+| 12 | 2026-11-07 | nifty mom same sign clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | NIFTY 50 5-minute, one lot of 75, 2015-01-01 to 2024-12-31 | 1,290 | +0.098 | -0.149 | FAIL |
+| 12 | 2026-11-07 | NR7 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 64,448 | +0.031 | -0.019 | FAIL |
+| 12 | 2026-11-07 | NR4 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 110,413 | +0.027 | -0.022 | FAIL |
+| 12 | 2026-11-07 | NR7 inside clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 23,994 | +0.038 | -0.012 | FAIL |
+| 12 | 2026-11-07 | gap GO 1.5 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 17,066 | +0.048 | +0.011 | FAIL |
+| 12 | 2026-11-07 | gap FADE 1.5 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 10,636 | +0.048 | +0.007 | FAIL |
+| 12 | 2026-11-07 | gap GO 3 clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 3,834 | +0.106 | +0.075 | FAIL |
+| 12 | 2026-11-07 | vwap 1.5 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 22,424 | -0.038 | -0.082 | FAIL |
+| 12 | 2026-11-07 | vwap 2.0 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 11,001 | -0.034 | -0.073 | FAIL |
+| 12 | 2026-11-07 | vwap 2.5 sideways clears the attempt 12 intraday pass mark. | intraday batch 2, costs and 1 tick, Rs 2,000 risk, Rs 5,00,000 cap | top 200 by prior 20-session turnover, 5-minute, 2015-01-01 to 2024-12-31 | 5,701 | -0.021 | -0.056 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -394,6 +406,75 @@ mom 12-1 K30 CAGR minus the NIFTY 200 survivorship bias: +6.027%, next to NIFTY2
 year | bias (random K=30 minus NIFTY 200) | mom 12-1 K30 | that year minus the bias | NIFTY200MOMENTM30
 2025 | -5.227% | -2.373% | +2.854% | -5.359%
 2026 | +5.205% | +14.382% | +9.177% | -4.218%
+
+
+## Attempt 12
+
+Rules fixed on 2026-11-07, before the run.
+
+Hypothesis: one of twelve intraday variants clears the pass mark below on 2015-2024. Entry and exit are 5-minute bars whose labels are the bar end. Nothing is held overnight.
+
+Common rules. A session is used only when every bar from 09:15 to 15:10 is present, using the bar start. The position is flat at the 15:10 bar close unless the rule exits earlier. Gao exits at the 15:25 bar close, which is the one later exit. R is |entry - stop|. A stock trade risks Rs 2,000 and is capped at Rs 5,00,000 of entry value, in whole shares. One tick of slippage, from nse_market.tick_for, is charged against the trade on the entry and on the exit. NIFTY 50 uses tick_for with symbol NIFTY, so the index tick is 0.05. Stock costs use the india/costs.py intraday schedule. R before is after the tick and before charges. R after is after the tick and the charges. A later bar that opens through the stop fills at the open. Otherwise a touch fills at the stop. The stop is taken before the target when both can fill on the same bar. The entry bar is not scanned for the stop.
+
+NIFTY trades use the NIFTY 50 index bars as the price and one lot of 75 units, not the Rs 2,000 sizer. Futures costs, check your broker: brokerage Rs 20 per order, STT 0.05% on the sell side, exchange 0.00173% on both sides, SEBI 0.0001% on both sides, stamp 0.002% on the buy, GST 18% on brokerage + exchange + SEBI.
+
+Universe for the stock strategies: each day, the 200 symbols with the highest average close times volume over the previous 20 sessions, and the 20 sessions must sit in one segment. Large caps are the top 100 by that same average. NIFTY has no stock book, so its large-cap average is its own average R. Market type is india/research/regime.py, known before the open. The window is 2015-01-01 through 2024-12-31. Dates from 2025-01-01 on are not requested.
+
+Random baseline, 100 seeded runs, seed 20261106 plus an offset per variant. Each run keeps the symbol, the day, the direction, the stop distance and the target distance, and enters at a random bar inside that rule's entry window. Gao's window is the 15:00 bar only. Excess R for a trade is its R after costs minus the mean R of those random entries. The t-statistic is the one-sample t of the mean excess in each calendar month.
+
+Pass mark, fixed before this run: average R after costs and slippage at least +0.10; at least 300 trades on at least 100 distinct days; t vs random above 3; average R after costs above 0 in 2015-2019 and in 2020-2024; above 0 on up, down, and sideways days; above 0 in large caps; and at least 2 of that strategy's 3 variants have t above 2. A value on a stated boundary passes. An empty bucket does not. The attempt 11 mark is unchanged.
+
+1. NIFTY intraday momentum. r1 is the 09:45 close divided by the previous session's last close, minus 1. At the 15:00 bar close, go long if r1 > 0 and short if r1 < 0. Exit at the 15:25 close. There is no stop. R is 0.25% of the entry, for reporting only. Variants: nifty mom always; nifty mom abs 0.25, which also requires |r1| > 0.25%; nifty mom same sign, which also requires r1 and the 15:00 close divided by the 14:30 close, minus 1, to be strictly the same sign.
+
+2. Crabel NR. The signal day is the strict narrowest daily high-low of the last 7 days, or 4, including that day, inside one segment. The next session trades. The opening range is the high and low of bars ending 09:20 through 09:45. Enter on the first 5-minute close beyond that range, either side, on a bar ending 09:50 through 14:30. The stop is the other side of the range. Exit at the 15:10 close. Variants: NR7; NR4; NR7 inside, which also requires the signal day's high to be strictly below the prior high and its low strictly above the prior low.
+
+3. Gaps. The gap is the 09:20 bar's open divided by the previous session's daily close, minus 1. A gap of exactly the threshold counts. gap GO 1.5 and gap GO 3 enter on the first close beyond the 15-minute range (bars ending 09:20 through 09:30) in the gap's direction, on a bar ending 09:35 through 15:05. The stop is the other side of that range. gap FADE 1.5 requires the open to be outside yesterday's high-low. After the first 15 minutes, the first close back inside that range is a fade: short after a gap up, long after a gap down, toward yesterday's close. The stop is the day's extreme through the signal bar. The target is yesterday's close, and the trade is skipped when that target is not beyond the entry. Exit at 15:10 at the latest. Thresholds: 1.5% for GO and FADE, 3% for the third GO.
+
+4. VWAP reversion, only on sideways days. VWAP starts at the 09:20 bar and uses bar volume times typical price (high + low + close) / 3, including the current bar. Between bars ending 10:00 and 14:00, the first close at least X percent below VWAP is a long, and the first close at least X percent above is a short. The target is that bar's VWAP. The stop is the same distance beyond the entry. Exit at 15:10. Variants: vwap 1.5 sideways, vwap 2.0 sideways, vwap 2.5 sideways. A strategy that trades only sideways days has empty up and down buckets.
+
+Reports: trades, distinct days, win rate (share of trades with R after costs above 0), average R before and after costs, t vs random, 2015-2019, 2020-2024, up, down, sideways, large caps, and each year.
+
+Results.
+variant | trades | days | win | R before | R after | t | 2015-19 | 2020-24 | up | down | sideways | large | result
+nifty mom always | 2,429 | 2429 | 38.1% | +0.035 | -0.212 | +0.00 | -0.213 | -0.210 | -0.206 | -0.186 | -0.253 | -0.212 | FAIL
+nifty mom abs 0.25 | 1,420 | 1420 | 40.1% | +0.056 | -0.190 | +0.00 | -0.164 | -0.212 | -0.183 | -0.164 | -0.233 | -0.190 | FAIL
+nifty mom same sign | 1,290 | 1290 | 41.2% | +0.098 | -0.149 | +0.00 | -0.138 | -0.160 | -0.166 | -0.044 | -0.154 | -0.149 | FAIL
+NR7 | 64,448 | 2386 | 44.4% | +0.031 | -0.019 | -22.11 | -0.011 | -0.027 | -0.017 | -0.004 | -0.037 | -0.003 | FAIL
+NR4 | 110,413 | 2409 | 44.4% | +0.027 | -0.022 | -28.39 | -0.017 | -0.028 | -0.022 | -0.006 | -0.036 | -0.007 | FAIL
+NR7 inside | 23,994 | 2307 | 44.8% | +0.038 | -0.012 | -14.46 | -0.005 | -0.019 | -0.006 | +0.016 | -0.057 | +0.008 | FAIL
+gap GO 1.5 | 17,066 | 2229 | 45.8% | +0.048 | +0.011 | -14.35 | +0.010 | +0.011 | +0.014 | -0.031 | +0.042 | +0.043 | FAIL
+gap FADE 1.5 | 10,636 | 2059 | 62.6% | +0.048 | +0.007 | -0.67 | +0.027 | -0.010 | +0.005 | +0.028 | -0.012 | +0.024 | FAIL
+gap GO 3 | 3,834 | 1234 | 50.0% | +0.106 | +0.075 | -6.84 | +0.095 | +0.064 | +0.064 | +0.013 | +0.156 | +0.098 | FAIL
+vwap 1.5 sideways | 22,424 | 429 | 48.1% | -0.038 | -0.082 | +29.08 | -0.084 | -0.079 | n/a | n/a | -0.082 | -0.100 | FAIL
+vwap 2.0 sideways | 11,001 | 429 | 48.5% | -0.034 | -0.073 | +23.91 | -0.084 | -0.062 | n/a | n/a | -0.073 | -0.082 | FAIL
+vwap 2.5 sideways | 5,701 | 423 | 48.8% | -0.021 | -0.056 | +24.34 | -0.076 | -0.036 | n/a | n/a | -0.056 | -0.064 | FAIL
+
+nifty mom always FAIL: avg R after costs -0.212 is below +0.10; t vs random +0.00 is not above 3; 2015-2019 -0.213 is not above 0; 2020-2024 -0.210 is not above 0; up -0.206 is not above 0; down -0.186 is not above 0; sideways -0.253 is not above 0; large caps -0.212 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 -0.123, 2016 -0.184, 2017 -0.249, 2018 -0.207, 2019 -0.292, 2020 -0.264, 2021 -0.154, 2022 -0.182, 2023 -0.230, 2024 -0.222
+nifty mom abs 0.25 FAIL: avg R after costs -0.190 is below +0.10; t vs random +0.00 is not above 3; 2015-2019 -0.164 is not above 0; 2020-2024 -0.212 is not above 0; up -0.183 is not above 0; down -0.164 is not above 0; sideways -0.233 is not above 0; large caps -0.190 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 -0.107, 2016 -0.165, 2017 -0.252, 2018 -0.146, 2019 -0.155, 2020 -0.240, 2021 -0.088, 2022 -0.232, 2023 -0.250, 2024 -0.269
+nifty mom same sign FAIL: avg R after costs -0.149 is below +0.10; t vs random +0.00 is not above 3; 2015-2019 -0.138 is not above 0; 2020-2024 -0.160 is not above 0; up -0.166 is not above 0; down -0.044 is not above 0; sideways -0.154 is not above 0; large caps -0.149 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.058, 2016 -0.089, 2017 -0.225, 2018 -0.142, 2019 -0.262, 2020 -0.209, 2021 -0.097, 2022 -0.007, 2023 -0.178, 2024 -0.305
+NR7 FAIL: avg R after costs -0.019 is below +0.10; t vs random -22.11 is not above 3; 2015-2019 -0.011 is not above 0; 2020-2024 -0.027 is not above 0; up -0.017 is not above 0; down -0.004 is not above 0; sideways -0.037 is not above 0; large caps -0.003 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.005, 2016 +0.019, 2017 -0.013, 2018 -0.011, 2019 -0.049, 2020 -0.040, 2021 +0.002, 2022 -0.001, 2023 -0.061, 2024 -0.035
+NR4 FAIL: avg R after costs -0.022 is below +0.10; t vs random -28.39 is not above 3; 2015-2019 -0.017 is not above 0; 2020-2024 -0.028 is not above 0; up -0.022 is not above 0; down -0.006 is not above 0; sideways -0.036 is not above 0; large caps -0.007 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 -0.002, 2016 +0.004, 2017 -0.017, 2018 -0.020, 2019 -0.044, 2020 -0.045, 2021 -0.012, 2022 -0.005, 2023 -0.055, 2024 -0.024
+NR7 inside FAIL: avg R after costs -0.012 is below +0.10; t vs random -14.46 is not above 3; 2015-2019 -0.005 is not above 0; 2020-2024 -0.019 is not above 0; up -0.006 is not above 0; sideways -0.057 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.002, 2016 +0.031, 2017 -0.008, 2018 +0.003, 2019 -0.047, 2020 -0.028, 2021 -0.003, 2022 +0.005, 2023 -0.036, 2024 -0.031
+gap GO 1.5 FAIL: avg R after costs +0.011 is below +0.10; t vs random -14.35 is not above 3; down -0.031 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.048, 2016 +0.016, 2017 +0.041, 2018 -0.020, 2019 -0.037, 2020 +0.014, 2021 -0.029, 2022 +0.033, 2023 -0.018, 2024 +0.025
+gap FADE 1.5 FAIL: avg R after costs +0.007 is below +0.10; t vs random -0.67 is not above 3; 2020-2024 -0.010 is not above 0; sideways -0.012 is not above 0; family variants with t above 2: 0 of 3, need 2
+  years: 2015 -0.010, 2016 -0.014, 2017 +0.023, 2018 +0.111, 2019 +0.009, 2020 -0.003, 2021 -0.014, 2022 -0.021, 2023 -0.029, 2024 +0.004
+gap GO 3 FAIL: avg R after costs +0.075 is below +0.10; t vs random -6.84 is not above 3; family variants with t above 2: 0 of 3, need 2
+  years: 2015 +0.280, 2016 +0.007, 2017 +0.158, 2018 -0.087, 2019 +0.095, 2020 +0.071, 2021 -0.013, 2022 +0.176, 2023 -0.037, 2024 +0.019
+vwap 1.5 sideways FAIL: avg R after costs -0.082 is below +0.10; 2015-2019 -0.084 is not above 0; 2020-2024 -0.079 is not above 0; up n/a is not above 0; down n/a is not above 0; sideways -0.082 is not above 0; large caps -0.100 is not above 0
+  years: 2015 -0.107, 2016 -0.074, 2017 -0.158, 2018 -0.066, 2019 -0.081, 2020 -0.093, 2022 -0.070, 2023 -0.105, 2024 +0.083
+vwap 2.0 sideways FAIL: avg R after costs -0.073 is below +0.10; 2015-2019 -0.084 is not above 0; 2020-2024 -0.062 is not above 0; up n/a is not above 0; down n/a is not above 0; sideways -0.073 is not above 0; large caps -0.082 is not above 0
+  years: 2015 -0.103, 2016 -0.080, 2017 -0.013, 2018 -0.065, 2019 -0.085, 2020 -0.079, 2022 -0.044, 2023 -0.108, 2024 +0.108
+vwap 2.5 sideways FAIL: avg R after costs -0.056 is below +0.10; 2015-2019 -0.076 is not above 0; 2020-2024 -0.036 is not above 0; up n/a is not above 0; down n/a is not above 0; sideways -0.056 is not above 0; large caps -0.064 is not above 0
+  years: 2015 -0.090, 2016 -0.067, 2017 -0.139, 2018 -0.017, 2019 -0.100, 2020 -0.048, 2022 -0.019, 2023 -0.121, 2024 +0.126
+
+Variants that pass: 0 of 12.
 
 
 ## Forward test

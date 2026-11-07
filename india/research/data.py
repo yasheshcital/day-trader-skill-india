@@ -8,8 +8,10 @@ Daily bars stay daily. Five-minute bars become sessions whose timestamps are
 the bar end, the same five-minute shift as india/backtest.py kite_end_label.
 
 HOLDOUT_START is 2025-01-01. A load whose result contains a bar on or after
-that date raises HoldoutError, unless final=True. final=True prints a notice
-and appends the date, the script and the arguments to HOLDOUT_LOG.md.
+that date raises HoldoutError, unless final=True. final=True prints a notice.
+The first final=True load in a process appends one line, the date and the
+script and the arguments, to HOLDOUT_LOG.md. Later symbols in that run do not
+add another line.
 
 Two exclusions apply by default. The first 20 trading sessions, counting the
 symbol's first date as session 1, are the listing window and are dropped.
@@ -49,6 +51,8 @@ USABLE_MASK = (1 << USABLE_COUNT) - 1
 _HERE = os.path.dirname(os.path.abspath(__file__))
 HOLDOUT_LOG = os.path.join(_HERE, "HOLDOUT_LOG.md")
 CACHE_VERSION = 1
+# Paths already given one holdout line in this process.
+_HOLD_LOGGED_PATHS = set()
 
 
 class DataError(Exception):
@@ -211,6 +215,10 @@ def _guard(symbol, dates, final, log_path):
 
 
 def _append_holdout_log(path):
+    """One line per process for this path. The first final=True load writes it."""
+    if path in _HOLD_LOGGED_PATHS:
+        return
+    _HOLD_LOGGED_PATHS.add(path)
     folder = os.path.dirname(path)
     if folder and not os.path.isdir(folder):
         os.makedirs(folder)

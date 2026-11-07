@@ -72,6 +72,13 @@ class ResearchData(unittest.TestCase):
         self.assertIn("final=True", message)
 
         log_path = os.path.join(root, "HOLDOUT_LOG.md")
+        real = data.HOLDOUT_LOG
+        self.assertNotEqual(os.path.abspath(log_path), os.path.abspath(real))
+        if os.path.isfile(real):
+            with open(real, encoding="utf-8") as fh:
+                real_before = fh.read()
+        else:
+            real_before = None
         buf = io.StringIO()
         with redirect_stdout(buf):
             series = data.load_daily(root, "AAA", final=True, log_path=log_path)
@@ -88,7 +95,13 @@ class ResearchData(unittest.TestCase):
         _daily(quiet, "BBB", [10] * 25, datetime.date(2024, 6, 1))
         before = data.load_daily(quiet, "BBB")
         self.assertTrue(all(day < data.HOLDOUT_START for day in before.dates()))
-        self.assertFalse(os.path.isfile(data.HOLDOUT_LOG))
+        if os.path.isfile(real):
+            with open(real, encoding="utf-8") as fh:
+                real_after = fh.read()
+        else:
+            real_after = None
+        self.assertEqual(real_before, real_after)
+        self.assertFalse(os.path.isfile(real) and real_before is None)
 
     def test_first_20_sessions_are_excluded(self):
         root = tempfile.mkdtemp()

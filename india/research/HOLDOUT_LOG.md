@@ -500,3 +500,5 @@ date	script	arguments
 2026-11-06 20:16:44	india/research/survivorship.py	--holdout
 2026-11-06 20:16:44	india/research/survivorship.py	--holdout
 2026-11-06 20:16:46	india/research/survivorship.py	--holdout
+
+2026-11-06 lines = one run of survivorship.py --holdout (one line per symbol, logger fixed in Step 19)
