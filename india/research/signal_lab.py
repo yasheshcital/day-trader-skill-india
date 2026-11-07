@@ -608,9 +608,9 @@ def score_slots(slots, by_month, runs, seed, start=START, end=END, log=None):
     return rows
 
 
-def load_symbol(root, symbol, end=END):
-    """Daily segments through `end`. The holdout is not requested."""
-    series = data.load_arrays(root, symbol, "day", end=end)
+def load_symbol(root, symbol, end=END, final=False, log_path=None):
+    """Daily segments through `end`. The holdout stays out unless final=True."""
+    series = data.load_arrays(root, symbol, "day", final=final, log_path=log_path, end=end)
     segments = []
     for segment in series.segments:
         if segment:
@@ -618,7 +618,7 @@ def load_symbol(root, symbol, end=END):
     return segments
 
 
-def _books(root, end, log):
+def _books(root, end, log, final=False, log_path=None):
     emit = log or (lambda line: None)
     names = []
     loaded = []
@@ -627,7 +627,7 @@ def _books(root, end, log):
         if symbol.startswith("NIFTY"):
             continue
         try:
-            series = data.load_arrays(root, symbol, "day", end=end)
+            series = data.load_arrays(root, symbol, "day", final=final, log_path=log_path, end=end)
         except data.DataError:
             continue
         dates = []

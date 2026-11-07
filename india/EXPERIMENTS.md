@@ -334,6 +334,68 @@ faber 12m | +10.326% | -38.082% | 0.271 | -28.891% | -0.288% | -1.03 | -0.302% |
 Variants that pass: 1 of 12.
 
 
+### Survivorship calibration
+
+PASS in-sample, but inflated by survivorship bias; real NIFTY200 Momentum 30 TRI: 18.8% CAGR vs NIFTY 50 TRI 13.6% since Apr 2005 (HDFC MF, Jul 2026)
+
+Price indices only. Dividends are excluded. Our momentum book is monthly and equal weight, with no volatility scaling and no 5% caps. The published NIFTY200 Momentum 30 index is a different portfolio. CAGR below is close-to-close on the shared sessions, annualised with 365.25-day years. The attempt 11 pass mark is unchanged.
+
+Random K=30 books: 100 runs, seed 20265106. These are the attempt 11 random draws for mom 12-1 K30.
+NIFTY 200 overlap: 2005-01-03 to 2024-12-31 (4960 sessions).
+Random K=30 mean CAGR +19.388%. NIFTY 200 CAGR +13.010%. Survivorship bias (random minus NIFTY 200) +6.377%.
+
+mom 12-1 K30 overlap with NIFTY200MOMENTM30: 2005-05-02 to 2024-12-31 (4865 sessions).
+mom 12-1 K30 CAGR +32.365%. NIFTY200MOMENTM30 price CAGR +19.852%.
+mom 12-1 K30 CAGR minus the NIFTY 200 survivorship bias: +25.987%, next to NIFTY200MOMENTM30 +19.852%.
+
+year | bias (random K=30 minus NIFTY 200) | mom 12-1 K30 | that year minus the bias | NIFTY200MOMENTM30
+2005 | +21.037% | +78.021% | +56.985% | +49.759%
+2006 | +61.277% | +123.009% | +61.733% | +42.596%
+2007 | +5.864% | +122.681% | +116.817% | +99.260%
+2008 | -2.889% | -66.104% | -63.215% | -60.354%
+2009 | +55.961% | +84.532% | +28.571% | +67.219%
+2010 | +6.489% | +27.674% | +21.185% | +18.362%
+2011 | -2.968% | -19.205% | -16.236% | -17.311%
+2012 | +8.570% | +55.300% | +46.730% | +37.141%
+2013 | -6.157% | +13.842% | +19.999% | +11.584%
+2014 | +23.471% | +100.875% | +77.404% | +47.905%
+2015 | -2.645% | +8.920% | +11.565% | +9.918%
+2016 | +8.833% | +5.061% | -3.772% | +8.506%
+2017 | +8.843% | +79.551% | +70.708% | +54.472%
+2018 | -11.693% | -4.547% | +7.146% | -2.446%
+2019 | -12.198% | +11.892% | +24.090% | +9.737%
+2020 | +8.434% | +34.856% | +26.422% | +18.831%
+2021 | +14.225% | +85.803% | +71.578% | +52.143%
+2022 | -5.202% | +0.319% | +5.521% | -6.401%
+2023 | +20.661% | +65.282% | +44.621% | +40.667%
+2024 | +6.111% | +34.378% | +28.268% | +20.006%
+
+
+### Holdout of mom 12-1 K20 above200
+
+One holdout run of mom 12-1 K20 above200, logged with final=True. Window 2025-01-01 to 2026-11-04 (457 sessions). The book is the attempt 11 rule: monthly 12-1 momentum, K=20, held only when the NIFTY month-end close is above its 200-day average, otherwise the book is NIFTY 50. Idle cash is in the NIFTY 50 price. Delivery costs apply to stock buys and sells. Dividends are excluded. CAGR is annualised with 365.25-day years. The attempt 11 rule is unchanged.
+
+mom 12-1 K20 above200: CAGR +1.865%, max drawdown -15.816%, mean monthly excess vs NIFTY 50 +0.115% over 23 months.
+NIFTY 50 over the same dates: CAGR +0.740%, max drawdown -15.560%.
+NIFTY200MOMENTM30 over 2025-01-01 to 2026-11-04 (457 sessions): CAGR -5.057%, max drawdown -22.412%, mean monthly excess of the book vs this index +0.506%.
+
+The same survivorship comparison on this window:
+
+Price indices only. Dividends are excluded. Our momentum book is monthly and equal weight, with no volatility scaling and no 5% caps. The published NIFTY200 Momentum 30 index is a different portfolio. CAGR below is close-to-close on the shared sessions, annualised with 365.25-day years. The attempt 11 pass mark is unchanged.
+
+Random K=30 books: 100 runs, seed 20265106. These are the attempt 11 random draws for mom 12-1 K30.
+NIFTY 200 overlap: 2025-01-01 to 2026-11-04 (457 sessions).
+Random K=30 mean CAGR +1.161%. NIFTY 200 CAGR +1.006%. Survivorship bias (random minus NIFTY 200) +0.155%.
+
+mom 12-1 K30 overlap with NIFTY200MOMENTM30: 2025-01-01 to 2026-11-04 (457 sessions).
+mom 12-1 K30 CAGR +6.182%. NIFTY200MOMENTM30 price CAGR -5.197%.
+mom 12-1 K30 CAGR minus the NIFTY 200 survivorship bias: +6.027%, next to NIFTY200MOMENTM30 -5.197%.
+
+year | bias (random K=30 minus NIFTY 200) | mom 12-1 K30 | that year minus the bias | NIFTY200MOMENTM30
+2025 | -5.227% | -2.373% | +2.854% | -5.359%
+2026 | +5.205% | +14.382% | +9.177% | -4.218%
+
+
 ## Forward test
 
 Started 2026-11-04, before any forward data. This section records the live paper rule. It is not an in-sample result, and no forward numbers are filled in here.
