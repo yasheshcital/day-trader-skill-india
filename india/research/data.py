@@ -251,12 +251,13 @@ def _clip(segments, start, end):
     return out
 
 
-def _prepare(symbol, items, final, log_path, start=None, end=None):
+def _prepare(symbol, items, final, log_path, start=None, end=None, guard=True):
     """Drop the listing window, record breaks, split the rest, then apply the holdout.
 
     start and end are inclusive. They are applied after the listing cut, so a
     request for 2015-2024 does not drop the first 20 days of 2015, and it does
-    not return a bar on or after the holdout.
+    not return a bar on or after the holdout. guard=False skips that check and
+    does not write the holdout log.
     """
     ordered = sorted(items, key=lambda item: item["date"])
     points = [(item["date"], item["close"]) for item in ordered]
@@ -268,7 +269,8 @@ def _prepare(symbol, items, final, log_path, start=None, end=None):
     for segment in segments:
         for item in segment:
             dates.append(item["date"])
-    _guard(symbol, dates, final, log_path)
+    if guard:
+        _guard(symbol, dates, final, log_path)
     return segments, excluded
 
 
@@ -384,7 +386,7 @@ def _read_symbol(root, interval, symbol, cache_root=None):
     return bars
 
 
-def load_daily(root, symbol, final=False, log_path=None, start=None, end=None, cache_root=None):
+def load_daily(root, symbol, final=False, log_path=None, start=None, end=None, cache_root=None, guard=True):
     """One symbol's daily bars. Listing days are gone and breaks split the rest."""
     by_date = {}
     for bar in _read_symbol(root, "day", symbol, cache_root):
@@ -396,7 +398,7 @@ def load_daily(root, symbol, final=False, log_path=None, start=None, end=None, c
             "close": bar["close"],
             "volume": bar["volume"],
         }
-    segments, excluded = _prepare(symbol, list(by_date.values()), final, log_path, start, end)
+    segments, excluded = _prepare(symbol, list(by_date.values()), final, log_path, start, end, guard)
     return Series(symbol, "day", segments, excluded)
 
 
@@ -424,14 +426,14 @@ def _sessions(bars):
     return sessions
 
 
-def load_sessions(root, symbol, final=False, log_path=None, start=None, end=None, cache_root=None):
+def load_sessions(root, symbol, final=False, log_path=None, start=None, end=None, cache_root=None, guard=True):
     """One symbol's 5-minute sessions. Bar timestamps are the bar end."""
     sessions = _sessions(_read_symbol(root, "5minute", symbol, cache_root))
-    segments, excluded = _prepare(symbol, sessions, final, log_path, start, end)
+    segments, excluded = _prepare(symbol, sessions, final, log_path, start, end, guard)
     return Series(symbol, "5minute", segments, excluded)
 
 
-def load_arrays(root, symbol, interval, final=False, log_path=None, start=None, end=None, cache_root=None):
+def load_arrays(root, symbol, interval, final=False, log_path=None, start=None, end=None, cache_root=None, guard=True):
     """One symbol as per-session arrays. Same listing cut, breaks, and holdout.
 
     This is the bulk reader. Expanding every bar into a dict is what load_sessions
@@ -446,7 +448,7 @@ def load_arrays(root, symbol, interval, final=False, log_path=None, start=None, 
             "close": session["close"][-1],
             "session": session,
         })
-    segments, excluded = _prepare(symbol, items, final, log_path, start, end)
+    segments, excluded = _prepare(symbol, items, final, log_path, start, end, guard)
     return Series(symbol, interval, segments, excluded)
 
 
@@ -573,6 +575,50 @@ def symbols_in(root):
                 continue
             found.add(name[:-len(".csv.gz")])
     return sorted(found)
+
+
+def read_daily_bars(root, symbol):
+    """Daily bars as stored. No listing cut, no holdout check, and no log write."""
+    return _read_symbol(root, "day", symbol)
+
+
+def _option_volume(row):
+    text = row.get("volume") or ""
+    if text == "":
+        return 0.0
+    return float(text)
+
+
+def _option_rows(path):
+    with gzip.open(path, "rt", encoding="utf-8", newline="") as fh:
+        for row in csv.DictReader(fh):
+            yield row
+
+
+def load_option_bars(path):
+    """Bars from one option file. Every bar with volume 0 is dropped."""
+    out = []
+    for row in _option_rows(path):
+        volume = _option_volume(row)
+        if not volume > 0:
+            continue
+        out.append({
+            "date": datetime.date.fromisoformat(row["datetime_start_ist"][:10]),
+            "open": float(row["open"]),
+            "high": float(row["high"]),
+            "low": float(row["low"]),
+            "close": float(row["close"]),
+            "volume": volume,
+        })
+    return out
+
+
+def first_traded(path):
+    """First date with volume above 0, or None when every bar is volume 0."""
+    for row in _option_rows(path):
+        if _option_volume(row) > 0:
+            return datetime.date.fromisoformat(row["datetime_start_ist"][:10])
+    return None
 
 
 def off_by_more_than_half_percent(day_close, minute_close):

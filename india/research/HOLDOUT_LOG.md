@@ -507,3 +507,4 @@ date	script	arguments
 2026-11-07 18:15:48	india/research/batch17.py	
 2026-11-07 AlgoTest NIFTY short straddle/strangle family (S1-S3), holdout used
 2026-11-08 10:22:31	india/research/batch18.py	
+2026-11-08 11:02:35	india/research/batch19.py	

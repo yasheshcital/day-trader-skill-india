@@ -323,14 +323,14 @@ def _apply_week_random(trades, runs, seed):
             trade["excess"] = None
 
 
-def load_sectors(root, end, final):
+def load_sectors(root, end, final, guard=True):
     """Sector index segments. A missing file is skipped."""
     loaded = {}
     closes = {}
     located = {}
     for name in ROTATION:
         try:
-            segments = lab.load_symbol(root, name, end=end, final=final)
+            segments = lab.load_symbol(root, name, end=end, final=final, guard=guard)
         except data.DataError:
             continue
         if not segments:
@@ -349,12 +349,12 @@ def load_sectors(root, end, final):
     return loaded, closes, located
 
 
-def prepare_context(root, end, log, final):
+def prepare_context(root, end, log, final, guard=True):
     emit = log or (lambda line: None)
-    ctx = h.load_context(root, start=f.SWING_START, end=end, log=emit, final=final)
+    ctx = h.load_context(root, start=f.SWING_START, end=end, log=emit, final=final, guard=guard)
     for symbol in ctx["loaded"]:
         f.attach_indicators(symbol["segments"])
-    _loaded, closes, located = load_sectors(root, end, final)
+    _loaded, closes, located = load_sectors(root, end, final, guard=guard)
     ctx["sector_close"] = closes
     ctx["sector_at"] = located
     emit("sector indices %d" % len(closes))

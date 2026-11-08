@@ -103,6 +103,9 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 18 | bank overnight | FAIL | avg +0.037%, monthly t +2.14 |
 | 18 | bank intraday | FAIL | avg -0.125%, monthly t -5.71 |
 | 18 | pre-holiday | FAIL | avg +0.112%, monthly t +0.88, events 198 |
+| 19 | 2026-11-08 | nifty basis 5d. | attempt 19, rules fixed before the run | 2011-01-01 to 2024-12-31 | 209 | +0.553% | +4.38 | PASS |
+| 19 | 2026-11-08 | holdout nifty basis 5d. | same rule, one logged load | 2025-01-01 to 2026-11-04 | 32 | +0.151% | +1.02 | FAIL |
+| 19 | 2026-11-08 | stock basis z10. | attempt 19, rules fixed before the run | 2011-01-01 to 2024-12-31 | 658 | +0.163% | +1.07 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1331,6 +1334,103 @@ bank intraday | 2458 | -0.125% | -5.71 | 2015-2019 -0.134% | 2020-2024 -0.116% |
 18c Pre-holiday. t bar above 3 because events are 198.
 pre-holiday | 198 | +0.112% | +0.88 | 2010-2014 +0.210% | 2015-2024 +0.066% | +0.059% | +0.092% | +0.361% | FAIL
   monthly t +0.88 is not above 3
+
+Bucket: empty
+
+
+## Forward book v1
+
+Rules fixed on 2026-11-08, before the blend.
+
+Research window 2005-01-01 to 2024-12-31. final stays false. No pass mark and no holdout.
+
+The six books are rsi2 < 5, m2 regime, rel rsi5, rel rsi5 stock10, tom rsi20, and mom 12-1 K20 above200. Capital is Rs 10,00,000. Idle cash sits in NIFTY 50 with no cost on that sleeve.
+
+rsi2 < 5, m2 regime, rel rsi5 and rel rsi5 stock10 use the 10-slot book. Each slot is Rs 1,00,000. Delivery costs. The signal is the existing rule, known at the close. Entry is the next open. Exit is the next open after a close above SMA5, otherwise the open 5 sessions after entry. A day with more signals than free slots fills the lowest RSI first, then the higher prior 60-session turnover, then the name. For the two relative books that sort value is the relative RSI. m2 keeps a trade only when the entry-day regime is up or sideways. An exit that is not a NIFTY session moves to the next session. A name already held is skipped.
+
+tom rsi20 holds the basket from the entry close to the exit close. The window is the close of the session before the last session of the month through the close of the third session of the next month. The names are the 20 lowest RSI(2) in that day's top 200 whose close is strictly above SMA200. Equal weight. Rs 10,00,000 is split across the names that have both closes. Delivery costs. The book is entirely in NIFTY outside the window. Windows do not overlap.
+
+mom 12-1 K20 above200 is the harness portfolio: 20 names, above the 200-session average, delivery costs, idle cash in NIFTY. No random books.
+
+A monthly return is the month-end equity over the prior month-end, minus 1, in percent. The first month starts from capital. Every month-end in 2005 through 2024 is a point, including a month that holds only NIFTY. The correlation is the Pearson correlation of those percent returns on the months both books have. Pearson needs at least 3 months and a non-zero variance on each side, otherwise that pair is missing.
+
+The blend month is the mean of the members' monthly returns. The equity curve starts at 1 and compounds those months. CAGR percent is (final to the power of 12 over the number of months, minus 1) times 100. Max drawdown is the deepest peak-to-equity drop of that curve, in percent. The worst calendar year is the lowest compounded calendar-year return. A year with fewer than 12 months still counts. The share of positive years counts a year only when its compounded return is strictly above 0.
+
+One blend is the equal weight of all 6. The other is the equal weight of the 3 least correlated. Among the 20 trios, the choice is the lowest average of the three pairwise correlations. A tie breaks on the alphabetical sorted name tuple, compared as (average, tuple). A trio with a missing correlation is left out.
+
+Forward record. Sessions of NIFTY 50 strictly after 2026-11-04. A date on or before that day is refused. For rsi2 < 5, m2 regime, rel rsi5, rel rsi5 stock10 and tom rsi20, a trade counts when its entry is after that day. The average is the mean of those after-cost trade returns and the t is their one-sample t. Fewer than 2 leaves t blank. For mom 12-1 K20 above200 the points are the daily book returns on sessions after that day. The first of those uses the prior session's equity as its base, and the cutoff session is not a point. Forward book v1 is the equal-weight mean of the three constituents' book daily returns. A session counts only when all three have a return. The count is the number of trades, or the number of sessions for the momentum book and for Forward book v1. The three names are frozen on the line below. They are not estimated again. Nothing in the record places an order.
+
+Constituents: mom 12-1 K20 above200, rel rsi5, tom rsi20.
+
+
+Blend results.
+
+correlation | rsi2 < 5 | m2 regime | rel rsi5 | rel rsi5 stock10 | tom rsi20 | mom 12-1 K20 above200
+rsi2 < 5 | 1.00 | +1.00 | +0.98 | +0.99 | +0.98 | +0.75
+m2 regime | +1.00 | 1.00 | +0.98 | +0.99 | +0.98 | +0.75
+rel rsi5 | +0.98 | +0.98 | 1.00 | +0.99 | +0.96 | +0.72
+rel rsi5 stock10 | +0.99 | +0.99 | +0.99 | 1.00 | +0.97 | +0.74
+tom rsi20 | +0.98 | +0.98 | +0.96 | +0.97 | 1.00 | +0.75
+mom 12-1 K20 above200 | +0.75 | +0.75 | +0.72 | +0.74 | +0.75 | 1.00
+
+book | CAGR | max DD | worst year | positive years
+rsi2 < 5 | +14.776% | -55.826% | 2008 -52.505% | 18/20
+m2 regime | +14.728% | -55.317% | 2008 -52.008% | 17/20
+rel rsi5 | +15.189% | -55.184% | 2008 -51.754% | 18/20
+rel rsi5 stock10 | +14.947% | -53.876% | 2008 -50.411% | 17/20
+tom rsi20 | +15.082% | -57.348% | 2008 -53.286% | 17/20
+mom 12-1 K20 above200 | +35.426% | -65.638% | 2008 -63.093% | 17/20
+equal weight of 6 | +18.434% | -57.290% | 2008 -53.961% | 17/20
+equal weight of 3 (mom 12-1 K20 above200, rel rsi5, tom rsi20) | +22.017% | -59.483% | 2008 -56.197% | 17/20
+least-3 average correlation +0.809
+
+
+## Attempt 19
+
+Rules fixed on 2026-11-08, before the run.
+
+Family: futures basis. This is a new family. Its holdout stays unused until a variant passes in sample.
+
+Data: data/kite/futures/day, the continuous series, one file per underlying. Scored trades enter on 2011-01-01 through 2024-12-31. Bars from 2010 may warm the lookback. The file has no expiry column and open interest is not used. A futures bar is kept when its open and its close are both above 0. Volume is not a filter on these files. Spot is the day close. NIFTY futures use the NIFTY 50 day file. A future with no spot series is skipped. The stock cross-section leaves out NIFTY, BANKNIFTY, FINNIFTY, MIDCPNIFTY, NIFTYNXT50 and NIFTYFPI.
+
+Expiry, stated before the run. For a session date, the front month is this month's expiry when the session is on or before that expiry, and the next month otherwise. The monthly expiry is the last Thursday of the month for expiry months through 2025-08, and the last Tuesday of the month from 2025-09 on. When that weekday is a NIFTY session, it is the expiry. When it is not a session and it falls on or before the last date in the NIFTY calendar, the previous NIFTY session is the expiry. When the raw weekday falls after the last calendar date, the raw weekday is kept and is not pulled back into the file. Days to expiry below 1 leave the basis undefined, including the expiry day itself. Annualised basis is (future close / spot close - 1) times (365 / days). The year is 365 days, not 365.25. A price that is not above 0 is skipped.
+
+Costs, check your broker. The attempt 16 futures schedule: brokerage Rs 20 a side, STT 0.05 percent of the sell, exchange 0.00173 percent, SEBI 0.0001 percent, stamp 0.002 percent of the buy, GST 18 percent of brokerage plus exchange plus SEBI. A rollover is one extra round trip for each month-start strictly after the entry and on or before the exit. NIFTY uses lot 75. The continuous file does not carry a stock's lot, so each stock name is sized at Rs 1,00,000 of futures notional.
+
+19a, nifty basis 5d. Long NIFTY futures for 5 sessions when today's annualised basis is at or below the 50th smallest of the previous 250 defined readings of this series. That 50th value is the top of the lowest 20 percent of 250. The 250 readings do not include today. Otherwise the book is flat, and a new signal is ignored until the open position exits. The signal is known at the close. Entry is the next session's future open. Exit is the open 5 sessions later, so a signal at index i enters at i+1 and exits at i+6. A trade whose exit is past the loaded series, or whose exit date is after 2024-12-31, is not recorded. The entry must fall in 2011-01-01 through 2024-12-31. The session calendar is the dates present in both the NIFTY future file and the NIFTY 50 spot.
+
+19b, stock basis z10. Each Monday from 2011-01-01 whose next Monday session is on or before 2024-12-31. A Monday that is not a NIFTY session is already absent. The signal day is the NIFTY session immediately before that Monday. The z-score is the basis that day, minus the mean of the prior 60 defined readings of that name, divided by the sample standard deviation of those 60. The 60 do not include the signal day. A name with fewer than 60 prior readings, a standard deviation of 0, or no defined basis that day is skipped. Long the 10 lowest z-scores among names that also have a future open on both Mondays. A tie breaks on the name. Fewer than 10 qualifying names skips the week. Entry is Monday's future open and exit is the next Monday session's future open. Equal weight. Excess is the basket's after-cost return minus the equal-weight after-cost return of every stock future that has both opens that week, including names without a z-score and including the 10 that were chosen. A week with fewer than 2 priced names stays in the average and stays out of the t.
+
+Pass, the attempt 14 shape with these clauses only. The after-cost average of the strategy's own return is above 0. The monthly t is above 3. The mean own return is positive in 2011-2017, in 2018-2024, and in up, down and sideways. An empty bucket fails. There is no large-cap clause and no family gate. Each variant is judged on its own. For 19a the monthly t is the one-sample t of the monthly means of the after-cost trade returns. For 19b the monthly t is the one-sample t of the monthly means of the excess, and the average that must be above 0 is the basket's own return. The regime is the NIFTY daily regime of the entry date. The decades use the entry year.
+
+Holdout, only for a variant that passes. One load, logged, from 2025-01-01 through the last NIFTY daily date. Futures bars through that date are read directly, so the 250 and 60 lookbacks have their warmup, and a trade with an entry before 2025-01-01 is dropped. Holdout pass is an after-cost average above 0 and a t above 2. For 19a that t is the monthly t of the after-cost returns. For 19b it is the monthly t of the excesses. The in-sample bar of t above 3 is not applied again. If neither variant passes, the holdout is not opened.
+
+The research window keeps final false.
+
+Results.
+
+Options hygiene. Volume 0 is dropped. first_traded is the first date with volume above 0.
+long-dated contracts 12 (file starts before 2026-08-01)
+symbol | file start | first traded
+NIFTY26DEC23000CE | 2022-01-04 | 2022-01-12
+NIFTY26DEC23000PE | 2022-01-04 | 2022-04-12
+NIFTY26DEC24000CE | 2022-11-28 | 2025-02-12
+NIFTY26DEC24000PE | 2022-11-28 | 2024-06-26
+NIFTY26DEC25000CE | 2023-07-17 | 2024-12-20
+NIFTY26DEC25000PE | 2023-07-17 | 2024-11-25
+NIFTY26DEC25500CE | 2025-12-31 | 2026-01-14
+NIFTY26DEC25500PE | 2025-12-31 | 2026-01-12
+NIFTY26DEC26000CE | 2023-12-05 | 2025-02-13
+NIFTY26DEC26000PE | 2023-12-05 | 2024-09-25
+NIFTY26DEC27000CE | 2023-12-28 | 2025-03-05
+NIFTY26DEC27000PE | 2023-12-28 | 2025-04-22
+
+19 futures basis.
+name | n | avg | monthly t | 2011-2017 | 2018-2024 | up | down | sideways | result
+nifty basis 5d | 209 | +0.553% | +4.38 | +0.543% | +0.562% | +0.443% | +1.304% | +0.089% | PASS
+  holdout 2025-01-01 to 2026-11-04 FAIL avg +0.151% t +1.02
+stock basis z10 | 658 | +0.163% | +1.07 | +0.124% | +0.198% | +0.064% | +0.524% | +0.245% | FAIL
+  monthly t +1.07 is not above 3
 
 Bucket: empty
 

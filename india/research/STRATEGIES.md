@@ -25,6 +25,7 @@ Each family gets one holdout look. A later variant of a family that has used its
 | options selling | yes |
 | overnight | yes |
 | pre-holiday | no |
+| futures basis | yes |
 
 ## Bucket
 
@@ -44,6 +45,7 @@ In-sample PASS, holdout average after costs above 0, t not above 2. An in-sample
 | rel rsi5 stock10 | 17 | PASS Holdout FAIL, avg +0.217%, t -0.15. |
 | tom rsi20 | 17 | PASS Holdout FAIL, avg +0.236%, t +0.29. |
 | S2 ATM straddle 50% SL | 17-A | slippage-sensitive; BANKNIFTY weekly discontinued |
+| nifty basis 5d | 19 | PASS Holdout FAIL, avg +0.151%, t +1.02. |
 
 
 ## Investing
@@ -101,6 +103,7 @@ Tested and not in a bucket above.
 | bank overnight | 18 | FAIL |
 | bank intraday | 18 | FAIL |
 | pre-holiday | 18 | FAIL |
+| stock basis z10 | 19 | FAIL |
 
 
 ## Sources

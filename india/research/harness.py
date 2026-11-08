@@ -961,13 +961,13 @@ def nifty_above(points, n=200):
     return out
 
 
-def load_context(root, start=START, end=END, warmup=WARMUP, log=None, final=False, log_path=None):
+def load_context(root, start=START, end=END, warmup=WARMUP, log=None, final=False, log_path=None, guard=True):
     emit = log or (lambda line: None)
-    loaded, books = lab._books(root, end, emit, final=final, log_path=log_path)
+    loaded, books = lab._books(root, end, emit, final=final, log_path=log_path, guard=guard)
     for symbol in loaded:
         for seg in symbol["segments"]:
             prepare(seg)
-    segments = lab.load_symbol(root, lab.NIFTY, end=end, final=final, log_path=log_path)
+    segments = lab.load_symbol(root, lab.NIFTY, end=end, final=final, log_path=log_path, guard=guard)
     nifty = {}
     points = []
     for seg_i, seg in enumerate(segments):
