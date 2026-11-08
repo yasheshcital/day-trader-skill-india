@@ -6,6 +6,26 @@ Dividends are excluded. Nothing here places an order.
 
 Tiers are filled from the attempt results. Bucket means an in-sample PASS and a holdout PASS. Watch means an in-sample PASS whose holdout average after costs is positive and whose holdout t is not above 2. Investing is a real edge kept for the later investing phase. Near-miss is close and closed is the rest. The source table below is the bibliography.
 
+Each family gets one holdout look. A later variant of a family that has used its look is judged on the in-sample result plus new months of data only. It is not given another look at the same holdout window.
+
+## Families
+
+| Family | Holdout used |
+|---|---|
+| opening-range breakout | no |
+| single technical signal | no |
+| momentum | yes |
+| rsi2 | yes |
+| pairs | no |
+| holy grail | no |
+| calendar | no |
+| sector-relative rsi | yes |
+| turn of the month | yes |
+| sector rotation | no |
+| options selling | yes |
+| overnight | yes |
+| pre-holiday | no |
+
 ## Bucket
 
 In-sample PASS and holdout PASS.
@@ -14,12 +34,17 @@ None yet.
 
 ## Watch
 
-In-sample PASS, holdout average after costs above 0, t not above 2.
+In-sample PASS, holdout average after costs above 0, t not above 2. An in-sample pass whose family has already used its one holdout look waits here for new months.
 
 | Name | Attempt | Note |
 |---|---|---|
 | rsi2 < 5 | 14, 15 | In-sample PASS. Holdout average after costs +0.327% and excess t +1.42. |
 | m2 regime | 16 | PASS Holdout FAIL, avg +0.079%, t +0.78. |
+| rel rsi5 | 17 | PASS Holdout FAIL, avg +0.038%, t -0.24. |
+| rel rsi5 stock10 | 17 | PASS Holdout FAIL, avg +0.217%, t -0.15. |
+| tom rsi20 | 17 | PASS Holdout FAIL, avg +0.236%, t +0.29. |
+| S2 ATM straddle 50% SL | 17-A | slippage-sensitive; BANKNIFTY weekly discontinued |
+
 
 ## Investing
 
@@ -37,6 +62,7 @@ Close to a pass, and not in the buckets above.
 |---|---|---|
 | rev K20 | 14 | Cleared every attempt 14 clause except the family gate, 1 of 3 with t above 2. |
 | Faber timing | 11 | faber 10m, faber 8m and faber 12m. The monthly t was negative. |
+| tom (turn of the month) | 16 | Average after costs +0.556% and monthly t +2.41. Positive in both decades and in up, down and sideways. t is not above 3, and the family was 1 of 3. |
 
 ## Closed
 
@@ -59,11 +85,23 @@ Tested and not in a bucket above.
 | grail adx30 | 16 | FAIL |
 | grail adx25 | 16 | FAIL |
 | grail adx30 sma200 | 16 | FAIL |
-| tom | 16 | FAIL |
 | expiry week | 16 | FAIL |
 | after expiry | 16 | FAIL |
 | m1 momentum | 16 | FAIL |
 | m3 book | 16 | FAIL |
+| rel rsi10 | 17 | PASS Holdout FAIL, avg -0.079%, t -0.88. |
+| tom nifty | 17 | FAIL |
+| tom mom20 | 17 | FAIL |
+| sector 4w | 17 | FAIL |
+| sector 8w | 17 | FAIL |
+| sector 13w | 17 | FAIL |
+| S4 iron fly OTM8 | 17-A | In-sample net Rs -2.39L, t -2.90. No holdout. |
+| nifty overnight | 18 | PASS Holdout FAIL, avg -0.041%, t -1.02. |
+| nifty intraday | 18 | FAIL |
+| bank overnight | 18 | FAIL |
+| bank intraday | 18 | FAIL |
+| pre-holiday | 18 | FAIL |
+
 
 ## Sources
 

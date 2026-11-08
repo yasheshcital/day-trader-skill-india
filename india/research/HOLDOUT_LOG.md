@@ -504,3 +504,6 @@ date	script	arguments
 2026-11-06 lines = one run of survivorship.py --holdout (one line per symbol, logger fixed in Step 19)
 2026-11-07 14:51:41	india/research/verify.py	
 2026-11-07 15:43:49	india/research/batch16.py	
+2026-11-07 18:15:48	india/research/batch17.py	
+2026-11-07 AlgoTest NIFTY short straddle/strangle family (S1-S3), holdout used
+2026-11-08 10:22:31	india/research/batch18.py	

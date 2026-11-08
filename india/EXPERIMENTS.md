@@ -79,6 +79,30 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 16 | 2026-11-07 | m2 regime. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | 28,851 | +0.600% | +21.17 | PASS |
 | 16 | 2026-11-07 | m3 book. | attempt 16, rules fixed before the run | 2005-01-01 to 2024-12-31 | see section | +15.184% | +1.80 | FAIL |
 | 16 | 2026-11-07 | holdout m2 regime. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 1,603 | +0.079% | +0.78 | FAIL |
+| 17 | 2026-11-07 | rel rsi5. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 25,300 | +0.404% | +19.63 | PASS |
+| 17 | 2026-11-07 | rel rsi10. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 50,494 | +0.334% | +21.58 | PASS |
+| 17 | 2026-11-07 | rel rsi5 stock10. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 13,116 | +0.634% | +17.33 | PASS |
+| 17 | 2026-11-07 | tom nifty. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 239 | +0.556% | +2.41 | FAIL |
+| 17 | 2026-11-07 | tom mom20. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 238 | +1.213% | +2.14 | FAIL |
+| 17 | 2026-11-07 | tom rsi20. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 239 | +1.238% | +4.90 | PASS |
+| 17 | 2026-11-07 | sector 4w. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 988 | +0.223% | +1.65 | FAIL |
+| 17 | 2026-11-07 | sector 8w. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 988 | +0.197% | +1.32 | FAIL |
+| 17 | 2026-11-07 | sector 13w. | attempt 17, rules fixed before the run | 2005-01-01 to 2024-12-31 | 988 | +0.193% | +1.36 | FAIL |
+| 17 | 2026-11-07 | holdout rel rsi5. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 1,731 | +0.038% | -0.24 | FAIL |
+| 17 | 2026-11-07 | holdout rel rsi10. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 3,572 | -0.079% | -0.88 | FAIL |
+| 17 | 2026-11-07 | holdout rel rsi5 stock10. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 1,055 | +0.217% | -0.15 | FAIL |
+| 17 | 2026-11-07 | holdout tom rsi20. | same rule, final=True once | 2025-01-01 to the last NIFTY date | 22 | +0.236% | +0.29 | FAIL |
+| 18 | rsi2 < 5 | decay stable, slope +0.0489, t +0.89 |
+| 18 | m2 regime | decay stable, slope +0.0472, t +0.87 |
+| 18 | rel rsi5 | decay stable, slope +0.0130, t +0.33 |
+| 18 | rel rsi5 stock10 | decay stable, slope +0.0490, t +0.94 |
+| 18 | tom rsi20 | decay stable, slope +0.0759, t +0.60 |
+| 18 | mom 12-1 K20 above200 | decay stable, slope +3.3931, t +0.84 |
+| 18 | nifty overnight | PASS | avg +0.059%, monthly t +3.99 |
+| 18 | nifty intraday | FAIL | avg -0.137%, monthly t -10.15 |
+| 18 | bank overnight | FAIL | avg +0.037%, monthly t +2.14 |
+| 18 | bank intraday | FAIL | avg -0.125%, monthly t -5.71 |
+| 18 | pre-holiday | FAIL | avg +0.112%, monthly t +0.88, events 198 |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -959,6 +983,356 @@ Tested and not in a bucket above.
 | Turn of the month | Ariel (1987), Journal of Financial Economics | daily, around month-end | not started | |
 | F&O expiry week | NSE monthly derivatives expiry, the last Thursday. An India calendar effect | daily, expiry week | not started | |
 | Volatility-regime switching | Hamilton (1989); Moreira and Muir (2017), "Volatility-Managed Portfolios" | daily to monthly | not started | |
+
+
+## Attempt 17
+
+Rules fixed on 2026-11-07, before the run.
+
+Three families on daily bars, 2005-01-01 through 2024-12-31. No 5-minute bars are used. Each family gets one holdout look. Momentum has used its look (attempt 11) and the rsi2 family has used its look (attempt 15). Every other family, including the three below, has not. A PASS from a family that has not used its look is scored once, in one load, from 2025-01-01 through the last NIFTY 50 daily date. A PASS from a family that has already used its look is marked needs new data and is not opened. Dates from 2025-01-01 on are not requested until that one look. Dividends are excluded. Nothing is placed.
+
+1. Sector-relative RSI(2). New family. Hypothesis: the edge is stock-specific, so the dip is measured against the stock's own sector. Industry is the Industry column of india/universe/nifty500.csv. The nearest sector index file in data/kite/day is used, and a stock with no near file is skipped. The map is Automobile and Auto Components to NIFTY AUTO, Consumer Durables to NIFTY CONSR DURBL, Fast Moving Consumer Goods to NIFTY FMCG, Financial Services to NIFTY FIN SERVICE, Healthcare to NIFTY HEALTHCARE, Information Technology to NIFTY IT, Media Entertainment & Publication to NIFTY MEDIA, Metals & Mining to NIFTY METAL, Oil Gas & Consumable Fuels to NIFTY OIL AND GAS, Power to NIFTY ENERGY, Realty to NIFTY REALTY. Capital Goods, Chemicals, Construction, Construction Materials, Consumer Services, Diversified, Services, Telecommunication and Textiles are skipped. Relative price is the stock close divided by that sector index close on the same session. A session with no sector close breaks the series and RSI(2) starts again. The signal is the stock close strictly above its own SMA200 and the RSI(2) of the relative price strictly below the threshold. The entry is the next session's open. The exit is the attempt 14 exit: the next open after a close above SMA5, or the open five sessions after entry. Delivery costs, Rs 1,00,000 a trade. The name is in the top 200 by prior 60-session turnover on the signal day. Variants: relative RSI(2) below 5; below 10; below 5 and the stock's own RSI(2) below 10. Exactly 5 and exactly 10 do not fire. The random entries are 100 runs, seed 20261106 + 91000 + variant index times 1000 + the run index, same-month top-200 days of the same symbol. The signal is not required. The t is the attempt 14 market-adjusted t versus those entries. The family is judged with the attempt 14 clauses, including large caps and at least 2 of the 3 variants with t above 2.
+
+2. Turn of the month with stocks. This family is the turn of the month, which has not used a holdout. The window is the attempt 16 window: the close of the session before the last session of the month, to the close of the third session of the next month. That span is five sessions. (a) NIFTY 50, the attempt 16 rule, for reference: futures costs, one lot of 75, and the attempt 16 tom seed 20261106 + 70000 + the event index. (b) The 20 stocks in that day's top 200 with the highest 12-1 momentum. 12-1 is the close 21 sessions before the entry divided by the close 252 sessions before it, minus 1, inside one segment. (c) The 20 stocks in that day's top 200 with the lowest RSI(2), among names whose close is strictly above SMA200. Ties break on the symbol name. A basket shorter than 20 is held when fewer names qualify. An empty basket skips the month. (b) and (c) use delivery costs, Rs 1,00,000 a name, equal weight of the names that have both the entry close and the exit close. The baseline is the same holdings over 100 other 5-session windows in the same calendar year, not starting on the real entry date. Seeds for (b) and (c) are 20261106 + 80000 + the stock index times 1000 + the event index, with (b) at index 0 and (c) at index 1. A name with no close on a random window is left out of that window, and a window with no priced name is left out of the baseline. The average that must be above 0 is the window's own return after costs. The monthly t is the one-sample t of (that return minus the mean of the same-year random windows), one observation per month. A year with no other window leaves the month in the average and out of the t. Decades and market types use the window's own return and the entry date's regime. Large caps are not a pass clause. At least 2 of the 3 variants need t above 2.
+
+3. Weekly sector rotation. New family, a trading timeframe. Each NIFTY Monday, hold the 2 sector indices with the best trailing return, and sell them at the next NIFTY Monday's open. A Monday that is not a session is skipped, so the hold reaches the next session that is a Monday. The lookback ends on the session before that Monday, inside one segment of the sector: 20 sessions for 4 weeks, 40 for 8 weeks, 65 for 13 weeks. Variants are those three lookbacks. The rotation universe is the sector indices on disk: NIFTY AUTO, NIFTY BANK, NIFTY CONSR DURBL, NIFTY ENERGY, NIFTY FIN SERVICE, NIFTY FMCG, NIFTY HEALTHCARE, NIFTY IT, NIFTY MEDIA, NIFTY METAL, NIFTY OIL AND GAS, NIFTY PHARMA, NIFTY PSU BANK, NIFTY PVT BANK, NIFTY REALTY. A sector joins a week only when it has the lookback and both Monday opens, in one segment. The two are treated as index ETFs with delivery costs, Rs 1,00,000 a leg, equal weight. A leg whose price does not buy one share is skipped, and a week with fewer than two eligible sectors is skipped. Ties break on the symbol name. The baseline is 2 random eligible sectors on the same week, 100 runs, seed 20261106 + 90000 + variant index times 1000 + the run index. The t is the one-sample t of the monthly mean of (the week's return minus the mean of those random pairs). Decades and market types use the week's own return and the Monday's regime. There is no large-cap clause. At least 2 of the 3 variants need t above 2.
+
+Pass marks, fixed before this run, are the attempt 16 marks. Sector-relative RSI uses the attempt 14 judge: average after costs above 0, t versus random above 3, both decades, up, down, sideways, large caps, and at least 2 of the 3 variants with t above 2. Turn of the month uses the calendar judge: average after costs above 0, monthly t above 3, above 0 in both decades and in each market type, and at least 2 of the 3 with t above 2. Sector rotation uses the same trade clauses without the large-cap bucket. A boundary stated as above is strict. At least 2 of 3 passes when the count is exactly 2. An empty required bucket fails. Holdout PASS, for a family that has not used its look, is average after costs above 0 and t above 2. For sector-relative RSI the holdout t is the one-sample t of the monthly mean of (return after costs minus the NIFTY price return over the trade), not versus a random entry. For the turn of the month the holdout t is the same excess versus same-year 5-session windows. For sector rotation it is the same monthly t versus random sectors. The rule is not changed after the holdout. STRATEGIES.md is updated from these results at the end.
+
+Results.
+
+Sector-relative RSI. Delivery costs, Rs 1,00,000. t versus same-month random entries.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | large | result
+rel rsi5 | 25,300 | +0.404% | +19.63 | +0.568% | +0.243% | +0.358% | +0.305% | +0.833% | +0.384% | PASS
+rel rsi10 | 50,494 | +0.334% | +21.58 | +0.450% | +0.221% | +0.293% | +0.359% | +0.652% | +0.300% | PASS
+rel rsi5 stock10 | 13,116 | +0.634% | +17.33 | +0.882% | +0.418% | +0.568% | +0.487% | +1.265% | +0.693% | PASS
+rel rsi5 PASS.
+rel rsi10 PASS.
+rel rsi5 stock10 PASS.
+
+Turn of the month. (a) is the attempt 16 futures rule. (b) and (c) are delivery baskets.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | result
+tom nifty | 239 | +0.556% | +2.41 | +0.810% | +0.301% | +0.499% | +1.188% | +0.260% | FAIL
+tom mom20 | 238 | +1.213% | +2.14 | +1.467% | +0.959% | +1.529% | +0.703% | +0.232% | FAIL
+tom rsi20 | 239 | +1.238% | +4.90 | +1.683% | +0.789% | +1.386% | +0.830% | +0.935% | PASS
+tom nifty FAIL: monthly t +2.41 is not above 3
+tom mom20 FAIL: monthly t +2.14 is not above 3
+tom rsi20 PASS.
+
+Sector rotation. Index ETFs, delivery costs, two sectors, Monday to Monday.
+variant | trades | avg | t | 2005-2014 | 2015-2024 | up | down | sideways | result
+sector 4w | 988 | +0.223% | +1.65 | +0.291% | +0.154% | +0.141% | +0.244% | +0.583% | FAIL
+sector 8w | 988 | +0.197% | +1.32 | +0.266% | +0.127% | +0.160% | +0.134% | +0.422% | FAIL
+sector 13w | 988 | +0.193% | +1.36 | +0.305% | +0.079% | +0.119% | +0.237% | +0.492% | FAIL
+sector 4w FAIL: t vs random +1.65 is not above 3; family variants with t above 2: 0 of 3, need 2
+sector 8w FAIL: t vs random +1.32 is not above 3; family variants with t above 2: 0 of 3, need 2
+sector 13w FAIL: t vs random +1.36 is not above 3; family variants with t above 2: 0 of 3, need 2
+
+Holdout.
+rel rsi5 | avg +0.038% | t -0.24 | FAIL
+rel rsi5 FAIL: t -0.24 is not above 2
+rel rsi10 | avg -0.079% | t -0.88 | FAIL
+rel rsi10 FAIL: avg after costs -0.079% is not above 0; t -0.88 is not above 2
+rel rsi5 stock10 | avg +0.217% | t -0.15 | FAIL
+rel rsi5 stock10 FAIL: t -0.15 is not above 2
+tom rsi20 | avg +0.236% | t +0.29 | FAIL
+tom rsi20 FAIL: t +0.29 is not above 2
+
+Families.
+opening-range breakout: no
+single technical signal: no
+momentum: yes
+rsi2: yes
+pairs: no
+holy grail: no
+calendar: no
+sector-relative rsi: yes
+turn of the month: yes
+sector rotation: no
+
+Bucket list.
+Bucket: none
+Watch: rsi2 < 5, m2 regime, rel rsi5, rel rsi5 stock10, tom rsi20
+Investing: mom 12-1 K20 above200
+Near-miss: rev K20, Faber timing, tom (turn of the month)
+Closed: Opening-range breakout, 20d-high / sma20-close and engulf-low / hold-20, Attempt 10 single signals, Turtle, 52-week high, mom 12-1 K20, mom 12-1 K30, Attempt 12 intraday batch, Big-gap continuation, rsi2 < 10 and rsi2 < 10 down2, IBS, turtle soup, rev K10, rev K10 above200, Index RSI(2), pairs same, pairs any, pairs z, grail adx30, grail adx25, grail adx30 sma200, expiry week, after expiry, m1 momentum, m3 book, rel rsi10, tom nifty, tom mom20, sector 4w, sector 8w, sector 13w
+
+
+## Attempt 17-A (AlgoTest options selling)
+
+Record only. These results were already run on AlgoTest. This step does not rerun them.
+
+Rules: NIFTY intraday, 09:20 entry, 15:15 exit, weekly expiry, 1 lot. Costs = AlgoTest taxes and charges + Rs 20 per order. In-sample window 2019-02 to 2024.
+
+| Strategy | In-sample | Holdout |
+|---|---|---|
+| S1 ATM straddle 25% SL | net Rs 3.55L, monthly t 3.82, PASS | net Rs 27.7k, t 0.37, FAIL |
+| S2 ATM straddle 50% SL | net Rs 3.40L, monthly t 3.73, PASS. At 0.5% slippage t 1.82, at 1% slippage t -0.10 | net Rs 84.1k, t 1.10, FAIL |
+| S3 OTM4 strangle 50% SL | net Rs 1.86L, monthly t 3.54, PASS | net Rs 23.3k, t 0.53, FAIL |
+| S4 iron fly with OTM8 wings, no leg SL | net Rs -2.39L, monthly t -2.90, FAIL | no holdout run |
+
+BANKNIFTY S2, 2017-2024, is a replication, not a holdout. t 5.48 at 0% slippage, 3.64 at 0.5% slippage, 1.68 at 1% slippage.
+
+
+## Attempt 18
+
+Research window only. Every load in this window uses final=False.
+A holdout is one load with final=True, logged once, and it runs only
+after a family passes in sample. The decay check has no pass mark and
+does not open 2025.
+
+18a Decay check. No pass and no fail. Does not use the holdout.
+Strategies: rsi2 < 5, m2 regime, rel rsi5, rel rsi5 stock10, tom rsi20,
+mom 12-1 K20 above200. For each one, print the average after-cost return
+and its t by calendar year from 2015 to 2024, then an ordinary least
+squares regression of that yearly average on the calendar year, with an
+intercept. The slope's t uses n - 2. A zero residual with a non-zero
+slope has t +inf or -inf. Label decaying when the slope is negative and
+its t is below -2. Otherwise label stable.
+For a trade strategy the year's average is the mean after-cost return of
+trades whose entry date is in that year, and the year's t is the
+one-sample t of those trade returns. A year with fewer than 2 trades has
+no t and is left out of the regression.
+For mom 12-1 K20 above200 the year's average is the book's calendar-year
+percent return (year-end equity over the prior year-end, delivery costs,
+idle cash in NIFTY). The year's t is the one-sample t of that year's
+month-end book percent returns. A year with fewer than 2 months is left
+out of the regression. The regression point is the calendar-year return.
+
+18b Overnight vs intraday. New family, overnight. Has not used a holdout.
+NIFTY 50 and NIFTY BANK 5-minute files. The files start on 2015-01-09.
+This test reads them directly and keeps every session. It does not apply
+the stock listing cut of 20 sessions. A session on or after 2025-01-01 is
+not read here.
+Bar labels are the bar end (the Kite candle start plus 5 minutes). The
+09:15 open is the open of the bar whose end is 09:20. A session whose
+first bar does not end at 09:20 is left out, and the next kept session
+measures overnight from the previous kept close. The first kept session
+has no overnight. Overnight is the previous kept close to this 09:15
+open. Intraday is that open to the session's last 5-minute close. The
+official close is a 30-minute average, so this last trade can differ from
+the daily close.
+Two trades, judged separately, four variants in all: hold the futures
+overnight only, and hold them intraday only, on NIFTY and on BANKNIFTY.
+The index level is the futures proxy. Costs are the attempt 16 futures
+schedule, check your broker: brokerage Rs 20 a side, STT 0.05% on the
+sell, exchange 0.00173% a side, SEBI 0.0001% a side, stamp 0.002% on the
+buy, GST 18% on brokerage plus exchange plus SEBI. NIFTY lot 75.
+BANKNIFTY lot 15, the lot for most of 2015-2023, check your broker. The
+lot matters because Rs 20 does not scale. One round trip. A rollover is
+one extra round trip for each month-start strictly after the entry and
+on or before the exit. Same-day intraday has none. Overnight can have
+one. Return is rupee P&L after costs divided by the buy value, in
+percent. Buy value is the lot times the entry price.
+Pass rules, the attempt 14 clauses this family uses: after-cost average
+above 0, monthly t above 3, and a positive average in both decades and
+in up, down and sideways. There is no random baseline, so the monthly t
+is the one-sample t of the monthly means of the daily after-cost
+returns. The decades are 2015-2019 and 2020-2024, because the 5-minute
+files begin in 2015. An empty bucket fails. No large-cap clause and no
+family gate. The regime is the NIFTY daily regime of the session date,
+including for BANKNIFTY.
+
+18c Pre-holiday effect. New family, pre-holiday. Has not used a holdout.
+NIFTY return from the close two sessions before an NSE holiday to the
+close of the session immediately before it. One close-to-close session:
+the last trading day before the holiday. The holiday list is
+nse_holidays.py, weekday full closures from 2010 to 2024, named from the
+NSE circulars. Muhurat sessions are not holidays here, because the NIFTY
+daily file has a bar. Weekend holidays are not events. A holiday after
+the last session in the calendar is not an event, because the session
+before it is not in the file. Two holidays that produce the same two
+sessions are one event.
+The session immediately before the holiday must fall in 2010-01-01
+through 2024-12-31. The trade date, the month, the decade and the regime
+are that session. The decades are 2010-2014 and 2015-2024, because the
+list starts in 2010.
+Costs are the same futures schedule, NIFTY lot 75, one round trip, plus
+a rollover when that one session crosses a month-start. The index close
+is the futures proxy.
+Excess is the after-cost return minus the mean of 100 other 1-session
+close-to-close windows in the same calendar year as the held session.
+Both sessions of a random window are in that year, and the window does
+not start on the real entry date. Seed is harness.SEED + 93000 + the
+event index. A year with no other window leaves the event in the average
+and out of the t.
+Pass rules are the same shape as 18b. The monthly t is the one-sample t
+of the monthly means of the excesses. The t bar is above 3. It is above
+2 only when the event count is strictly fewer than 150. Exactly 150
+still needs t above 3. Decades and regimes use the after-cost return,
+and each must be above 0. An empty bucket fails.
+
+Holdout, only for a family that passes in sample. One load, logged.
+Window 2025-01-01 through the last NIFTY daily date. The overnight
+holdout reads 5-minute bars from 2024-12-01 so the first 2025 overnight
+has a previous close, and drops trades before 2025-01-01. The pre-holiday
+holdout uses the 2025 and 2026 dates in nse_holidays.py. Holdout pass is
+after-cost average above 0 and t above 2, the same bar as attempts 16
+and 17. The in-sample event-count exception is not a second holdout bar.
+For overnight the holdout t is the monthly t of the after-cost returns.
+For pre-holiday it is the monthly t of the excesses. A family that is
+looked at is marked holdout used, including when the holdout fails.
+
+Results.
+
+Long-dated check. Raw files, first 3 day bars, nothing trimmed.
+Contracts before 2026-08-01: 12. Every strike a multiple of 500: yes.
+NIFTY26DEC23000CE.csv.gz strike 23000 CE multiple of 500: yes
+  2022-01-04 00:00:00 open 2967.2 high 2967.2 low 2967.2 close 2967.2 NIFTY close 17805.25
+  2022-01-05 00:00:00 open 2967.2 high 2967.2 low 2967.2 close 2967.2 NIFTY close 17925.25
+  2022-01-06 00:00:00 open 2967.2 high 2967.2 low 2967.2 close 2967.2 NIFTY close 17745.9
+NIFTY26DEC23000PE.csv.gz strike 23000 PE multiple of 500: yes
+  2022-01-04 00:00:00 open 4091.95 high 4091.95 low 4091.95 close 4091.95 NIFTY close 17805.25
+  2022-01-05 00:00:00 open 4091.95 high 4091.95 low 4091.95 close 4091.95 NIFTY close 17925.25
+  2022-01-06 00:00:00 open 4091.95 high 4091.95 low 4091.95 close 4091.95 NIFTY close 17745.9
+NIFTY26DEC24000CE.csv.gz strike 24000 CE multiple of 500: yes
+  2022-11-28 00:00:00 open 2010.65 high 2010.65 low 2010.65 close 2010.65 NIFTY close 18562.75
+  2022-11-29 00:00:00 open 2010.65 high 2010.65 low 2010.65 close 2010.65 NIFTY close 18618.05
+  2022-11-30 00:00:00 open 2010.65 high 2010.65 low 2010.65 close 2010.65 NIFTY close 18758.35
+NIFTY26DEC24000PE.csv.gz strike 24000 PE multiple of 500: yes
+  2022-11-28 00:00:00 open 5233.45 high 5233.45 low 5233.45 close 5233.45 NIFTY close 18562.75
+  2022-11-29 00:00:00 open 5233.45 high 5233.45 low 5233.45 close 5233.45 NIFTY close 18618.05
+  2022-11-30 00:00:00 open 5233.45 high 5233.45 low 5233.45 close 5233.45 NIFTY close 18758.35
+NIFTY26DEC25000CE.csv.gz strike 25000 CE multiple of 500: yes
+  2023-07-17 00:00:00 open 1811.2 high 1811.2 low 1811.2 close 1811.2 NIFTY close 19711.45
+  2023-07-18 00:00:00 open 1811.2 high 1811.2 low 1811.2 close 1811.2 NIFTY close 19749.25
+  2023-07-19 00:00:00 open 1811.2 high 1811.2 low 1811.2 close 1811.2 NIFTY close 19833.15
+NIFTY26DEC25000PE.csv.gz strike 25000 PE multiple of 500: yes
+  2023-07-17 00:00:00 open 5825.75 high 5825.75 low 5825.75 close 5825.75 NIFTY close 19711.45
+  2023-07-18 00:00:00 open 5825.75 high 5825.75 low 5825.75 close 5825.75 NIFTY close 19749.25
+  2023-07-19 00:00:00 open 5825.75 high 5825.75 low 5825.75 close 5825.75 NIFTY close 19833.15
+NIFTY26DEC25500CE.csv.gz strike 25500 CE multiple of 500: yes
+  2025-12-31 00:00:00 open 2555.85 high 2555.85 low 2555.85 close 2555.85 NIFTY close 26129.6
+  2026-01-01 00:00:00 open 2555.85 high 2555.85 low 2555.85 close 2555.85 NIFTY close 26146.55
+  2026-01-02 00:00:00 open 2555.85 high 2555.85 low 2555.85 close 2555.85 NIFTY close 26328.55
+NIFTY26DEC25500PE.csv.gz strike 25500 PE multiple of 500: yes
+  2025-12-31 00:00:00 open 624 high 624 low 624 close 624 NIFTY close 26129.6
+  2026-01-01 00:00:00 open 624 high 624 low 624 close 624 NIFTY close 26146.55
+  2026-01-02 00:00:00 open 624 high 624 low 624 close 624 NIFTY close 26328.55
+NIFTY26DEC26000CE.csv.gz strike 26000 CE multiple of 500: yes
+  2023-12-05 00:00:00 open 1631.05 high 1631.05 low 1631.05 close 1631.05 NIFTY close 20855.1
+  2023-12-06 00:00:00 open 1631.05 high 1631.05 low 1631.05 close 1631.05 NIFTY close 20937.7
+  2023-12-07 00:00:00 open 1631.05 high 1631.05 low 1631.05 close 1631.05 NIFTY close 20901.15
+NIFTY26DEC26000PE.csv.gz strike 26000 PE multiple of 500: yes
+  2023-12-05 00:00:00 open 6437.4 high 6437.4 low 6437.4 close 6437.4 NIFTY close 20855.1
+  2023-12-06 00:00:00 open 6437.4 high 6437.4 low 6437.4 close 6437.4 NIFTY close 20937.7
+  2023-12-07 00:00:00 open 6437.4 high 6437.4 low 6437.4 close 6437.4 NIFTY close 20901.15
+NIFTY26DEC27000CE.csv.gz strike 27000 CE multiple of 500: yes
+  2023-12-28 00:00:00 open 1651.65 high 1651.65 low 1651.65 close 1651.65 NIFTY close 21778.7
+  2023-12-29 00:00:00 open 1651.65 high 1651.65 low 1651.65 close 1651.65 NIFTY close 21731.4
+  2024-01-01 00:00:00 open 1651.65 high 1651.65 low 1651.65 close 1651.65 NIFTY close 21741.9
+NIFTY26DEC27000PE.csv.gz strike 27000 PE multiple of 500: yes
+  2023-12-28 00:00:00 open 6522.3 high 6522.3 low 6522.3 close 6522.3 NIFTY close 21778.7
+  2023-12-29 00:00:00 open 6522.3 high 6522.3 low 6522.3 close 6522.3 NIFTY close 21731.4
+  2024-01-01 00:00:00 open 6522.3 high 6522.3 low 6522.3 close 6522.3 NIFTY close 21741.9
+
+18a Decay. No pass mark.
+rsi2 < 5 stable slope +0.0489 t +0.89 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 1615 | +0.783% | +6.65 | yes
+2016 | 1230 | -0.167% | -1.17 | yes
+2017 | 1671 | +0.915% | +10.01 | yes
+2018 | 1092 | -0.138% | -0.93 | yes
+2019 | 961 | +0.353% | +3.29 | yes
+2020 | 1090 | -0.217% | -0.92 | yes
+2021 | 2303 | +1.083% | +12.84 | yes
+2022 | 1273 | +0.452% | +3.02 | yes
+2023 | 1552 | +0.862% | +8.66 | yes
+2024 | 2300 | +0.793% | +8.75 | yes
+
+m2 regime stable slope +0.0472 t +0.87 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 1282 | +0.857% | +6.19 | yes
+2016 | 917 | -0.212% | -1.32 | yes
+2017 | 1671 | +0.915% | +10.01 | yes
+2018 | 1050 | -0.173% | -1.14 | yes
+2019 | 961 | +0.353% | +3.29 | yes
+2020 | 923 | -0.011% | -0.04 | yes
+2021 | 2303 | +1.083% | +12.84 | yes
+2022 | 1229 | +0.403% | +2.64 | yes
+2023 | 1552 | +0.862% | +8.66 | yes
+2024 | 2300 | +0.793% | +8.75 | yes
+
+rel rsi5 stable slope +0.0130 t +0.33 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 1038 | +0.508% | +3.72 | yes
+2016 | 1115 | -0.071% | -0.51 | yes
+2017 | 1622 | +0.457% | +5.70 | yes
+2018 | 902 | -0.544% | -3.62 | yes
+2019 | 789 | +0.218% | +1.91 | yes
+2020 | 1053 | +0.493% | +3.66 | yes
+2021 | 2109 | +0.266% | +3.14 | yes
+2022 | 860 | +0.077% | +0.49 | yes
+2023 | 1395 | +0.564% | +6.25 | yes
+2024 | 1928 | +0.164% | +1.77 | yes
+
+rel rsi5 stock10 stable slope +0.0490 t +0.94 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 584 | +0.659% | +3.18 | yes
+2016 | 643 | -0.176% | -0.82 | yes
+2017 | 885 | +0.620% | +5.08 | yes
+2018 | 542 | -0.600% | -2.80 | yes
+2019 | 438 | +0.291% | +1.68 | yes
+2020 | 457 | +0.903% | +3.51 | yes
+2021 | 1103 | +0.537% | +4.11 | yes
+2022 | 466 | +0.452% | +1.81 | yes
+2023 | 742 | +0.911% | +6.24 | yes
+2024 | 1139 | +0.358% | +2.70 | yes
+
+tom rsi20 stable slope +0.0759 t +0.60 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 12 | +0.811% | +0.87 | yes
+2016 | 12 | +1.229% | +1.60 | yes
+2017 | 12 | +0.843% | +1.94 | yes
+2018 | 12 | -1.342% | -1.80 | yes
+2019 | 12 | -0.572% | -1.00 | yes
+2020 | 12 | +1.490% | +1.19 | yes
+2021 | 12 | +2.513% | +3.76 | yes
+2022 | 12 | +0.940% | +1.47 | yes
+2023 | 12 | +1.593% | +4.30 | yes
+2024 | 11 | +0.351% | +0.33 | yes
+
+mom 12-1 K20 above200 stable slope +3.3931 t +0.84 (10 years in the regression)
+year | n | avg | t | in regression
+2015 | 12 | -12.663% | -0.71 | yes
+2016 | 12 | +24.036% | +1.20 | yes
+2017 | 12 | +78.785% | +4.78 | yes
+2018 | 12 | +0.112% | +0.11 | yes
+2019 | 12 | +10.393% | +0.80 | yes
+2020 | 12 | +44.240% | +1.19 | yes
+2021 | 12 | +97.843% | +4.68 | yes
+2022 | 12 | +0.725% | +0.13 | yes
+2023 | 12 | +52.165% | +1.69 | yes
+2024 | 12 | +34.694% | +1.18 | yes
+
+18b Overnight vs intraday.
+name | n | avg | monthly t | early | late | up | down | sideways | result
+nifty overnight | 2457 | +0.059% | +3.99 | 2015-2019 +0.064% | 2020-2024 +0.055% | +0.063% | +0.077% | +0.034% | PASS
+  holdout FAIL avg -0.041% t -1.02
+nifty intraday | 2458 | -0.137% | -10.15 | 2015-2019 -0.157% | 2020-2024 -0.117% | -0.164% | -0.070% | -0.077% | FAIL
+  avg after costs -0.137% is not above 0
+  monthly t -10.15 is not above 3
+  2015-2019 -0.157% is not above 0
+  2020-2024 -0.117% is not above 0
+  up -0.164% is not above 0
+  down -0.070% is not above 0
+  sideways -0.077% is not above 0
+bank overnight | 2457 | +0.037% | +2.14 | 2015-2019 +0.040% | 2020-2024 +0.034% | +0.040% | +0.050% | +0.016% | FAIL
+  monthly t +2.14 is not above 3
+bank intraday | 2458 | -0.125% | -5.71 | 2015-2019 -0.134% | 2020-2024 -0.116% | -0.154% | -0.114% | -0.018% | FAIL
+  avg after costs -0.125% is not above 0
+  monthly t -5.71 is not above 3
+  2015-2019 -0.134% is not above 0
+  2020-2024 -0.116% is not above 0
+  up -0.154% is not above 0
+  down -0.114% is not above 0
+  sideways -0.018% is not above 0
+
+18c Pre-holiday. t bar above 3 because events are 198.
+pre-holiday | 198 | +0.112% | +0.88 | 2010-2014 +0.210% | 2015-2024 +0.066% | +0.059% | +0.092% | +0.361% | FAIL
+  monthly t +0.88 is not above 3
+
+Bucket: empty
 
 
 ## Forward test
