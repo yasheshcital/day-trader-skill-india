@@ -430,7 +430,7 @@ def _finish(equity, trades, index_points, capital, turnover_sum, panel, tri_poin
                 break
         return found
 
-    start_level = level_before(first)
+    start_level = level_before(first) or level_on(first)
     end_level = level_on(last)
     index_cagr = None
     if start_level and end_level:
@@ -501,7 +501,7 @@ def _finish(equity, trades, index_points, capital, turnover_sum, panel, tri_poin
         tri_base = None
         tri_end = None
         for day, close in tri_points:
-            if day < first:
+            if day <= first:
                 tri_base = close
             if day <= last:
                 tri_end = close

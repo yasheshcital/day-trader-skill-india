@@ -27,10 +27,12 @@ Output lives under data/nse/ and is gitignored:
   cm/YYYY-MM-DD.csv.gz            cash bhavcopy, EQ and BE, from 2005
   delivery/YYYY-MM-DD.csv.gz      deliverable quantity and percent
   indices/<slug>.csv.gz           daily closes, price or total return
+  actions/YYYY.csv.gz             corporate actions, one year, equities
   progress.json                   ok or missing for the original jobs
   progress-cm.json                cash bhavcopy, its own file
   progress-delivery.json          delivery, its own file
   progress-indices.json           index history, its own file
+  progress-actions.json           corporate actions, its own file
 
 Cash, delivery and the index history each keep a separate progress file so
 those three jobs can run at the same time. The original jobs stay on
@@ -39,6 +41,7 @@ progress.json.
   caffeinate -i python3 india/nse_archive.py --only cm
   caffeinate -i python3 india/nse_archive.py --only delivery
   caffeinate -i python3 india/nse_archive.py --only indices
+  caffeinate -i python3 india/nse_archive.py --only actions
 """
 
 import csv
@@ -49,6 +52,7 @@ import http.client
 import io
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -118,7 +122,7 @@ BACKOFF = (2, 4)
 FAIL_STREAK = 5
 FAIL_PAUSE = 60
 GAP_SECONDS = 1.0
-ONLY = ("bhavcopy", "participant", "vix", "results", "cm", "delivery", "indices")
+ONLY = ("bhavcopy", "participant", "vix", "results", "cm", "delivery", "indices", "actions")
 COMMANDS = (
     "caffeinate -i python3 india/nse_archive.py --only participant",
     "caffeinate -i python3 india/nse_archive.py --only vix",
@@ -127,13 +131,43 @@ COMMANDS = (
     "caffeinate -i python3 india/nse_archive.py --only cm",
     "caffeinate -i python3 india/nse_archive.py --only delivery",
     "caffeinate -i python3 india/nse_archive.py --only indices",
+    "caffeinate -i python3 india/nse_archive.py --only actions",
 )
-NEW_JOBS = ("cm", "delivery", "indices")
+NEW_JOBS = ("cm", "delivery", "indices", "actions")
 _PROGRESS_NAME = {
     "cm": "progress-cm.json",
     "delivery": "progress-delivery.json",
     "indices": "progress-indices.json",
+    "actions": "progress-actions.json",
 }
+ACTIONS_HEADER = ("date", "symbol", "series", "isin", "purpose")
+_CUR = r"r(?:s\.?|e\.?)"
+_SPLIT_PAIR = re.compile(
+    _CUR + r"\s*([0-9]+(?:\.[0-9]+)?)\s*(?:/-\s*)?(?:each\s+)?"
+    r"(?:per\s+(?:share\s*)?)?(?:each\s+)?to\s*(?:face\s+value\s*)?"
+    r"(?:" + _CUR + r"\s*)?([0-9]+(?:\.[0-9]+)?)",
+    re.I)
+_BONUS = re.compile(
+    r"bon(?:us)?(?:\s+issue)?(?:\s+shares)?(?:\s+in\s+the\s+ratio\s+of)?"
+    r"\s*[-:]?\s*([0-9]+(?:\.[0-9]+)?)\s*:\s*([0-9]+(?:\.[0-9]+)?)",
+    re.I)
+_SPLIT_LOOSE = re.compile(
+    r"([0-9]+(?:\.[0-9]+)?)\s*/-\s*(?:each\s+)?to\s*(?:face\s+value\s*)?"
+    r"(?:" + _CUR + r"\s*)?([0-9]+(?:\.[0-9]+)?)",
+    re.I)
+_SPLIT_WORD = re.compile(
+    r"split|splt|\bfv\s*spl|\bspl\b|\bfv\b|face\s*val|sub-?\s*div|consolidat",
+    re.I)
+_DEMERGER = re.compile(r"de[\s-]*merger|scheme of arrangement|scheme of demerger|"
+                       r"sch of arngment|capital reduction|composite scheme|"
+                       r"return of capital|capital repayment|scheme of arangement", re.I)
+_NOT_EQUITY_BONUS = re.compile(r"bonus\s+(?:debenture|ncrps|preference|dvr)", re.I)
+_ADMIN = re.compile(
+    r"annual general meeting|extra\s*ordinary general meeting|\bagm\b|\begm\b|"
+    r"buy\s*back|buyback|book closure|interest payment",
+    re.I)
+_DIVIDEND = re.compile(r"dividend|intdiv|\bdiv\b", re.I)
+_RIGHTS = re.compile(r"\brights?\b", re.I)
 
 MONTHS = ("JAN", "FEB", "MAR", "APR", "MAY", "JUN",
           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC")
@@ -209,6 +243,131 @@ def parse_nse_date(text):
         return "%04d-%02d-%02d" % (int(parts[2]), month, int(parts[0]))
     except ValueError:
         return ""
+
+
+def action_years(today):
+    """Calendar years from 2005 through the run's year."""
+    return list(range(CM_START.year, today.year + 1))
+
+
+def actions_path(root, year):
+    return os.path.join(root, "actions", "%d.csv.gz" % year)
+
+
+def actions_url(year, today):
+    """One calendar year of the equities corporate-actions feed."""
+    end_month = 12
+    end_day = 31
+    if year == today.year:
+        end_month = today.month
+        end_day = today.day
+    return (
+        "https://www.nseindia.com/api/corporates-corporateActions?index=equities"
+        "&from_date=01-01-%d&to_date=%02d-%02d-%d" % (year, end_day, end_month, year)
+    )
+
+
+def parse_purpose(text):
+    """Turn one NSE purpose line into a factor, or a flag for a later price ratio.
+
+    A face-value split from Rs A to Rs B has factor B/A. Bonus X:Y (X new
+    shares for every Y held) has factor Y/(X+Y). Both in one line multiply.
+    A rights issue, a demerger, a scheme of arrangement, or a capital
+    reduction carries no price of its own. An ordinary dividend does not adjust.
+    """
+    raw = (text or "").strip()
+    low = raw.lower()
+    out = {
+        "purpose": raw,
+        "factor": None,
+        "rights": False,
+        "demerger": False,
+        "dividend": False,
+        "readable": False,
+    }
+    if raw == "":
+        return out
+    demerger = _DEMERGER.search(raw) is not None
+    split_words = _SPLIT_WORD.search(raw) is not None
+    factor = 1.0
+    have = False
+    if _NOT_EQUITY_BONUS.search(raw) is None:
+        for new_shares, old_shares in _BONUS.findall(raw):
+            added = float(new_shares) + float(old_shares)
+            if added <= 0:
+                continue
+            factor *= float(old_shares) / added
+            have = True
+    if split_words:
+        pairs = _SPLIT_PAIR.findall(raw) or _SPLIT_LOOSE.findall(raw)
+        for old_face, new_face in pairs:
+            old_value = float(old_face)
+            if old_value <= 0:
+                continue
+            factor *= float(new_face) / old_value
+            have = True
+    dividend = _DIVIDEND.search(raw) is not None or "interest payment" in low
+    if "distribution" in low and not demerger:
+        dividend = True
+    rights = _RIGHTS.search(raw) is not None
+    known = have or demerger or rights or dividend or _ADMIN.search(raw) is not None
+    equity_bonus = re.search(r"\bbon(?:us)?\b", low) is not None and _NOT_EQUITY_BONUS.search(raw) is None
+    if equity_bonus and not _BONUS.search(raw):
+        known = False
+    if split_words and not _SPLIT_PAIR.search(raw) and not _SPLIT_LOOSE.search(raw):
+        known = False
+    out["factor"] = factor if have else None
+    out["rights"] = rights
+    out["demerger"] = demerger
+    out["dividend"] = dividend
+    out["readable"] = known
+    return out
+
+
+def combine_purpose(parts):
+    """Multiply split and bonus factors that share an ex-date."""
+    factor = 1.0
+    have = False
+    rights = False
+    demerger = False
+    for part in parts:
+        if part.get("factor") is not None:
+            factor *= part["factor"]
+            have = True
+        if part.get("rights"):
+            rights = True
+        if part.get("demerger"):
+            demerger = True
+    return {
+        "factor": factor if have else None,
+        "rights": rights,
+        "demerger": demerger,
+    }
+
+
+def parse_actions(payload):
+    """JSON from the corporate-actions feed, as date, symbol, series, isin, purpose."""
+    if isinstance(payload, bytes):
+        payload = payload.decode("utf-8", "replace")
+    if payload.startswith("\ufeff"):
+        payload = payload[1:]
+    data = json.loads(payload)
+    if isinstance(data, dict):
+        data = data.get("data") or []
+    rows = []
+    for item in data:
+        symbol = (item.get("symbol") or "").strip()
+        ex = parse_nse_date(item.get("exDate") or "")
+        if symbol == "" or ex == "":
+            continue
+        rows.append({
+            "date": ex,
+            "symbol": symbol,
+            "series": (item.get("series") or "").strip(),
+            "isin": (item.get("isin") or "").strip(),
+            "purpose": (item.get("subject") or "").strip(),
+        })
+    return rows
 
 
 def _option_type(text):
@@ -964,6 +1123,54 @@ def _status(progress, kind, key):
     return (progress.get(kind) or {}).get(key, "")
 
 
+def _tally_actions(root, today):
+    own = _load_progress(root, "actions")
+    years = action_years(today)
+    present = 0
+    missing = 0
+    fetch = 0
+    for year in years:
+        key = str(year)
+        if _present(actions_path(root, year)):
+            present += 1
+        elif _status(own, "actions", key) == "missing":
+            missing += 1
+        else:
+            fetch += 1
+    return {
+        "expected": len(years),
+        "present": present,
+        "missing": missing,
+        "fetch": fetch,
+    }
+
+
+def _fetch_actions(client, root, progress, year, today, log):
+    path = actions_path(root, year)
+    key = str(year)
+    if _present(path) or _status(progress, "actions", key) == "missing":
+        return "skip"
+    status, body = client.get(
+        [actions_url(year, today)],
+        accept="application/json,text/plain,*/*",
+    )
+    if status != 200 or not body or _looks_html(body):
+        log("actions %s failed status %s" % (key, status))
+        return "fail"
+    try:
+        rows = parse_actions(body)
+    except (ValueError, OSError, KeyError) as exc:
+        log("actions %s parse failed: %s" % (key, exc))
+        return "fail"
+    if not rows:
+        log("actions %s had no rows" % key)
+        return "fail"
+    _record_rows(path, ACTIONS_HEADER, rows)
+    _mark(root, progress, "actions", key, "ok", "actions")
+    log("actions %s rows %d" % (key, len(rows)))
+    return "ok"
+
+
 def plan(root, symbols, today):
     """Counts only. No request is made."""
     bhav_days = trading_days(BHAV_START, today)
@@ -1070,6 +1277,7 @@ def plan(root, symbols, today):
         "cm": tally_own("cm", "cm", cm_days, cm_path),
         "delivery": tally_own("delivery", "delivery", cm_days, delivery_path),
         "indices": tally_indices(),
+        "actions": _tally_actions(root, today),
     }
 
 
@@ -1086,6 +1294,7 @@ def format_plan(counts):
         ("cm", "cash bhavcopy"),
         ("delivery", "delivery"),
         ("indices", "index history"),
+        ("actions", "corporate actions"),
     )
     for key, label in order:
         item = counts[key]
@@ -1416,6 +1625,9 @@ def _download_job(root, today, only, counts, client, emit):
     elif only == "delivery":
         for day in trading_days(CM_START, today):
             note(_fetch_delivery(client, root, progress, day, emit))
+    elif only == "actions":
+        for year in action_years(today):
+            note(_fetch_actions(client, root, progress, year, today, emit))
     else:
         for slug, name, alt in INDEX_SERIES:
             for year in index_years(today):

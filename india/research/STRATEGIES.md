@@ -120,6 +120,15 @@ Tested and not in a bucket above.
 | quiet orb A | 21 | FAIL |
 | quiet orb B | 21 | FAIL |
 | nifty expiry afternoon | 21 | FAIL |
+| mom 12-1 top 20 | 22 | FAIL |
+| mom 12-1 top 30 | 22 | FAIL |
+| mom 6-1 top 20 | 22 | FAIL |
+| mom 6-1 top 30 | 22 | FAIL |
+| results drift 20 | 22 | FAIL |
+| results drift 60 | 22 | FAIL |
+| delivery accumulation | 22 | FAIL |
+| low volatility | 22 | FAIL |
+| overlay results drift 60 | 22 | FAIL |
 
 
 ## Sources

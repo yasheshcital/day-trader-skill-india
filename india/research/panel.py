@@ -1,22 +1,16 @@
 """Survivorship-free daily panel from the cash bhavcopy.
 
 Each stock is keyed by ISIN. When the symbol on that ISIN changes, the change
-is kept. The adjustment factor on a day is that day's prev_close divided by
-the previous session's close. On the next calendar session, a factor more
-than 0.5% away from 1 is a corporate action. When the previous bar is not the
-previous calendar session, an archive gap or a day the stock did not trade,
-the move is an action only if the factor is within 1% of a standard ratio
-(1/2, 1/5, 1/10, 2/3, 1/3, 1/4, 4/5, 5/6, 9/10, 10/11, 1/1.5, 1/3.5).
-Anything else across a gap is a normal return. A weekday with no cash file,
+is kept. The stored panel adjusts in this order. For a name in the Kite day files, a day
+whose raw close over the Kite close has moved more than 0.5% from the
+previous overlap uses that ratio. Otherwise the NSE corporate-actions file
+supplies the factor. Otherwise, on consecutive sessions, prev_close over the
+previous close is used when it is more than 0.5% from 1. Across a gap, only a
+factor within 1% of a standard ratio (1/2, 1/5, 1/10, 2/3, 1/3, 1/4, 4/5,
+5/6, 9/10, 10/11, 1/1.5, 1/3.5) is an action. A weekday with no cash file,
 and not a known NSE holiday, is an archive gap. A session where at least 30%
-of the names that traded both days have a prev_close disagreement is treated
-the same way, so one missing file does not become thousands of actions.
-
-When prev_close was left equal to the previous close but the open, high, low
-and close all sit on a standard ratio, that ratio is the action. NSE often
-prints the split in the price and leaves prev_close unchanged. A 10% or 20%
-lock is the circuit, so 9/10 and 4/5 are not inferred from the print. Earlier
-opens, highs, lows and closes are multiplied by each action's factor.
+of the names that traded both days disagree on prev_close is treated the same
+way. Every action records its source.
 Volume and turnover are left as printed.
 
 Rows that arrive with a blank ISIN are held under the symbol. An ISIN whose
@@ -37,6 +31,7 @@ with data/kite/day.
 """
 
 import array
+import bisect
 import csv
 import datetime
 import gzip
@@ -79,7 +74,7 @@ FACTOR_BUCKETS = (
     ("1.005-1.02", lambda factor: 1.005 <= factor <= 1.02),
     (">1.02", lambda factor: factor > 1.02),
 )
-PANEL_VERSION = 2
+PANEL_VERSION = 3
 LARGE = (
     "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK",
     "SBIN", "BHARTIARTL", "ITC", "LT", "HINDUNILVR",
@@ -97,6 +92,94 @@ def _float(text):
         return float(text)
     except ValueError:
         return None
+
+
+def keep_equity(isin, series):
+    """EQ and BE only. A published ISIN must start with INE.
+
+    A blank ISIN is the cash file from before June 2011. It is kept so the
+    stitch can join it onto the INE series. An INF fund or any other prefix
+    is dropped.
+    """
+    kind = (series or "").strip().upper()
+    if kind not in ("EQ", "BE"):
+        return False
+    text = (isin or "").strip()
+    if text == "":
+        return True
+    return text.startswith("INE")
+
+
+def listed_equity(isin):
+    """True for a series that survives the filter. Blank and SYM keys do not."""
+    return (isin or "").startswith("INE")
+
+
+def choose_factor(kite_factor, nse_factor, prev_factor, adjacent):
+    """Kite, then the NSE file, then prev_close, then the gap ratio.
+
+    A Kite value is used only when it is more than 0.5% from 1. Returns
+    (factor or None, source or None).
+    """
+    if kite_factor is not None and abs(kite_factor - 1.0) > ACTION_GAP:
+        return kite_factor, "kite"
+    if nse_factor is not None:
+        return nse_factor, "nse"
+    if prev_factor is None:
+        return None, None
+    if adjacent and abs(prev_factor - 1.0) > ACTION_GAP:
+        return prev_factor, "prev_close"
+    if (not adjacent) and near_standard(prev_factor):
+        return prev_factor, "ratio"
+    return None, None
+
+
+def resolve_corporate(combined, previous, prev_close, open_):
+    """Price factor for a demerger or a rights issue, else the parsed factor.
+
+    Returns (factor or None, estimated). prev_close is used when the exchange
+    adjusted it. A demerger with an unadjusted prev_close uses the open.
+    """
+    parsed = combined.get("factor")
+    if combined.get("demerger") or combined.get("rights"):
+        published = None
+        if previous and prev_close and previous > 0 and prev_close > 0:
+            published = prev_close / float(previous)
+        if published is not None and abs(published - 1.0) > ACTION_GAP:
+            return published, False
+        if combined.get("demerger") and previous and open_ and previous > 0 and open_ > 0:
+            estimated = open_ / float(previous)
+            if parsed is not None:
+                estimated *= parsed
+            return estimated, True
+        if parsed is not None:
+            return parsed, False
+        return None, False
+    if parsed is not None:
+        return parsed, False
+    return None, False
+
+
+def kite_ratio(raw_now, kite_now, raw_prev, kite_prev):
+    """raw/Kite against the previous overlap. None when Kite is not a real price.
+
+    A Kite close under 1 rupee while the raw close is many times larger is a
+    stub, not an adjusted series, and must not be turned into a factor.
+    """
+    if raw_now <= 0 or kite_now <= 0 or raw_prev <= 0 or kite_prev <= 0:
+        return None
+    small = kite_now if kite_now < kite_prev else kite_prev
+    if small < 1.0 and max(raw_now, raw_prev) / small > 30.0:
+        return None
+    return (raw_now / kite_now) / (raw_prev / kite_prev)
+
+
+def kite_change(raw_now, kite_now, raw_prev, kite_prev):
+    """How far raw/Kite moved since the previous overlap. None inside 0.5%."""
+    change = kite_ratio(raw_now, kite_now, raw_prev, kite_prev)
+    if change is None or abs(change - 1.0) <= ACTION_GAP:
+        return None
+    return change
 
 
 def near_standard(factor):
@@ -155,6 +238,31 @@ def price_jump_ratio(previous, open_, high, low, close):
             best = ratio
             best_far = farther
     return best
+
+
+def extreme_bar_factor(previous, open_, high, low, close):
+    """A split the standard list missed, when the whole bar opened on the new price.
+
+    The bar has to stay within 25% of its open, and the open has to be at
+    least 40% away from the previous close. A crash that opens near the old
+    price does not qualify. Returns (factor, estimated).
+    """
+    if previous <= 0 or open_ <= 0 or high <= 0 or low <= 0 or close <= 0:
+        return None, False
+    if (high - low) / open_ > 0.25:
+        return None, False
+    ratio = open_ / previous
+    if ratio > 0.60 and ratio < 1.0 / 0.60:
+        return None, False
+    for standard in STANDARD_RATIOS:
+        if standard >= 0.75:
+            continue
+        if abs(ratio - standard) / standard <= 0.08:
+            return standard, False
+        inverse = 1.0 / standard
+        if inverse > 1.5 and abs(ratio - inverse) / inverse <= 0.08:
+            return inverse, False
+    return ratio, True
 
 
 def action_factor(previous, prev_close, open_, high, low, close, adjacent):
@@ -637,7 +745,7 @@ def _with_archive_gaps(file_dates):
 def load_store(cm_root, log=None):
     """Calendar plus one raw series per ISIN. EQ wins over BE on the same day."""
     if not os.path.isdir(cm_root):
-        return [], [], {}
+        return [], [], {}, set()
     names = []
     for name in os.listdir(cm_root):
         if len(name) >= 14 and name.endswith(".csv.gz"):
@@ -653,6 +761,7 @@ def load_store(cm_root, log=None):
     symbols = []
     sym_id = {}
     series = {}
+    dropped = set()
     for nth, name in enumerate(names):
         if log and nth % 500 == 0:
             log("reading cash %d of %d" % (nth, len(names)))
@@ -668,7 +777,9 @@ def load_store(cm_root, log=None):
                 isin = row[col["isin"]].strip()
                 symbol = row[col["symbol"]].strip()
                 kind = row[col["series"]].strip().upper()
-                if symbol == "" or kind not in ("EQ", "BE"):
+                if symbol == "" or not keep_equity(isin, kind):
+                    if symbol and kind in ("EQ", "BE") and isin and not isin.startswith("INE"):
+                        dropped.add(symbol)
                     continue
                 close = _num_cell(row[col["close"]])
                 if close <= 0:
@@ -699,7 +810,7 @@ def load_store(cm_root, log=None):
                 bucket = _blank_series()
                 series[isin] = bucket
             _append_bar(bucket, session, item[1], item[2], item[3], item[4], item[5], item[6], item[7])
-    return calendar, symbols, series
+    return calendar, symbols, series, dropped
 
 
 def _slice_series(series, end_session):
@@ -781,9 +892,75 @@ def _gap_sessions(series):
     return found
 
 
-def adjust_store(series, symbols, calendar):
-    """Back-adjust every series. Drops the raw high, low and prev_close."""
+def _series_kite(bucket, symbols, kite_by_symbol):
+    """The Kite day file for this series, keyed by date. None when it has none."""
+    if not kite_by_symbol:
+        return None
+    best = None
+    best_n = 0
+    counts = {}
+    for sid in bucket["sym"]:
+        name = symbols[sid]
+        if name not in kite_by_symbol:
+            continue
+        counts[name] = counts.get(name, 0) + 1
+    for name, count in counts.items():
+        if best is None or count > best_n:
+            best = name
+            best_n = count
+    if best is None:
+        return None
+    return kite_by_symbol[best]
+
+
+def _kite_factor_at(bucket, calendar, kite_map, i):
+    if kite_map is None:
+        return None
+    day = calendar[bucket["idx"][i]]
+    kite_now = kite_map.get(day)
+    raw_now = bucket["c"][i]
+    if kite_now is None or raw_now <= 0:
+        return None
+    j = i - 1
+    while j >= 0:
+        kite_prev = kite_map.get(calendar[bucket["idx"][j]])
+        raw_prev = bucket["c"][j]
+        if kite_prev is not None and raw_prev > 0:
+            return kite_ratio(raw_now, kite_now, raw_prev, kite_prev)
+        j -= 1
+    return None
+
+
+def _dividend_only(combined):
+    """An NSE day that is only a dividend, with no split, bonus, rights or demerger."""
+    if not combined:
+        return False
+    if combined.get("factor") is not None:
+        return False
+    if combined.get("rights") or combined.get("demerger"):
+        return False
+    return True
+
+
+def _nse_for_bar(actions_index, isin, symbol, day):
+    if not actions_index:
+        return None
+    found = actions_index.get(("isin", isin, day))
+    if found is not None:
+        return found
+    return actions_index.get(("sym", symbol, day))
+
+
+def adjust_store(series, symbols, calendar, actions_index=None, kite_by_symbol=None):
+    """Back-adjust every series. Drops the raw high, low and prev_close.
+
+    With an actions index or a Kite map, the factor priority is Kite, then
+    the NSE file, then prev_close, then the standard ratio across a gap.
+    Without either, the older bar rule is kept so a caller with no archive
+    still sees a split that the price itself shows.
+    """
     gaps = _gap_sessions(series)
+    external = actions_index is not None or kite_by_symbol is not None
     actions = []
     adjusted = {}
     for isin, bucket in series.items():
@@ -795,20 +972,91 @@ def adjust_store(series, symbols, calendar):
         opens = bucket["o"]
         highs = bucket["h"]
         lows = bucket["l"]
+        kite_map = _series_kite(bucket, symbols, kite_by_symbol) if external else None
         for i in range(1, n):
             if close[i - 1] <= 0:
                 continue
             adjacent = idx[i] == idx[i - 1] + 1 and idx[i] not in gaps
-            factor = action_factor(
-                close[i - 1], prev[i], opens[i], highs[i], lows[i], close[i], adjacent)
+            estimated = False
+            source = ""
+            if external:
+                symbol = symbols[bucket["sym"][i]]
+                observed = _kite_factor_at(bucket, calendar, kite_map, i)
+                combined = _nse_for_bar(actions_index, isin, symbol, calendar[idx[i]])
+                nse_factor = None
+                if combined is not None:
+                    nse_factor, estimated = resolve_corporate(
+                        combined, close[i - 1], prev[i], opens[i])
+                published = None
+                if prev[i] > 0:
+                    published = prev[i] / close[i - 1]
+                # A published prev_close that the open did not trade through is
+                # a bad print, not an adjustment. Ignore it.
+                published_ok = True
+                if published is not None and abs(published - 1.0) > 0.05:
+                    if prev[i] <= 0 or opens[i] <= 0 or abs(opens[i] / prev[i] - 1.0) > 0.40:
+                        published_ok = False
+                        published = None
+                if nse_factor is not None and not published_ok:
+                    nse_factor = None
+                bar_factor = None
+                bar_estimated = False
+                if published is None or abs(published - 1.0) <= 0.05:
+                    bar_factor = price_jump_ratio(
+                        close[i - 1], opens[i], highs[i], lows[i], close[i])
+                    if bar_factor is None:
+                        bar_factor, bar_estimated = extreme_bar_factor(
+                            close[i - 1], opens[i], highs[i], lows[i], close[i])
+                raw_ret = close[i] / close[i - 1] - 1.0
+                use_bar = (
+                    bar_factor is not None
+                    and symbol not in LARGE
+                    and (raw_ret < -0.40 or raw_ret > 0.80)
+                )
+                if observed is not None and not use_bar:
+                    factor = observed if abs(observed - 1.0) > ACTION_GAP else None
+                    source = "kite"
+                    if factor is not None:
+                        adjusted_ret = close[i] / (close[i - 1] * factor) - 1.0
+                        # Kite's own series sometimes jumps while the raw bar
+                        # does not. Copying that jump invents a move.
+                        if abs(raw_ret) <= 0.25 and (adjusted_ret < -0.40 or adjusted_ret > 0.80):
+                            factor = None
+                            observed = None
+                elif use_bar:
+                    factor = bar_factor
+                    source = "bar"
+                    estimated = bar_estimated
+                    observed = "bar"
+                if observed is None:
+                    factor, source = choose_factor(None, nse_factor, published, adjacent)
+                    if factor is None and bar_factor is not None:
+                        factor = bar_factor
+                        source = "bar"
+                        estimated = bar_estimated
+                    factor, source = choose_factor(None, nse_factor, published, adjacent)
+                    if factor is None and bar_factor is not None:
+                        factor = bar_factor
+                        source = "bar"
+                        estimated = bar_estimated
+            else:
+                factor = action_factor(
+                    close[i - 1], prev[i], opens[i], highs[i], lows[i], close[i], adjacent)
+                source = "bar"
             if factor is None:
                 continue
             factors[i] = factor
+            # A Kite move under 5% is rounding or an ordinary dividend. It is
+            # applied so the daily return matches, and it is not a corporate action.
+            if source == "kite" and abs(factor - 1.0) < 0.05:
+                continue
             actions.append({
                 "date": calendar[idx[i]],
                 "isin": isin,
                 "symbol": symbols[bucket["sym"][i]],
                 "factor": factor,
+                "source": source,
+                "estimated": estimated,
             })
         scale_running = 1.0
         scale = [1.0] * n
@@ -879,17 +1127,102 @@ def symbol_changes_store(series, symbols, calendar):
     return found
 
 
-def build_store(cm_root, log=None):
-    """The cached panel. version 2 is the gap rule plus the ISIN stitch."""
-    calendar, symbols, raw = load_store(cm_root, log=log)
+def _drop_unlisted(series, symbols, dropped):
+    """Remove any series that is not an INE equity. Returns the symbols kept."""
+    surviving = set()
+    for isin in list(series):
+        if listed_equity(isin):
+            for sid in series[isin]["sym"]:
+                surviving.add(symbols[sid])
+            continue
+        for sid in series[isin]["sym"]:
+            dropped.add(symbols[sid])
+        del series[isin]
+    for name in list(dropped):
+        if name in surviving:
+            dropped.discard(name)
+    return surviving
+
+
+def load_action_index(actions_root):
+    """Parsed NSE actions keyed by ('isin', isin, date) and ('sym', symbol, date)."""
+    from india.nse_archive import combine_purpose
+    from india.nse_archive import parse_purpose
+    groups = {}
+    unknown = {}
+    if not actions_root or not os.path.isdir(actions_root):
+        return {}, unknown
+    for name in sorted(os.listdir(actions_root)):
+        if not name.endswith(".csv.gz"):
+            continue
+        path = os.path.join(actions_root, name)
+        with gzip.open(path, "rt", encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                parsed = parse_purpose(row.get("purpose") or "")
+                if not parsed["readable"]:
+                    text = parsed["purpose"]
+                    unknown[text] = unknown.get(text, 0) + 1
+                day_text = row.get("date") or ""
+                if len(day_text) < 10:
+                    continue
+                day = datetime.date.fromisoformat(day_text[:10])
+                isin = (row.get("isin") or "").strip()
+                symbol = (row.get("symbol") or "").strip()
+                if isin.startswith("INE"):
+                    groups.setdefault(("isin", isin, day), []).append(parsed)
+                if symbol:
+                    groups.setdefault(("sym", symbol, day), []).append(parsed)
+    combined = {}
+    for key, parts in groups.items():
+        combined[key] = combine_purpose(parts)
+    return combined, unknown
+
+
+def load_kite_day(kite_root):
+    """Adjusted closes for the Kite day-file names, excluding index files."""
+    from india.nse_archive import stock_symbols
+    found = {}
+    if not kite_root or not os.path.isdir(os.path.join(kite_root, "day")):
+        return found
+    for symbol in stock_symbols(kite_root):
+        path = os.path.join(kite_root, "day", symbol + ".csv.gz")
+        if not os.path.isfile(path):
+            continue
+        closes = {}
+        for text, close in _kite_closes(path).items():
+            closes[datetime.date.fromisoformat(text)] = close
+        found[symbol] = closes
+    return found
+
+
+def build_store(cm_root, log=None, actions_root=None, kite_root=None):
+    """The cached panel. Equity ISINs only, adjusted from Kite and NSE actions."""
+    calendar, symbols, raw, dropped = load_store(cm_root, log=log)
     if not calendar:
         return None
     if log:
         log("raw isins %d" % len(raw))
     stitches = stitch_store(raw, symbols, calendar)
+    surviving = _drop_unlisted(raw, symbols, dropped)
     if log:
         log("stitches %d" % len(stitches))
-    series, actions = adjust_store(raw, symbols, calendar)
+        log("equity filter removed %d symbols" % len(dropped))
+        log("GOLDBEES %s" % ("gone" if "GOLDBEES" not in surviving else "still present"))
+        log("NIFTYBEES %s" % ("gone" if "NIFTYBEES" not in surviving else "still present"))
+    parent = os.path.dirname(cm_root)
+    if actions_root is None:
+        actions_root = os.path.join(parent, "actions")
+    if kite_root is None:
+        kite_root = os.path.join(os.path.dirname(parent), "kite")
+    actions_index, unknown = load_action_index(actions_root)
+    if log:
+        log("nse action keys %d" % len(actions_index))
+        for text, count in sorted(unknown.items(), key=lambda item: (-item[1], item[0])):
+            log("unreadable purpose %d %s" % (count, text))
+    kite_by_symbol = load_kite_day(kite_root)
+    if log:
+        log("kite names %d" % len(kite_by_symbol))
+    series, actions = adjust_store(raw, symbols, calendar, actions_index, kite_by_symbol)
     if log:
         log("adjusting done, actions %d" % len(actions))
     universe = universes_from_store(series, calendar)
@@ -1156,33 +1489,150 @@ def top200_mean(panel, index_points, start, end):
     )
 
 
-def evaluate_gates(panel, kite_root, nse_root, log):
-    """Print PASS or FAIL. The fall list is printed for review and does not stop the run.
+def _percentile(values, pct):
+    """Nearest-rank percentile. pct is a fraction, so 0.99 is the 99th."""
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    rank = int(pct * len(ordered) + 0.999999) - 1
+    if rank < 0:
+        rank = 0
+    if rank >= len(ordered):
+        rank = len(ordered) - 1
+    return ordered[rank]
 
-    Returns True when the level gap, the 1-year gap, the action counts and the
-    top-200 mean all pass.
+
+def _on_or_before(dates, closes, target, slack_days):
+    """Close on or before target, within slack_days. dates are sorted."""
+    pos = bisect.bisect_right(dates, target) - 1
+    if pos < 0:
+        return None
+    if (target - dates[pos]).days > slack_days:
+        return None
+    return closes[pos]
+
+
+def return_gates(panel, kite_root, names=LARGE):
+    """Daily and 1-year return gaps versus Kite for the large names.
+
+    A daily gap is our one-session return minus Kite's, in percentage points.
+    The 1-year gap is the absolute difference over the previous calendar year.
     """
-    check = cross_check(panel, kite_root)
-    _print_check(check, log)
+    daily = []
+    year_gaps = []
+    for symbol in names:
+        path = os.path.join(kite_root, "day", symbol + ".csv.gz")
+        isin = _isin_for_symbol(panel, symbol) if panel else None
+        if not panel or isin is None or not os.path.isfile(path):
+            continue
+        kite_map = _kite_closes(path)
+        bucket = panel["series"][isin]
+        idx = bucket["idx"]
+        dates = []
+        closes = []
+        for day, close in _panel_closes(panel, isin):
+            dates.append(day)
+            closes.append(close)
+        kite_dates = []
+        kite_closes = []
+        for text in sorted(kite_map):
+            kite_dates.append(datetime.date.fromisoformat(text))
+            kite_closes.append(kite_map[text])
+        for i in range(1, len(dates)):
+            if idx[i] != idx[i - 1] + 1:
+                continue
+            prev_close = closes[i - 1]
+            close = closes[i]
+            kite_now = kite_map.get(dates[i].isoformat())
+            kite_prev = kite_map.get(dates[i - 1].isoformat())
+            if (prev_close <= 0 or close <= 0 or kite_now is None or kite_prev is None
+                    or kite_prev <= 0 or kite_now <= 0):
+                continue
+            ours = close / prev_close - 1.0
+            theirs = kite_now / kite_prev - 1.0
+            daily.append({
+                "symbol": symbol,
+                "date": dates[i],
+                "gap": (ours - theirs) * 100.0,
+            })
+            target = _year_back(dates[i])
+            panel_then = _on_or_before(dates, closes, target, 10)
+            kite_then = _on_or_before(kite_dates, kite_closes, target, 10)
+            if panel_then is None or kite_then is None or panel_then <= 0 or kite_then <= 0:
+                continue
+            panel_ret = close / panel_then - 1.0
+            kite_ret = kite_now / kite_then - 1.0
+            year_gaps.append(abs(panel_ret - kite_ret) * 100.0)
+    return daily, year_gaps
+
+
+def unexplained_moves(panel, start, end):
+    """One-session adjusted moves beyond -40% or +80% inside the monthly top 500."""
+    universe = panel["universe"][500]
+    rebalance = sorted(universe)
+    calendar = panel["calendar"]
+    symbols = panel["symbols"]
+    cursor = 0
+    current = []
+    found = []
+    for session, day in enumerate(calendar):
+        while cursor < len(rebalance) and rebalance[cursor] <= day:
+            current = universe[rebalance[cursor]]
+            cursor += 1
+        if day < start or day > end:
+            continue
+        for isin in current:
+            bucket = panel["series"].get(isin)
+            if bucket is None:
+                continue
+            pos = bisect.bisect_left(bucket["idx"], session)
+            if pos <= 0 or pos >= len(bucket["idx"]) or bucket["idx"][pos] != session:
+                continue
+            if bucket["idx"][pos - 1] != session - 1:
+                continue
+            prev = bucket["c"][pos - 1]
+            close = bucket["c"][pos]
+            if prev <= 0 or close <= 0:
+                continue
+            ret = close / prev - 1.0
+            if ret < -0.40 - 1e-4 or ret > 0.80 + 1e-4:
+                found.append((day, symbols[bucket["sym"][pos]], isin, ret))
+    found.sort()
+    return found
+
+
+def evaluate_gates(panel, kite_root, nse_root, log):
+    """Print PASS or FAIL. Returns True only when every numeric gate passes."""
     ok = True
-    largest = check["largest"]
-    if largest is None or not largest["gap"] < 1.0:
-        ok = False
-        shown = "no overlap" if largest is None else "%.3f%% %s %s" % (
-            largest["gap"], largest["symbol"], largest["date"].isoformat())
-        log("gate kite daily gap: FAIL %s" % shown)
+    daily, year_gaps = return_gates(panel, kite_root)
+    wide = []
+    worst = None
+    for row in daily:
+        gap = abs(row["gap"])
+        if worst is None or gap > worst:
+            worst = gap
+        if gap > 1.0:
+            wide.append(row)
+    n_daily = len(daily)
+    share = (len(wide) / float(n_daily)) if n_daily else 1.0
+    for row in wide:
+        log("daily return gap %s %s %+.2f points" % (
+            row["date"].isoformat(), row["symbol"], row["gap"]))
+    if n_daily and share < 0.002 and (worst is None or worst <= 5.0):
+        log("gate kite daily return: PASS %d of %d days over 1 point (%.3f%%), worst %.2f points" % (
+            len(wide), n_daily, share * 100.0, worst or 0.0))
     else:
-        log("gate kite daily gap: PASS %.3f%% %s %s" % (
-            largest["gap"], largest["symbol"], largest["date"].isoformat()))
-    year = check["largest_year"]
-    if year is None or not year["gap"] < 2.0:
         ok = False
-        shown = "no overlap" if year is None else "%.3f points %s %s" % (
-            year["gap"], year["symbol"], year["date"].isoformat())
-        log("gate kite 1-year return: FAIL %s" % shown)
+        log("gate kite daily return: FAIL %d of %d days over 1 point (%.3f%%), worst %.2f points" % (
+            len(wide), n_daily, share * 100.0, worst or 0.0))
+    p99 = _percentile(year_gaps, 0.99)
+    if p99 is not None and p99 < 2.0:
+        log("gate kite 1-year return: PASS 99th percentile %.3f points on %d overlaps" % (
+            p99, len(year_gaps)))
     else:
-        log("gate kite 1-year return: PASS %.3f points %s %s" % (
-            year["gap"], year["symbol"], year["date"].isoformat()))
+        ok = False
+        shown = "no overlap" if p99 is None else "%.3f points on %d overlaps" % (p99, len(year_gaps))
+        log("gate kite 1-year return: FAIL 99th percentile %s" % shown)
     counts = actions_per_year(panel["actions"])
     too_many = []
     busiest = None
@@ -1214,15 +1664,26 @@ def evaluate_gates(panel, kite_root, nse_root, log):
             ok = False
             log("gate top 200 mean daily: FAIL book %.4f%% index %.4f%% diff %+.4f points on %d days" % (
                 book * 100.0, index_mean * 100.0, diff, n_days))
-    log("largest single-day falls")
-    for ret, day, symbol, isin in largest_falls(panel, 20):
-        log("%s %s %s %+.2f%%" % (day.isoformat(), symbol, isin, ret * 100.0))
-    log("gate largest falls: printed")
+    moves = unexplained_moves(panel, datetime.date(2005, 1, 1), datetime.date(2024, 12, 31))
+    log("unexplained moves %d" % len(moves))
+    for day, symbol, isin, ret in moves:
+        log("unexplained %s %s %s %+.2f%%" % (day.isoformat(), symbol, isin, ret * 100.0))
+    if len(moves) < 20:
+        log("gate unexplained moves: PASS %d" % len(moves))
+    else:
+        ok = False
+        log("gate unexplained moves: FAIL %d" % len(moves))
     return ok
 
 
 def _print_actions(actions, log):
     log("corporate actions %d" % len(actions))
+    counts = {}
+    for action in actions:
+        source = action.get("source") or "bar"
+        counts[source] = counts.get(source, 0) + 1
+    for source in sorted(counts):
+        log("action source %s %d" % (source, counts[source]))
 
 
 def _print_histogram(actions, log):

@@ -121,6 +121,15 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 21 | 2026-11-10 | quiet orb A. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 17,124 | -0.027 | n/a | FAIL |
 | 21 | 2026-11-10 | quiet orb B. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 37,205 | -0.009 | n/a | FAIL |
 | 21 | 2026-11-10 | nifty expiry afternoon. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 511 | -0.242 | n/a | FAIL |
+| 22 | 2026-11-16 | mom 12-1 top 20. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 4358 | +0.65% | +0.72 | FAIL |
+| 22 | 2026-11-16 | mom 12-1 top 30. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 6457 | +2.27% | +1.03 | FAIL |
+| 22 | 2026-11-16 | mom 6-1 top 20. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 4449 | +2.93% | +1.39 | FAIL |
+| 22 | 2026-11-16 | mom 6-1 top 30. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 6599 | +1.65% | +1.13 | FAIL |
+| 22 | 2026-11-16 | results drift 20. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1365 | -8.17% | -2.02 | FAIL |
+| 22 | 2026-11-16 | results drift 60. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1052 | +4.59% | +0.76 | FAIL |
+| 22 | 2026-11-16 | delivery accumulation. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 4615 | +1.11% | +0.91 | FAIL |
+| 22 | 2026-11-16 | low volatility. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 6100 | -0.67% | -0.64 | FAIL |
+| 22 | 2026-11-16 | overlay results drift 60. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 830 | +0.55% | -0.19 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1627,6 +1636,78 @@ No attempt 21 variant passed. Its holdout rows were not opened.
 Intraday is Closed for good.
 
 Bucket: empty
+
+
+## Attempt 22
+
+Rules fixed on 2026-11-16, before the run.
+
+Window: 2005-01-01 through 2024-12-31. final stays false on this window. Prices are the survivorship-free cash panel in data/cache/panel, built from data/nse/cm. A stock that stops trading is sold at its last adjusted close, and that loss stays in the result. Rebalance, where the variant rebalances on the calendar, is the first session of each month. Costs are the delivery schedule in india/costs.py. Tax is invest.tax_due: STCG 15% before 2024-07-23 and 20% on or after that date, LTCG 10% above Rs 1,00,000 or 12.5% above Rs 1,25,000 for a sale after the one-year anniversary, and losses offset gains in the same year. The book starts at Rs 10,00,000. No new order is sent.
+
+Universe. Top 200 and top 500 are the panel's monthly lists: stocks that trade on the first session, ranked by the median turnover of the previous 60 sessions.
+
+22a, momentum. Four variants: mom 12-1 top 20, mom 12-1 top 30, mom 6-1 top 20, mom 6-1 top 30. The universe is the top 200. 12-1 is the adjusted close 21 sessions before the rebalance divided by the close 252 sessions before it, minus 1. 6-1 uses 21 and 126 sessions. A name is held only when its adjusted close is above its own 200-session average. The book is the top 20 or top 30 by that momentum, equal weight, long only. This is the momentum family. It is judged in sample and compared with NIFTY200 Momentum 30. It does not get a holdout. The comparison also prints that index over 2025-01-01 through the last index row. That print reads the published index. It does not run this book on those dates and it does not log a holdout.
+
+22b, post-results drift. Two variants: results drift 20 and results drift 60. A results day is a results row in data/nse/events.csv. The reaction is that session's adjusted close over the previous session's adjusted close, minus the NIFTY 200 price return on the same session. It is a signal when that reaction is in the top 10% of all results-day reactions in the previous 365 days, not including the day itself. The cutoff is the value at index int(n * 0.9) of the sorted past reactions. The buy is the next session's adjusted open. The exit is the close 20 sessions later, or 60, counting the entry session as the first, so the exit index is entry plus 19 or entry plus 59. At most 20 positions. Each new position is one twentieth of equity at the entry. Idle cash earns 0. A name already held is not bought again. If more than the free slots signal on one session, the largest reactions are kept.
+
+22c, delivery accumulation. One variant: delivery accumulation. Monthly, from the top 500, the 20 names with the largest rise in their own 20-session average delivery percent over their own 120-session average, among names whose adjusted close is above their 50-session average. Equal weight.
+
+22d, low volatility. One variant: low volatility. Monthly, the 30 names from the top 200 with the lowest standard deviation of the last 250 one-session adjusted returns. Equal weight.
+
+22e, the 10-month overlay, applied to whichever of 22a to 22d has the highest in-sample after-tax CAGR. At a month end, when the NIFTY 200 price close is below the average of that close and the nine month-end closes before it, the next month is held in cash. A tie stays invested. The first ten month-ends have no signal, and those months stay invested.
+
+Pass mark, fixed here. CAGR after delivery costs and tax is at least 3 points above the NIFTY 200 price index over the same dates. The monthly t of the excess over that price index is above 2.5. The book is ahead of NIFTY 200 price in 2005-2014 and in 2015-2024, measured as total return. Max drawdown of the after-tax wealth is no more than 10 points deeper than the NIFTY 200 price drawdown. The excess over NIFTY 200 TRI is reported and is not part of the mark. A boundary stated with at least, or with no more than, still passes. Above 2.5 does not.
+
+Holdout. Only 22b, 22c and 22d. One look each, and only for a variant that passed in sample. The look is 2025-01-01 through the last panel session, final=True, logged once for this script. The same CAGR, t and drawdown clauses are applied on that window. The 2005-2014 and 2015-2024 clauses stay in sample. 22a is not sent to the holdout.
+
+Results.
+
+name | CAGR after tax | excess vs NIFTY 200 price | monthly t | max DD | NIFTY 200 DD | 2005-2014 | 2015-2024 | excess vs NIFTY 200 TRI | result
+mom 12-1 top 20 | CAGR +13.66% | excess +0.65% | t +0.72 | DD +81.45% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.78% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 0.723811670052561 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+mom 12-1 top 30 | CAGR +15.28% | excess +2.27% | t +1.03 | DD +79.48% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.84% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 1.0305438498216153 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+mom 6-1 top 20 | CAGR +15.94% | excess +2.93% | t +1.39 | DD +82.55% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +1.50% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 1.3857720318643854 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+mom 6-1 top 30 | CAGR +14.66% | excess +1.65% | t +1.13 | DD +81.02% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.22% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 1.132868860799543 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+results drift 20 | CAGR +4.84% | excess -8.17% | t -2.02 | DD +32.60% | index DD +64.04% | 2005-2014 behind | 2015-2024 behind | TRI excess -9.60% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t -2.015599877481592 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  2015-2024 is not ahead of NIFTY 200
+results drift 60 | CAGR +17.60% | excess +4.59% | t +0.76 | DD +60.63% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +3.15% | FAIL
+  monthly excess t 0.7624164328923894 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+delivery accumulation | CAGR +14.12% | excess +1.11% | t +0.91 | DD +79.31% | index DD +64.04% | 2005-2014 ahead | 2015-2024 behind | TRI excess -0.33% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 0.9050789176777073 is not above 2.5
+  2015-2024 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+low volatility | CAGR +12.34% | excess -0.67% | t -0.64 | DD +55.64% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -2.11% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t -0.6414374785167366 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+overlay results drift 60 | CAGR +13.56% | excess +0.55% | t -0.19 | DD +36.70% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.88% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t -0.1869178134519249 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+
+NIFTY200 Momentum 30 price CAGR +19.33% over 2005-2024 and -4.44% over 2025 through 2026-11-09. 22a is not run on the holdout.
+
+No variant passed in sample. The holdout was not opened for a failure.
 
 
 ## Forward test
