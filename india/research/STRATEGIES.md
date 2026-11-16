@@ -26,6 +26,7 @@ Each family gets one holdout look. A later variant of a family that has used its
 | overnight | yes |
 | pre-holiday | no |
 | futures basis | yes |
+| event days | no |
 
 ## Bucket
 
@@ -104,6 +105,21 @@ Tested and not in a bucket above.
 | bank intraday | 18 | FAIL |
 | pre-holiday | 18 | FAIL |
 | stock basis z10 | 19 | FAIL |
+| nifty expiry oc | 20 | FAIL |
+| nifty expiry 75m | 20 | FAIL |
+| bank expiry oc | 20 | FAIL |
+| bank expiry 75m | 20 | FAIL |
+| results gap cont | 20 | FAIL |
+| results gap fade | 20 | FAIL |
+| macro orb A | 20 | FAIL |
+| macro orb B | 20 | FAIL |
+| switch orb A | 20 | FAIL |
+| switch orb B | 20 | FAIL |
+| fii orb A | 21 | FAIL |
+| fii orb B | 21 | FAIL |
+| quiet orb A | 21 | FAIL |
+| quiet orb B | 21 | FAIL |
+| nifty expiry afternoon | 21 | FAIL |
 
 
 ## Sources

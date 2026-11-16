@@ -106,6 +106,21 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 19 | 2026-11-08 | nifty basis 5d. | attempt 19, rules fixed before the run | 2011-01-01 to 2024-12-31 | 209 | +0.553% | +4.38 | PASS |
 | 19 | 2026-11-08 | holdout nifty basis 5d. | same rule, one logged load | 2025-01-01 to 2026-11-04 | 32 | +0.151% | +1.02 | FAIL |
 | 19 | 2026-11-08 | stock basis z10. | attempt 19, rules fixed before the run | 2011-01-01 to 2024-12-31 | 658 | +0.163% | +1.07 | FAIL |
+| 20 | 2026-11-10 | nifty expiry oc. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 512 | -0.169% | -1.51 | FAIL |
+| 20 | 2026-11-10 | nifty expiry 75m. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 512 | -0.077% | -0.51 | FAIL |
+| 20 | 2026-11-10 | bank expiry oc. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 512 | -0.162% | -1.00 | FAIL |
+| 20 | 2026-11-10 | bank expiry 75m. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 512 | -0.098% | -0.98 | FAIL |
+| 20 | 2026-11-10 | results gap cont. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 7,494 | +0.094 | +2.07 | FAIL |
+| 20 | 2026-11-10 | results gap fade. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 0 | n/a | n/a | FAIL |
+| 20 | 2026-11-10 | macro orb A. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 580 | -0.153 | n/a | FAIL |
+| 20 | 2026-11-10 | macro orb B. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 1,228 | -0.110 | n/a | FAIL |
+| 20 | 2026-11-10 | switch orb A. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 18,981 | -0.053 | n/a | FAIL |
+| 20 | 2026-11-10 | switch orb B. | attempt 20, rules fixed before the run | 2015-01-01 to 2024-12-31 | 41,243 | -0.047 | n/a | FAIL |
+| 21 | 2026-11-10 | fii orb A. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 9,403 | -0.027 | n/a | FAIL |
+| 21 | 2026-11-10 | fii orb B. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 20,418 | -0.006 | n/a | FAIL |
+| 21 | 2026-11-10 | quiet orb A. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 17,124 | -0.027 | n/a | FAIL |
+| 21 | 2026-11-10 | quiet orb B. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 37,205 | -0.009 | n/a | FAIL |
+| 21 | 2026-11-10 | nifty expiry afternoon. | attempt 21, rules fixed before the run | 2015-01-01 to 2024-12-31 | 511 | -0.242 | n/a | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1431,6 +1446,185 @@ nifty basis 5d | 209 | +0.553% | +4.38 | +0.543% | +0.562% | +0.443% | +1.304% |
   holdout 2025-01-01 to 2026-11-04 FAIL avg +0.151% t +1.02
 stock basis z10 | 658 | +0.163% | +1.07 | +0.124% | +0.198% | +0.064% | +0.524% | +0.245% | FAIL
   monthly t +1.07 is not above 3
+
+Bucket: empty
+
+
+## Attempt 20
+
+Rules fixed on 2026-11-10, before the run.
+
+Family: event days. This is a new family. Its holdout stays unused until a variant passes in sample.
+
+Window: 2015-01-01 through 2024-12-31. Prices are the existing 5-minute and daily files. The research window keeps final false. No new order is sent.
+
+Calendar. data/nse/events.csv has columns date, kind, symbol, source. Symbol is blank on a market-wide row. Kinds are results, rbi, budget, expiry-monthly, expiry-weekly, and rebalance.
+
+Expiry days come from the continuous futures files in data/kite/futures when a file has an expiry column. Those files are daily continuous series and the column is absent, so the weekday rule supplies the dates. Weekly expiry is Thursday through 2025-08-31 and Tuesday after that date. Monthly expiry is the last Thursday through 2025-08-31 and the last Tuesday after that date. When the scheduled day is a holiday or a weekend, the expiry is the previous trading day. A date that is both is monthly only. 20a scores NIFTY and BANKNIFTY on those NIFTY expiry dates, monthly and weekly together.
+
+Results day. The announcement time is the financial-results broadcast. From 2025, where that feed stops, an NSE announcement whose text says financial results is used, and a broadcast already mapped to that session is kept. A board-meeting intimation is archived and is not a results day. The results day is the first NIFTY session whose 09:15 is strictly after the announcement. A stamp with no clock time is treated as 15:30 on that date, so the results day is the next session. The clock time is not invented.
+
+RBI days are the MPC resolution dates hard-coded in events.py, with the rbi.org.in source on the row. Budget days are the Union Budget speech dates, source indiabudget.gov.in. When the published date is not a NIFTY session, the event date is the next NIFTY session if that session falls within 4 calendar days, and otherwise the date is left out. Rebalance is the last NIFTY session of March and of September, the semi-annual Nifty 50 reconstitution.
+
+20a, expiry day, index. Four variants: nifty expiry oc, nifty expiry 75m, bank expiry oc, bank expiry 75m. The book is long one lot. NIFTY lot 75. BANKNIFTY lot 15, check your broker. Costs are the attempt 16 futures schedule, same-day, so the rollover count is 0. Open to close is the open of the bar ending 09:20 (the 09:15 price) to the close of the bar ending 15:10. The usable session ends at 15:10, so the close is that bar and not the 15:30 print. The last 75 minutes are the close of the bar ending 13:55 to the close of the bar ending 15:10. 15:10 minus 75 minutes is 13:55. Both bars sit inside a usable session. The return is the after-cost futures return in percent. Excess is that return minus the mean after-cost return of the same index on same-calendar-year days that are not in the expiry set. A year with no such day leaves the excess empty. The trade still counts in the average.
+
+20a pass. Each variant on its own. No family gate. The average of the expiry day's own after-cost return is above 0. The monthly t is the one-sample t of the monthly means of the excess, and it is above 3. The own average is above 0 in 2015-2019, in 2020-2024, and in up, down, and sideways. An empty bucket fails. The regime is the NIFTY daily regime of the session.
+
+20b, results day, stocks. Two variants: results gap cont and results gap fade. The universe is the attempt 12 universe: the top 200 names by average close times volume over the previous 20 sessions, and the 20 sessions must sit in one segment. Large caps are the top 100 of that ranking. The gap is the open of the bar ending 09:20 divided by the previous session's daily close in the same segment, minus 1. A gap of exactly 0 is not a trade. A gap that does not clear one tick is not a trade either, because the stop would not sit beyond the slipped fill. Continuation trades in the sign of the gap. Fade trades the other way. Entry is that open. The stop is the previous close, so R is the distance from the slipped entry to that close. There is no target. Exit is the 15:10 close unless a later bar stops it out. The entry bar is not scanned. A later bar that opens through the stop fills at that open. Otherwise a touch fills at the stop. One tick of slippage, from nse_market.tick_for, on the entry and on the exit. Costs are the intraday round trip. R before charges is after the tick. R after is after the tick and the charges. Size is Rs 2,000 of risk, capped at Rs 5,00,000, in whole shares.
+
+20b pass. The attempt 12 mark, with one change stated here: there are two variants, so the family clause is at least 1 of the 2 with t above 2. Every other clause is unchanged. Average R after costs and slippage at least +0.10. At least 300 trades on at least 100 distinct days. t above 3. Average R after costs above 0 in 2015-2019, in 2020-2024, in up, down, and sideways, and in large caps. A boundary stated with at least still passes. An empty bucket fails. The t is not a random bar, because a gap trade exists only at the open. The baseline is the same symbol on a random usable non-results day in the same calendar year: enter at that day's open, apply the same continuation or fade rule to that day's own gap, stop at that day's previous close, exit at 15:10. 100 runs. The seed is 20261106 plus the variant index times 1000, plus the run index. Excess R is R after costs minus the mean R of those random days. The monthly t is the one-sample t of the monthly means of that excess. A year with no eligible non-results day leaves that trade out of the t. It still counts in the average R.
+
+20c, macro days. The attempt 8 trend-day opening-range breakout, both universes. Universe A is today's NIFTY 50 list and has survivorship bias. Universe B is the point-in-time top 100 by the previous 20 sessions of turnover. A trade is taken only when the session is an RBI day or a Budget day. The all-days book is printed beside it and is not a variant. It cannot pass and it is not sent to the holdout. Names: macro orb A and macro orb B. The pass mark is attempt 8's four rules. At least 100 trades. Average R after costs at least +0.10. The first half and the second half of the sessions both above 0 after costs. Those halves are the halves of the full 2015-2024 NIFTY session calendar, the same split as attempt 8, not the halves of the macro dates. After-cost average R above 0 on at least 60 percent of the stocks that traded.
+
+20d, on/off switch. The same attempt 8 rule on both universes, taken only on a day that is on before 09:15. Names: switch orb A and switch orb B. The India VIX known before 09:15 is the previous session's close. It is in its top 30 percent of the last 250 closes when those 250 closes, ending at yesterday and including yesterday, put yesterday at or above the 176th smallest. That cutoff is index 175 of the sorted window. A tie at the cutoff is on. Fewer than 250 prior closes leaves the VIX clause off. The day is also on when events.csv has any row that day, including a stock-specific results row. Either condition is enough. The pass mark is the same four attempt 8 rules, and the halves are again the full 2015-2024 calendar.
+
+Holdout, only for a variant that passes. One load, logged, of the NIFTY 50 daily file, from 2025-01-01 through the last NIFTY daily date. Other reads in that block do not log. If nothing passes, the holdout is not opened. Holdout pass for a 20a variant is its own average above 0 and its excess t above 2. The in-sample bar of t above 3, and the half and regime clauses, are not applied again. Holdout pass for 20b is average R after costs above 0 and the excess t above 2. The +0.10 bar and the trade-count clauses are not applied again. Holdout pass for 20c and 20d is average R after costs above 0 and the monthly t of that R above 2. The 100-trade clause and the 60 percent stock clause are not applied on the short holdout.
+
+If no attempt 20 or 21 variant passes in-sample AND its holdout, intraday is Closed for good.
+
+Results.
+
+events.csv rows 26131
+budget 20
+expiry-monthly 436
+expiry-weekly 1461
+rbi 62
+rebalance 34
+results 24118
+
+20a expiry day, index. Long one lot. Own return after futures costs.
+name | n | own avg | excess avg | monthly t | 2015-2019 | 2020-2024 | up | down | sideways | result
+nifty expiry oc | 512 | -0.169% | -0.044% | -1.51 | -0.193% | -0.145% | -0.160% | -0.020% | -0.301% | FAIL
+  own avg -0.169% is not above 0
+  excess t -1.51 is not above 3
+  2015-2019 -0.193% is not above 0
+  2020-2024 -0.145% is not above 0
+  up -0.160% is not above 0
+  down -0.020% is not above 0
+  sideways -0.301% is not above 0
+nifty expiry 75m | 512 | -0.077% | -0.007% | -0.51 | -0.090% | -0.064% | -0.057% | -0.104% | -0.137% | FAIL
+  own avg -0.077% is not above 0
+  excess t -0.51 is not above 3
+  2015-2019 -0.090% is not above 0
+  2020-2024 -0.064% is not above 0
+  up -0.057% is not above 0
+  down -0.104% is not above 0
+  sideways -0.137% is not above 0
+bank expiry oc | 512 | -0.162% | -0.041% | -1.00 | -0.189% | -0.136% | -0.135% | -0.078% | -0.323% | FAIL
+  own avg -0.162% is not above 0
+  excess t -1.00 is not above 3
+  2015-2019 -0.189% is not above 0
+  2020-2024 -0.136% is not above 0
+  up -0.135% is not above 0
+  down -0.078% is not above 0
+  sideways -0.323% is not above 0
+bank expiry 75m | 512 | -0.098% | -0.024% | -0.98 | -0.107% | -0.090% | -0.068% | -0.210% | -0.142% | FAIL
+  own avg -0.098% is not above 0
+  excess t -0.98 is not above 3
+  2015-2019 -0.107% is not above 0
+  2020-2024 -0.090% is not above 0
+  up -0.068% is not above 0
+  down -0.210% is not above 0
+  sideways -0.142% is not above 0
+
+20b results day, stocks. R after the tick and the intraday charges.
+name | n | days | avg R | monthly t | 2015-2019 | 2020-2024 | up | down | sideways | large | result
+results gap cont | 7,494 | 1,187 | +0.094 | +2.07 | -0.348 | +0.542 | +0.042 | -0.332 | +0.581 | -0.187 | FAIL
+  avg R after costs +0.094 is below +0.10
+  t vs non-results days +2.07 is not above 3
+  2015-2019 -0.348 is not above 0
+  down -0.332 is not above 0
+  large caps -0.187 is not above 0
+results gap fade | 0 | 0 | n/a | n/a | n/a | n/a | n/a | n/a | n/a | n/a | FAIL
+  avg R after costs n/a is below +0.10
+  trades 0 is below 300
+  days 0 is below 100
+  t vs non-results days n/a is not above 3
+  2015-2019 n/a is not above 0
+  2020-2024 n/a is not above 0
+  up n/a is not above 0
+  down n/a is not above 0
+  sideways n/a is not above 0
+  large caps n/a is not above 0
+
+20c macro days and 20d switch. Attempt 8 rule. all days is a comparison.
+name | n | avg R | first half | second half | stocks above 0 | result
+all days A | 25,326 | -0.047 | -0.050 | -0.044 | 12 of 48 | comparison
+all days B | 54,707 | -0.038 | -0.050 | -0.027 | 123 of 314 | comparison
+macro orb A | 580 | -0.153 | -0.104 | -0.189 | 14 of 48 | FAIL
+  average R after costs -0.153 < +0.10
+  first half -0.104 is not above 0 after costs
+  second half -0.189 is not above 0 after costs
+  after-cost R > 0 on 14 of 48 stocks (29.2%), need 60%
+macro orb B | 1,228 | -0.110 | -0.084 | -0.130 | 82 of 218 | FAIL
+  average R after costs -0.110 < +0.10
+  first half -0.084 is not above 0 after costs
+  second half -0.130 is not above 0 after costs
+  after-cost R > 0 on 82 of 218 stocks (37.6%), need 60%
+switch orb A | 18,981 | -0.053 | -0.050 | -0.055 | 12 of 48 | FAIL
+  average R after costs -0.053 < +0.10
+  first half -0.050 is not above 0 after costs
+  second half -0.055 is not above 0 after costs
+  after-cost R > 0 on 12 of 48 stocks (25.0%), need 60%
+switch orb B | 41,243 | -0.047 | -0.052 | -0.043 | 119 of 309 | FAIL
+  average R after costs -0.047 < +0.10
+  first half -0.052 is not above 0 after costs
+  second half -0.043 is not above 0 after costs
+  after-cost R > 0 on 119 of 309 stocks (38.5%), need 60%
+
+No variant passed. The holdout was not opened.
+
+Bucket: empty
+
+Intraday is Closed for good.
+
+
+## Attempt 21
+
+Rules fixed on 2026-11-10, before the run.
+
+21a, 21b and 21c use the attempt 8 pass mark. At least 100 trades. Average R after costs and 1 tick of slippage at least +0.10. The first half and the second half of the full 2015-2024 NIFTY session calendar both above 0 after costs. After-cost average R above 0 on at least 60 percent of the names that traded. A boundary stated with at least still passes. An empty book fails.
+
+21a, FII flow filter. Names: fii orb A and fii orb B. The attempt 8 trend-day opening-range breakout, both universes, taken only in the direction of yesterday's change in the FII net index-futures position. Net is Future Index Long minus Future Index Short on the FII row of the participant-wise open-interest file. Yesterday is the latest file dated before the session. The change is that net minus the net on the previous file. Long when the change is positive. Short when it is negative. A change of zero is not a trade. Days whose absolute change sits in the smallest 30 percent of the last 250 absolute changes, ending at yesterday and including yesterday, are skipped. The cutoff is index 74 of the sorted window, the 75th smallest. A tie at the cutoff is skipped. Fewer than 250 changes and the day is skipped. Universe A is today's NIFTY 50 list and has survivorship bias. Universe B is the point-in-time top 100 by the previous 20 sessions of turnover.
+
+21b, expiry-day afternoon. Name: nifty expiry afternoon. NIFTY futures, one lot of 75, on the NIFTY 50 5-minute series, because the continuous futures file is daily. Expiry days are the monthly and weekly dates in events.csv, together. Enter at the close of the bar ending 13:30, in the direction of that close minus the open of the bar ending 09:20 (the 09:15 price). A flat morning is not a trade. Exit is the close of the bar ending 15:20. There is no stop and no target. If the 13:30 bar or the 15:20 bar is missing, the day is not a trade. One tick of 0.05, from tick_for with the symbol NIFTY, on the entry and on the exit. Costs are the attempt 16 futures schedule, same day, so the rollover count is 0. R's denominator is the morning move times the lot, measured before the tick. R after subtracts the futures charges. The 60 percent clause is this one name.
+
+21c, quiet-day skip. Names: quiet orb A and quiet orb B. The same attempt 8 rule on both universes, skipping a day where the India VIX close known before 09:15 (yesterday's close) is in its lowest 30 percent of the last 250 closes. The window ends at yesterday and includes yesterday. The cutoff is index 74 of the sorted window. A tie at the cutoff is skipped. Fewer than 250 closes leaves the clause off, so the day is not skipped for lack of history.
+
+Family. 21a and 21c are the opening-range breakout family. 21b is the event days family. The holdout is one logged load of the NIFTY 50 daily file, shared with attempt 20, and only when a variant has passed in sample. Other reads in that block do not log. Holdout pass is average R after costs above 0 and the monthly t of that R above 2. The 100-trade clause and the 60 percent clause are not applied on the short holdout.
+
+If no attempt 20 or 21 variant passes in-sample AND its holdout, intraday is Closed for good.
+
+Results.
+
+name | n | avg R | first half | second half | stocks above 0 | result
+fii orb A | 9,403 | -0.027 | -0.052 | -0.011 | 20 of 48 | FAIL
+  average R after costs -0.027 < +0.10
+  first half -0.052 is not above 0 after costs
+  second half -0.011 is not above 0 after costs
+  after-cost R > 0 on 20 of 48 stocks (41.7%), need 60%
+fii orb B | 20,418 | -0.006 | -0.028 | +0.010 | 150 of 306 | FAIL
+  average R after costs -0.006 < +0.10
+  first half -0.028 is not above 0 after costs
+  after-cost R > 0 on 150 of 306 stocks (49.0%), need 60%
+quiet orb A | 17,124 | -0.027 | -0.047 | -0.011 | 18 of 48 | FAIL
+  average R after costs -0.027 < +0.10
+  first half -0.047 is not above 0 after costs
+  second half -0.011 is not above 0 after costs
+  after-cost R > 0 on 18 of 48 stocks (37.5%), need 60%
+quiet orb B | 37,205 | -0.009 | -0.024 | +0.005 | 151 of 301 | FAIL
+  average R after costs -0.009 < +0.10
+  first half -0.024 is not above 0 after costs
+  after-cost R > 0 on 151 of 301 stocks (50.2%), need 60%
+nifty expiry afternoon | 511 | -0.242 | -0.101 | -0.382 | 0 of 1 | FAIL
+  average R after costs -0.242 < +0.10
+  first half -0.101 is not above 0 after costs
+  second half -0.382 is not above 0 after costs
+  after-cost R > 0 on 0 of 1 stocks (0.0%), need 60%
+
+No attempt 21 variant passed. Its holdout rows were not opened.
+
+Intraday is Closed for good.
 
 Bucket: empty
 

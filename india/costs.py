@@ -68,3 +68,55 @@ def breakdown(buy, sell, shares):
 def round_trip(buy, sell, shares):
     """Total round-trip cost in rupees."""
     return breakdown(buy, sell, shares)["total"]
+
+
+# Delivery (CNC) schedule, the same rates signal_lab uses. Check your broker.
+# A percentage is "percent of that side's value". Brokerage is zero. STT is on
+# both sides. Stamp is on the buy. GST is 18% of exchange plus SEBI. The DP
+# charge is once on the sell.
+DELIVERY_STT_PCT = Decimal("0.1")
+DELIVERY_EXCHANGE_PCT = Decimal("0.00297")
+DELIVERY_SEBI_PCT = Decimal("0.0001")
+DELIVERY_STAMP_PCT = Decimal("0.015")
+DELIVERY_GST_PCT = Decimal("18")
+DELIVERY_DP = Decimal("15.34")
+
+
+def _delivery_value(price, shares, what):
+    px = _d(price, what)
+    n = _d(shares, "shares")
+    if px <= 0:
+        raise ValueError("%s must be above 0" % what)
+    if n != n.to_integral_value() or n < 0:
+        raise ValueError("shares must be a whole number, not %r" % (shares,))
+    return px, n, px * n
+
+
+def delivery_buy(price, shares):
+    """Rupees charged on a delivery buy. Zero shares costs nothing."""
+    _px, n, value = _delivery_value(price, shares, "buy price")
+    if n == 0:
+        return Decimal("0")
+    stt = value * DELIVERY_STT_PCT / Decimal("100")
+    exchange = value * DELIVERY_EXCHANGE_PCT / Decimal("100")
+    sebi = value * DELIVERY_SEBI_PCT / Decimal("100")
+    stamp = value * DELIVERY_STAMP_PCT / Decimal("100")
+    gst = (exchange + sebi) * DELIVERY_GST_PCT / Decimal("100")
+    return stt + exchange + sebi + stamp + gst
+
+
+def delivery_sell(price, shares):
+    """Rupees charged on a delivery sell, including the DP charge."""
+    _px, n, value = _delivery_value(price, shares, "sell price")
+    if n == 0:
+        return Decimal("0")
+    stt = value * DELIVERY_STT_PCT / Decimal("100")
+    exchange = value * DELIVERY_EXCHANGE_PCT / Decimal("100")
+    sebi = value * DELIVERY_SEBI_PCT / Decimal("100")
+    gst = (exchange + sebi) * DELIVERY_GST_PCT / Decimal("100")
+    return stt + exchange + sebi + gst + DELIVERY_DP
+
+
+def delivery_round_trip(buy, sell, shares):
+    """Delivery buy plus delivery sell, in rupees."""
+    return delivery_buy(buy, shares) + delivery_sell(sell, shares)
