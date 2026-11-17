@@ -129,6 +129,10 @@ Tested and not in a bucket above.
 | delivery accumulation | 22 | FAIL |
 | low volatility | 22 | FAIL |
 | overlay results drift 60 | 22 | FAIL |
+| 23a index momentum 6m | 23 | FAIL |
+| 23b index momentum 12m | 23 | FAIL |
+| 23c index momentum 6m overlay | 23 | FAIL |
+| 23d results drift 60 top 200 | 23 | FAIL |
 
 
 ## Sources

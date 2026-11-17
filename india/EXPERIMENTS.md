@@ -130,6 +130,10 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 22 | 2026-11-16 | delivery accumulation. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 4615 | +1.11% | +0.91 | FAIL |
 | 22 | 2026-11-16 | low volatility. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 6100 | -0.67% | -0.64 | FAIL |
 | 22 | 2026-11-16 | overlay results drift 60. | attempt 22, rules fixed before the run | 2005-01-01 to 2024-12-31 | 830 | +0.55% | -0.19 | FAIL |
+| 23 | 2026-11-17 | 23a index momentum 6m. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1097 | +3.04% | +1.22 | FAIL |
+| 23 | 2026-11-17 | 23b index momentum 12m. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 532 | +1.23% | +0.79 | FAIL |
+| 23 | 2026-11-17 | 23c index momentum 6m overlay. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1122 | +0.63% | +0.06 | FAIL |
+| 23 | 2026-11-17 | 23d results drift 60 top 200. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 719 | -7.01% | -1.84 | FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1662,52 +1666,106 @@ Holdout. Only 22b, 22c and 22d. One look each, and only for a variant that passe
 
 Results.
 
-name | CAGR after tax | excess vs NIFTY 200 price | monthly t | max DD | NIFTY 200 DD | 2005-2014 | 2015-2024 | excess vs NIFTY 200 TRI | result
-mom 12-1 top 20 | CAGR +13.66% | excess +0.65% | t +0.72 | DD +81.45% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.78% | FAIL
+name | CAGR before tax | CAGR after tax | excess vs NIFTY 200 price | monthly t | max DD | NIFTY 200 DD | 2005-2014 | 2015-2024 | excess vs NIFTY 200 TRI | result
+mom 12-1 top 20 | before tax +14.54% | after tax +13.66% | excess +0.65% | t +0.72 | DD +81.45% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.78% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t 0.723811670052561 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
   max drawdown is more than 10 points deeper than NIFTY 200
-mom 12-1 top 30 | CAGR +15.28% | excess +2.27% | t +1.03 | DD +79.48% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.84% | FAIL
+mom 12-1 top 30 | before tax +16.11% | after tax +15.28% | excess +2.27% | t +1.03 | DD +79.48% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.84% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t 1.0305438498216153 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
   max drawdown is more than 10 points deeper than NIFTY 200
-mom 6-1 top 20 | CAGR +15.94% | excess +2.93% | t +1.39 | DD +82.55% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +1.50% | FAIL
+mom 6-1 top 20 | before tax +16.94% | after tax +15.94% | excess +2.93% | t +1.39 | DD +82.55% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +1.50% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t 1.3857720318643854 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
   max drawdown is more than 10 points deeper than NIFTY 200
-mom 6-1 top 30 | CAGR +14.66% | excess +1.65% | t +1.13 | DD +81.02% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.22% | FAIL
+mom 6-1 top 30 | before tax +15.65% | after tax +14.66% | excess +1.65% | t +1.13 | DD +81.02% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +0.22% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t 1.132868860799543 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
   max drawdown is more than 10 points deeper than NIFTY 200
-results drift 20 | CAGR +4.84% | excess -8.17% | t -2.02 | DD +32.60% | index DD +64.04% | 2005-2014 behind | 2015-2024 behind | TRI excess -9.60% | FAIL
+results drift 20 | before tax +5.64% | after tax +4.84% | excess -8.17% | t -2.02 | DD +32.60% | index DD +64.04% | 2005-2014 behind | 2015-2024 behind | TRI excess -9.60% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t -2.015599877481592 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
   2015-2024 is not ahead of NIFTY 200
-results drift 60 | CAGR +17.60% | excess +4.59% | t +0.76 | DD +60.63% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +3.15% | FAIL
+results drift 60 | before tax +18.55% | after tax +17.60% | excess +4.59% | t +0.76 | DD +60.63% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +3.15% | FAIL
   monthly excess t 0.7624164328923894 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
-delivery accumulation | CAGR +14.12% | excess +1.11% | t +0.91 | DD +79.31% | index DD +64.04% | 2005-2014 ahead | 2015-2024 behind | TRI excess -0.33% | FAIL
+delivery accumulation | before tax +15.41% | after tax +14.12% | excess +1.11% | t +0.91 | DD +79.31% | index DD +64.04% | 2005-2014 ahead | 2015-2024 behind | TRI excess -0.33% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t 0.9050789176777073 is not above 2.5
   2015-2024 is not ahead of NIFTY 200
   max drawdown is more than 10 points deeper than NIFTY 200
-low volatility | CAGR +12.34% | excess -0.67% | t -0.64 | DD +55.64% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -2.11% | FAIL
+low volatility | before tax +12.91% | after tax +12.34% | excess -0.67% | t -0.64 | DD +55.64% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -2.11% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t -0.6414374785167366 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
-overlay results drift 60 | CAGR +13.56% | excess +0.55% | t -0.19 | DD +36.70% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.88% | FAIL
+overlay results drift 60 | before tax +14.50% | after tax +13.56% | excess +0.55% | t -0.19 | DD +36.70% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.88% | FAIL
   after-tax CAGR is not at least 3 points above NIFTY 200
   monthly excess t -0.1869178134519249 is not above 2.5
   2005-2014 is not ahead of NIFTY 200
 
+Before tax is the CAGR after delivery costs and before tax. The verdicts are unchanged.
+
 NIFTY200 Momentum 30 price CAGR +19.33% over 2005-2024 and -4.44% over 2025 through 2026-11-09. 22a is not run on the holdout.
 
 No variant passed in sample. The holdout was not opened for a failure.
+
+## Attempt 23
+
+Rules fixed on 2026-11-17, before the run.
+
+Window: 2005-01-01 through 2024-12-31. final stays false on this window. Prices are the survivorship-free cash panel in data/cache/panel, built from data/nse/cm. A stock that stops trading is sold at its last adjusted close, and that loss stays in the result. Costs are the delivery schedule in india/costs.py. Tax is invest.tax_due: STCG 15% before 2024-07-23 and 20% on or after that date, LTCG 10% above Rs 1,00,000 or 12.5% above Rs 1,25,000 for a sale after the one-year anniversary, and losses offset gains in the same year. The book starts at Rs 10,00,000. No new order is sent.
+
+Universe. Top 200 is the panel's monthly list: stocks that trade on the first session, ranked by the median turnover of the previous 60 sessions.
+
+23a, index-style momentum. The score is the average of the 6-month return and the 12-month return, each divided by the 1-year daily volatility. The 6-month return is the adjusted close divided by the close 126 sessions earlier, minus 1. The 12-month return uses 252 sessions. Volatility is the sample standard deviation of the last 252 one-session returns. The book is the top 30 from the top 200, equal weight, long only. Rebalance is the first session of April and the first session of October. Buffer: a holding is kept while it ranks in the top 60. A name that does not rank, or ranks 61 or worse, is sold. Vacancies are filled from the top of the ranking. The book never holds more than 30 names.
+
+23b, the same book as 23a, rebalanced on the first session of April only, so a sale of a name bought the previous April is after the one-year anniversary and is taxed as long-term.
+
+23c, 23a with the NIFTY 200 10-month-average overlay checked on the first session of every month. The signal is the same as attempt 22: the previous month-end close against the average of that close and the nine month-end closes before it. Below the average, the next month is cash. At or above it, the book is the latest April or October selection. The first ten month-ends have no signal, and those months stay invested. A tie stays invested.
+
+23d, post-results drift, hold 60 sessions, only for a stock inside the top 200 on the entry session. The reaction, the top 10% cutoff, the next session's open and the exit 60 sessions later are the same as attempt 22. At most 20 positions. Each new position is one twentieth of equity at the entry. Idle cash earns 0.
+
+Pass mark, the same as attempt 22. CAGR after delivery costs and tax is at least 3 points above the NIFTY 200 price index over the same dates. The monthly t of the excess over that price index is above 2.5. The book is ahead of NIFTY 200 price in 2005-2014 and in 2015-2024, measured as total return. Max drawdown of the after-tax wealth is no more than 10 points deeper than the NIFTY 200 price drawdown. The excess over NIFTY 200 TRI is reported and is not part of the mark. A boundary stated with at least, or with no more than, still passes. Above 2.5 does not.
+
+For information, not a variant: buy NIFTY200 Momentum 30 TRI on 2005-04-01 and sell on 2024-12-31, one delivery round trip, LTCG once. The same trade in NIFTY 200 TRI. Neither trade is a holdout.
+
+Holdout. Only 23d. One look, and only after an in-sample pass. The look is 2025-01-01 through the last panel session, final=True, logged once. The same CAGR, t and drawdown clauses are applied on that window. The decade clauses stay in sample. 23a, 23b and 23c are momentum. They are compared with the published NIFTY200 Momentum 30 and NIFTY 200 indexes over 2025-01-01 through the last index row. Those books are not run on those dates and they do not log a holdout.
+
+If no attempt 23 variant passes, short-term stock picking is Closed and factor exposure goes through index funds.
+
+Results.
+
+name | CAGR before tax | CAGR after tax | excess vs NIFTY 200 price | monthly t | max DD | NIFTY 200 DD | 2005-2014 | 2015-2024 | excess vs NIFTY 200 TRI | result
+23a index momentum 6m | before tax +16.70% | after tax +16.05% | excess +3.04% | t +1.22 | DD +76.37% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess +1.60% | FAIL
+  monthly excess t 1.2236155813816763 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+23b index momentum 12m | before tax +14.77% | after tax +14.24% | excess +1.23% | t +0.79 | DD +77.03% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.21% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 0.7902290274749959 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  max drawdown is more than 10 points deeper than NIFTY 200
+23c index momentum 6m overlay | before tax +14.29% | after tax +13.64% | excess +0.63% | t +0.06 | DD +48.87% | index DD +64.04% | 2005-2014 behind | 2015-2024 ahead | TRI excess -0.81% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t 0.061254369256245604 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+23d results drift 60 top 200 | before tax +6.74% | after tax +6.00% | excess -7.01% | t -1.84 | DD +47.29% | index DD +64.04% | 2005-2014 behind | 2015-2024 behind | TRI excess -8.45% | FAIL
+  after-tax CAGR is not at least 3 points above NIFTY 200
+  monthly excess t -1.8364472526800089 is not above 2.5
+  2005-2014 is not ahead of NIFTY 200
+  2015-2024 is not ahead of NIFTY 200
+
+NIFTY200 Momentum 30 TRI bought 2005-04-01 sold 2024-12-31, one LTCG, after-tax CAGR +19.85%, ending equity 35749040.12.
+NIFTY 200 TRI bought 2005-04-01 sold 2024-12-31, one LTCG, after-tax CAGR +14.01%, ending equity 13326213.01.
+NIFTY200 Momentum 30 price CAGR -4.44% and NIFTY 200 price CAGR +3.10% over 2025-01-01 through 2026-11-09. 23a, 23b and 23c are not run on those dates.
+
+No attempt 23 variant passed. Short-term stock picking is Closed and factor exposure goes through index funds.
 
 
 ## Forward test

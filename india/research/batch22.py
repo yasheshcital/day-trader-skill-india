@@ -389,9 +389,10 @@ def run_monthly(panel, score, top_n, universe_n, index_points, start, end,
 def _finish(equity, trades, index_points, capital, turnover_sum, panel, tri_points=None):
     if not equity:
         return {
-            "cagr": None, "index_cagr": None, "tri_excess": None, "t": None,
-            "tri_t": None, "dd": None, "index_dd": None, "ahead_early": False,
-            "ahead_late": False, "trades": 0, "turnover": None, "final_equity": capital,
+            "cagr": None, "pretax_cagr": None, "index_cagr": None, "tri_excess": None,
+            "t": None, "tri_t": None, "dd": None, "index_dd": None,
+            "ahead_early": False, "ahead_late": False, "trades": 0,
+            "turnover": None, "final_equity": capital,
         }
     by_year = {}
     for trade in trades:
@@ -407,6 +408,7 @@ def _finish(equity, trades, index_points, capital, turnover_sum, panel, tri_poin
     first = after[0][0]
     last = after[-1][0]
     cagr = invest._cagr(capital, after[-1][1], first, last)
+    pretax_cagr = invest._cagr(capital, equity[-1][1], first, last)
     index_at = {}
     for day, close in index_points:
         index_at[day] = close
@@ -514,6 +516,7 @@ def _finish(equity, trades, index_points, capital, turnover_sum, panel, tri_poin
     turnover = turnover_sum / years if years > 0 else None
     return {
         "cagr": cagr,
+        "pretax_cagr": pretax_cagr,
         "index_cagr": index_cagr,
         "tri_excess": tri_excess,
         "t": harness.t_stat(excess) if excess else None,
@@ -786,7 +789,9 @@ def _row_line(name, row, result):
     return " ".join([
         name,
         "|",
-        "CAGR %s" % _pct(row["cagr"]),
+        "before tax %s" % _pct(row.get("pretax_cagr")),
+        "|",
+        "after tax %s" % _pct(row["cagr"]),
         "|",
         "excess %s" % _pct(None if row["cagr"] is None or row["index_cagr"] is None else row["cagr"] - row["index_cagr"]),
         "|",
@@ -1098,7 +1103,7 @@ def _summary_row(stamp, name, row, result, window):
 def _report(stamp, blocks, momentum_note):
     lines = [rules_text(stamp).rstrip(), "", "Results.", ""]
     lines.append(
-        "name | CAGR after tax | excess vs NIFTY 200 price | monthly t | "
+        "name | CAGR before tax | CAGR after tax | excess vs NIFTY 200 price | monthly t | "
         "max DD | NIFTY 200 DD | 2005-2014 | 2015-2024 | excess vs NIFTY 200 TRI | result"
     )
     for block in blocks:
