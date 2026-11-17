@@ -99,7 +99,26 @@ INDEX_SERIES = (
     ("NIFTY100_LOW_VOLATILITY_30_TR", "NIFTY100 LOW VOLATILITY 30 TR", "NIFTY100 LOW VOLATILITY 30 TRI"),
     ("NIFTY_ALPHA_50", "NIFTY ALPHA 50", "NIFTY ALPHA 50 TR"),
     ("NIFTY_ALPHA_50_TR", "NIFTY ALPHA 50 TR", "NIFTY ALPHA 50 TRI"),
+    ("NIFTY200_QUALITY_30", "NIFTY200 QUALITY 30", "NIFTY 200 QUALITY 30"),
+    ("NIFTY200_QUALITY_30_TR", "NIFTY200 QUALITY 30 TR", "NIFTY200 QUALITY 30 TRI"),
+    ("NIFTY50_VALUE_20", "NIFTY50 VALUE 20", "NIFTY 50 VALUE 20"),
+    ("NIFTY50_VALUE_20_TR", "NIFTY50 VALUE 20 TR", "NIFTY50 VALUE 20 TRI"),
+    ("NIFTY_MIDCAP_150", "NIFTY MIDCAP 150", "NIFTYMIDCAP 150"),
+    ("NIFTY_MIDCAP_150_TR", "NIFTY MIDCAP 150 TR", "NIFTY MIDCAP 150 TRI"),
+    ("NIFTY_SMALLCAP_250", "NIFTY SMALLCAP 250", "NIFTYSMALLCAP 250"),
+    ("NIFTY_SMALLCAP_250_TR", "NIFTY SMALLCAP 250 TR", "NIFTY SMALLCAP 250 TRI"),
+    ("NIFTY_MIDCAP150_MOMENTUM_50", "NIFTY MIDCAP150 MOMENTUM 50", "NIFTYMIDCAP150 MOMENTUM 50"),
+    ("NIFTY_MIDCAP150_MOMENTUM_50_TR", "NIFTY MIDCAP150 MOMENTUM 50 TR", "NIFTY MIDCAP150 MOMENTUM 50 TRI"),
+    # The 10-year benchmark G-Sec index is already a total return (coupons are
+    # reinvested). It is published on the price endpoint, so the slug does not
+    # end in _TR. The clean-price file is the price series.
+    ("NIFTY_10YR_BENCHMARK_GSEC_CLEAN", "NIFTY 10 YR BENCHMARK G-SEC (CLEAN PRICE)", "NIFTY 10 YR BENCHMARK G-SEC CLEAN PRICE"),
+    ("NIFTY_10YR_BENCHMARK_GSEC", "NIFTY 10 YR BENCHMARK G-SEC", "NIFTY 10 YR BENCHMARK GSEC"),
 )
+# Nifty Indices does not publish a bullion gold index. Nifty Commodities is an
+# equity basket. Gold for the long-term books is the IBJA 999 fine-gold rate,
+# INR per 10 grams, stored as indices/GOLD_INR.csv.gz with columns date, close.
+# Source: https://www.ibja.co . It is not fetched by --only indices.
 CM_SERIES = ("EQ", "BE")
 CM_HEADER = (
     "date", "symbol", "series", "isin", "open", "high", "low", "close",

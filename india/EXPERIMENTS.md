@@ -134,6 +134,18 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 23 | 2026-11-17 | 23b index momentum 12m. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 532 | +1.23% | +0.79 | FAIL |
 | 23 | 2026-11-17 | 23c index momentum 6m overlay. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 1122 | +0.63% | +0.06 | FAIL |
 | 23 | 2026-11-17 | 23d results drift 60 top 200. | attempt 23, rules fixed before the run | 2005-01-01 to 2024-12-31 | 719 | -7.01% | -1.84 | FAIL |
+| 24 | 2026-11-17 | 24a NIFTY 200. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +0.00% | +6.03% | FAIL |
+| 24 | 2026-11-17 | 24a Momentum 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +5.58% | +11.32% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24a LowVol 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +3.01% | +10.07% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24a Alpha 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +5.77% | +8.58% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24b Momentum+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 72 | +4.47% | +12.07% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 82 | +5.00% | +10.91% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24d NIFTY 200. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +0.00% | +6.03% | FAIL |
+| 24 | 2026-11-17 | 24d Momentum 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +5.74% | +11.32% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24d LowVol 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +1.96% | +10.07% | FAIL |
+| 24 | 2026-11-17 | 24d Alpha 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +6.98% | +8.58% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24d Momentum+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 348 | +4.05% | +12.14% | PASS Holdout FAIL |
+| 24 | 2026-11-17 | 24d Alpha50+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 346 | +5.04% | +11.00% | PASS Holdout FAIL |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1766,6 +1778,134 @@ NIFTY 200 TRI bought 2005-04-01 sold 2024-12-31, one LTCG, after-tax CAGR +14.01
 NIFTY200 Momentum 30 price CAGR -4.44% and NIFTY 200 price CAGR +3.10% over 2025-01-01 through 2026-11-09. 23a, 23b and 23c are not run on those dates.
 
 No attempt 23 variant passed. Short-term stock picking is Closed and factor exposure goes through index funds.
+
+
+## Attempt 24
+
+Rules fixed on 2026-11-17, before the run.
+
+Window: 2005-04-01 through 2024-12-31. final stays false on this window. A portfolio whose series starts after 2005-04-01 is scored from that first date, and the row says so. Prices are the total-return files in data/nse/indices. The NIFTY 10 yr Benchmark G-Sec file is the total-return index (the index itself reinvests coupons). Gold is not an NSE index. Nifty Indices does not publish a bullion series, so gold is the IBJA 999 fine-gold rate, INR per 10 grams, in GOLD_INR.csv.gz. That file is not part of the index download. A sleeve used on a session before its launch date in data/nse/indices/launch.csv is marked (back-test years included). A blank launch date is not treated as a back-test.
+
+Costs. Each sleeve pays an expense ratio, taken out of the index level between sessions. Broad indexes, the G-Sec index and gold pay 0.3% a year. Factor indexes (momentum, low volatility, quality, value, alpha, and Midcap150 Momentum 50) pay 0.5% a year. There is no delivery brokerage.
+
+Tax. Equity held for more than 12 months is LTCG: 10% above Rs 1,00,000 on a sale before 2024-07-23, and 12.5% above Rs 1,25,000 on or after that date. Equity held for 12 months or less is STCG, 15% before that date and 20% on or after it. G-Sec and gold are taxed at 30% on the year's net gain, with no exemption. A loss offsets gains of the same kind in that year. The book is sold on the last session so the CAGR is after that tax. Drawdown, the worst calendar year, the recovery and the rolling CAGRs use the growth of the book before that final sale.
+
+Rebalance is the first session of April, back to the target weights. The engine can skip that rebalance unless a weight is more than 5 points away from its target. Five points exactly does not trade. Attempt 24 leaves the bands off, so every April is a full rebalance. The first purchase is not a band check.
+
+24a, each single index, buy and hold. The lump sum is Rs 10,00,000.
+
+24b, equal mixes: Momentum+LowVol, Momentum+Quality, Momentum+LowVol+Quality, Alpha50+LowVol. Same lump sum, April rebalance.
+
+24c, 70/20/10 and 60/25/15 equity, G-Sec and gold. Equity is (i) NIFTY 200 and (ii) the 24b mix with the highest after-tax CAGR. Same lump sum, April rebalance. When the signal in 24e is off, the equity weight is cash and the G-Sec and gold weights stay put.
+
+24d, every 24a, 24b and 24c portfolio as a Rs 10,000 contribution on the first session of each month. The growth rate is the XIRR of those contributions and the after-tax ending value. There is no lump sum.
+
+24e, the 10-month NIFTY 200 price rule on the equity part of the best 24c portfolio, after tax. The signal is the same as attempt 22: the previous month-end close against the average of that close and the nine before it. Below the average, equity is cash until the signal turns back on. At or above it, equity is invested. The first ten month-ends have no signal, and those months stay invested. A tie stays invested. G-Sec and gold are not sold by the signal.
+
+Pass mark, versus NIFTY 200 TRI run the same way (buy and hold against buy and hold, SIP against SIP), after the 0.3% expense and the same tax, over the portfolio's own dates. CAGR (XIRR for a SIP) at least 2 points higher, OR the same CAGR within 1 point with max drawdown at least 15 points smaller. It must also have a higher minimum rolling 10-year CAGR. A boundary stated with at least, or with within, still passes. Higher does not. A portfolio with no complete 10-year window fails the rolling clause.
+
+Holdout. Each portfolio that passes in sample gets one look, 2025-01-01 through the last shared date, final=True, logged once. The CAGR and drawdown clauses are applied on that window. The rolling 10-year clause stays in sample, because the holdout window is shorter than 10 years.
+
+A sleeve whose file is not on disk is not scored. That row is not a FAIL and it is not catalogued.
+
+Results.
+
+name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD | worst year | years to recover | rolling 5-year min/med/max | rolling 10-year min/med/max | result
+24a NIFTY 200 (back-test years included) | CAGR +13.69% | excess +0.00% | DD +63.76% | bench DD +63.76% | worst 2008 -56.22% | recover 6.23 years | 5y -1.38% / +12.73% / +22.40% | 10y +6.03% / +12.22% / +17.09% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24a Momentum 30 (back-test years included) | CAGR +19.27% | excess +5.58% | DD +67.82% | bench DD +63.76% | worst 2008 -60.24% | recover 6.02 years | 5y -1.64% / +18.78% / +29.86% | 10y +11.32% / +18.92% / +23.92% | PASS
+24a LowVol 30 (back-test years included) | CAGR +16.70% | excess +3.01% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | PASS
+24a Quality 30 | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24a Value 20 | NOT SCORED | series not on disk: NIFTY50_VALUE_20_TR
+  series not on disk: NIFTY50_VALUE_20_TR
+24a Alpha 50 (back-test years included) | CAGR +19.46% | excess +5.77% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
+24a Midcap 150 | NOT SCORED | series not on disk: NIFTY_MIDCAP_150_TR
+  series not on disk: NIFTY_MIDCAP_150_TR
+24a Smallcap 250 | NOT SCORED | series not on disk: NIFTY_SMALLCAP_250_TR
+  series not on disk: NIFTY_SMALLCAP_250_TR
+24a Midcap150 Momentum 50 | NOT SCORED | series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
+  series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
+24a G-Sec 10y | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC
+24a Gold | NOT SCORED | series not on disk: GOLD_INR
+  series not on disk: GOLD_INR
+24b Momentum+LowVol (back-test years included) | CAGR +18.16% | excess +4.47% | DD +60.12% | bench DD +63.76% | worst 2008 -53.07% | recover 2.73 years | 5y +3.54% / +17.16% / +26.24% | 10y +12.07% / +16.76% / +21.97% | PASS
+24b Momentum+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24b Momentum+LowVol+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24b Alpha50+LowVol (back-test years included) | CAGR +18.69% | excess +5.00% | DD +66.65% | bench DD +63.76% | worst 2008 -61.13% | recover 4.84 years | 5y +1.30% / +17.94% / +30.17% | 10y +10.91% / +17.15% / +22.21% | PASS
+24c 70/20/10 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24c 60/25/15 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24c 70/20/10 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24c 60/25/15 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24d NIFTY 200 (back-test years included) | XIRR +12.63% | excess +0.00% | DD +63.76% | bench DD +63.76% | worst 2008 -56.22% | recover 6.23 years | 5y -1.38% / +12.73% / +22.40% | 10y +6.03% / +12.22% / +17.09% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24d Momentum 30 (back-test years included) | XIRR +18.37% | excess +5.74% | DD +67.82% | bench DD +63.76% | worst 2008 -60.24% | recover 6.02 years | 5y -1.64% / +18.78% / +29.86% | 10y +11.32% / +18.92% / +23.92% | PASS
+24d LowVol 30 (back-test years included) | XIRR +14.59% | excess +1.96% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+24d Quality 30 | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24d Value 20 | NOT SCORED | series not on disk: NIFTY50_VALUE_20_TR
+  series not on disk: NIFTY50_VALUE_20_TR
+24d Alpha 50 (back-test years included) | XIRR +19.61% | excess +6.98% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
+24d Midcap 150 | NOT SCORED | series not on disk: NIFTY_MIDCAP_150_TR
+  series not on disk: NIFTY_MIDCAP_150_TR
+24d Smallcap 250 | NOT SCORED | series not on disk: NIFTY_SMALLCAP_250_TR
+  series not on disk: NIFTY_SMALLCAP_250_TR
+24d Midcap150 Momentum 50 | NOT SCORED | series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
+  series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
+24d G-Sec 10y | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC
+24d Gold | NOT SCORED | series not on disk: GOLD_INR
+  series not on disk: GOLD_INR
+24d Momentum+LowVol (back-test years included) | XIRR +16.68% | excess +4.05% | DD +59.32% | bench DD +63.76% | worst 2008 -52.15% | recover 2.71 years | 5y +3.93% / +17.17% / +26.34% | 10y +12.14% / +16.82% / +22.03% | PASS
+24d Momentum+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24d Momentum+LowVol+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
+  series not on disk: NIFTY200_QUALITY_30_TR
+24d Alpha50+LowVol (back-test years included) | XIRR +17.67% | excess +5.04% | DD +65.99% | bench DD +63.76% | worst 2008 -60.29% | recover 4.73 years | 5y +1.58% / +17.97% / +30.24% | 10y +11.00% / +17.23% / +22.28% | PASS
+24d 70/20/10 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24d 60/25/15 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24d 70/20/10 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24d 60/25/15 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+
+Not on disk: NIFTY200_QUALITY_30_TR, NIFTY50_VALUE_20_TR, NIFTY_MIDCAP_150_TR, NIFTY_SMALLCAP_250_TR, NIFTY_MIDCAP150_MOMENTUM_50_TR, NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR.
+Index download, run from Terminal, not from Cursor: caffeinate -i python3 india/nse_archive.py --only indices
+Gold is not in that download. Save the IBJA 999 rate, INR per 10 grams, as data/nse/indices/GOLD_INR.csv.gz with columns date and close. Source: https://www.ibja.co
+Best 24b mix by after-tax CAGR: 24b Alpha50+LowVol at +18.69%.
+No 24c portfolio could be scored, so 24e was not run.
+
+Holdout, 2025-01-01 through the last shared date. The rolling 10-year clause stays in sample.
+holdout 24a Momentum 30 | 2025-01-01 to 2026-11-09 | CAGR -4.20% | excess -8.09% | DD +22.38% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a LowVol 30 | 2025-01-01 to 2026-11-09 | CAGR +3.53% | excess -0.36% | DD +14.30% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a Alpha 50 | 2025-01-01 to 2026-11-09 | CAGR -3.57% | excess -7.46% | DD +26.19% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24b Momentum+LowVol | 2025-01-01 to 2026-11-09 | CAGR -0.28% | excess -4.17% | DD +15.43% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | CAGR +0.17% | excess -3.71% | DD +17.49% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Momentum 30 | 2025-01-01 to 2026-11-09 | XIRR +0.96% | excess -4.16% | DD +22.38% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Alpha 50 | 2025-01-01 to 2026-11-09 | XIRR +4.87% | excess -0.26% | DD +26.19% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Momentum+LowVol | 2025-01-01 to 2026-11-09 | XIRR +2.31% | excess -2.81% | DD +15.50% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Alpha50+LowVol | 2025-01-01 to 2026-11-09 | XIRR +4.36% | excess -0.76% | DD +17.67% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
 
 
 ## Forward test

@@ -57,6 +57,7 @@ A real edge, for the later investing phase.
 |---|---|---|
 | mom 12-1 K20 above200 | 11 | PASS in-sample, but inflated by survivorship bias; real NIFTY200 Momentum 30 TRI: 18.8% CAGR vs NIFTY 50 TRI 13.6% since Apr 2005 (HDFC MF, Jul 2026) |
 
+
 ## Near-miss
 
 Close to a pass, and not in the buckets above.
@@ -133,6 +134,18 @@ Tested and not in a bucket above.
 | 23b index momentum 12m | 23 | FAIL |
 | 23c index momentum 6m overlay | 23 | FAIL |
 | 23d results drift 60 top 200 | 23 | FAIL |
+| 24a NIFTY 200 | 24 | FAIL |
+| 24a Momentum 30 | 24 | PASS in-sample, Holdout FAIL |
+| 24a LowVol 30 | 24 | PASS in-sample, Holdout FAIL |
+| 24a Alpha 50 | 24 | PASS in-sample, Holdout FAIL |
+| 24b Momentum+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24b Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24d NIFTY 200 | 24 | FAIL |
+| 24d Momentum 30 | 24 | PASS in-sample, Holdout FAIL |
+| 24d LowVol 30 | 24 | FAIL |
+| 24d Alpha 50 | 24 | PASS in-sample, Holdout FAIL |
+| 24d Momentum+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24d Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
 
 
 ## Sources
