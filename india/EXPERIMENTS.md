@@ -146,6 +146,42 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 24 | 2026-11-17 | 24d Alpha 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +6.98% | +8.58% | PASS Holdout FAIL |
 | 24 | 2026-11-17 | 24d Momentum+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 348 | +4.05% | +12.14% | PASS Holdout FAIL |
 | 24 | 2026-11-17 | 24d Alpha50+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 346 | +5.04% | +11.00% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a Quality 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +3.60% | +11.35% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a Value 20. | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 1 | +3.63% | +9.06% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a Midcap 150. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +3.30% | +7.64% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a Smallcap 250. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +2.28% | +2.85% | FAIL |
+| 24 | 2026-11-18 | 24a Midcap150 Momentum 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +9.60% | +16.27% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a G-Sec 10y. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 1 | -6.24% | +5.56% | FAIL |
+| 24 | 2026-11-18 | 24a Gold. | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 1 | -2.31% | +3.72% | FAIL |
+| 24 | 2026-11-18 | 24b Momentum+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 88 | +4.82% | +12.72% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24b Momentum+LowVol+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 126 | +4.30% | +11.85% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24c 70/20/10 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 117 | -0.85% | +10.55% | FAIL |
+| 24 | 2026-11-18 | 24c 60/25/15 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 117 | -1.23% | +10.25% | FAIL |
+| 24 | 2026-11-18 | 24c 70/20/10 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 168 | +3.34% | +14.28% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24c 60/25/15 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 180 | +2.40% | +13.28% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Quality 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +2.89% | +11.35% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Value 20. | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 192 | +2.45% | +9.06% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Midcap 150. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +4.36% | +7.64% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Smallcap 250. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +2.65% | +2.85% | FAIL |
+| 24 | 2026-11-18 | 24d Midcap150 Momentum 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +10.30% | +16.27% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d G-Sec 10y. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 168 | -8.94% | +5.56% | FAIL |
+| 24 | 2026-11-18 | 24d Gold. | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 214 | -4.58% | +3.72% | FAIL |
+| 24 | 2026-11-18 | 24d Momentum+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 336 | +4.54% | +12.79% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Momentum+LowVol+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 450 | +3.75% | +11.92% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d 70/20/10 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 370 | -1.70% | +10.50% | FAIL |
+| 24 | 2026-11-18 | 24d 60/25/15 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 367 | -2.30% | +10.23% | FAIL |
+| 24 | 2026-11-18 | 24d 70/20/10 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 464 | +2.31% | +14.22% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d 60/25/15 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 463 | +1.17% | +13.23% | FAIL |
+| 24 | 2026-11-18 | 24e 70/20/10 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 254 | -1.33% | +9.07% | FAIL |
+| 25 | 2026-11-18 | 25 NIFTY 50. | attempt 25, rules fixed before the run | 2005-01-03 to 2026-11-17 | 1 | -0.18% | +59.59% | FAIL |
+| 25 | 2026-11-18 | 25 NIFTY 200. | attempt 25, rules fixed before the run | 2011-07-20 to 2026-11-17 | 1 | +0.00% | +38.07% | FAIL |
+| 25 | 2026-11-18 | 25 Momentum 30. | attempt 25, rules fixed before the run | 2020-08-26 to 2026-11-17 | 1 | +0.37% | +31.74% | FAIL |
+| 25 | 2026-11-18 | 25 LowVol 30. | attempt 25, rules fixed before the run | 2016-07-11 to 2026-11-17 | 1 | -0.44% | +30.70% | FAIL |
+| 25 | 2026-11-18 | 25 Alpha 50. | attempt 25, rules fixed before the run | 2012-11-20 to 2026-11-17 | 1 | +6.39% | +40.20% | PASS |
+| 25 | 2026-11-18 | 25 Quality 30. | attempt 25, rules fixed before the run | 2018-04-18 to 2026-11-17 | 1 | -1.64% | +29.14% | FAIL |
+| 25 | 2026-11-18 | 25 Midcap 150. | attempt 25, rules fixed before the run | 2016-04-04 to 2026-11-17 | 1 | +3.92% | +43.43% | FAIL |
+| 25 | 2026-11-18 | 25 Smallcap 250. | attempt 25, rules fixed before the run | 2016-04-04 to 2026-11-17 | 1 | +1.76% | +60.04% | FAIL |
+| 25 | 2026-11-18 | 25 Midcap150 Momentum 50. | attempt 25, rules fixed before the run | 2022-08-17 to 2026-11-17 | 1 | +4.99% | +25.68% | too short |
 
 Attempt 6 was specified before the run. The midpoint stop used about Rs 2,93,681 a position and never had more than 3 open. The far-side stop used about Rs 1,74,263 a position, also with 3 open at the peak. Neither clears the pass mark.
 
@@ -1816,96 +1852,177 @@ name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD 
   minimum rolling 10-year CAGR is not higher
 24a Momentum 30 (back-test years included) | CAGR +19.27% | excess +5.58% | DD +67.82% | bench DD +63.76% | worst 2008 -60.24% | recover 6.02 years | 5y -1.64% / +18.78% / +29.86% | 10y +11.32% / +18.92% / +23.92% | PASS
 24a LowVol 30 (back-test years included) | CAGR +16.70% | excess +3.01% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | PASS
-24a Quality 30 | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
-24a Value 20 | NOT SCORED | series not on disk: NIFTY50_VALUE_20_TR
-  series not on disk: NIFTY50_VALUE_20_TR
+24a Quality 30 (back-test years included) | CAGR +17.29% | excess +3.60% | DD +55.83% | bench DD +63.76% | worst 2008 -50.24% | recover 1.76 years | 5y +3.23% / +16.07% / +34.22% | 10y +11.35% / +15.69% / +24.01% | PASS
+24a Value 20 | starts 2009-01-01 | CAGR +18.42% | excess +3.63% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
 24a Alpha 50 (back-test years included) | CAGR +19.46% | excess +5.77% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
-24a Midcap 150 | NOT SCORED | series not on disk: NIFTY_MIDCAP_150_TR
-  series not on disk: NIFTY_MIDCAP_150_TR
-24a Smallcap 250 | NOT SCORED | series not on disk: NIFTY_SMALLCAP_250_TR
-  series not on disk: NIFTY_SMALLCAP_250_TR
-24a Midcap150 Momentum 50 | NOT SCORED | series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
-  series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
-24a G-Sec 10y | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC
-24a Gold | NOT SCORED | series not on disk: GOLD_INR
-  series not on disk: GOLD_INR
+24a Midcap 150 (back-test years included) | CAGR +16.99% | excess +3.30% | DD +72.98% | bench DD +63.76% | worst 2008 -65.05% | recover 6.36 years | 5y -2.14% / +15.11% / +31.51% | 10y +7.64% / +14.92% / +22.86% | PASS
+24a Smallcap 250 (back-test years included) | CAGR +15.97% | excess +2.28% | DD +75.65% | bench DD +63.76% | worst 2008 -68.67% | recover 6.43 years | 5y -6.32% / +12.34% / +33.09% | 10y +2.85% / +12.66% / +21.26% | FAIL
+  minimum rolling 10-year CAGR is not higher
+24a Midcap150 Momentum 50 (back-test years included) | CAGR +23.29% | excess +9.60% | DD +72.68% | bench DD +63.76% | worst 2008 -65.25% | recover 4.93 years | 5y +1.57% / +22.89% / +39.21% | 10y +16.27% / +22.89% / +28.79% | PASS
+24a G-Sec 10y | starts 2011-01-03 | CAGR +4.86% | excess -6.24% | DD +11.79% | bench DD +38.07% | worst 2013 -1.09% | recover 1.42 years | 5y +3.53% / +6.76% / +9.59% | 10y +5.56% / +6.48% / +7.24% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24a Gold | starts 2007-03-19 | CAGR +9.51% | excess -2.31% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
 24b Momentum+LowVol (back-test years included) | CAGR +18.16% | excess +4.47% | DD +60.12% | bench DD +63.76% | worst 2008 -53.07% | recover 2.73 years | 5y +3.54% / +17.16% / +26.24% | 10y +12.07% / +16.76% / +21.97% | PASS
-24b Momentum+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
-24b Momentum+LowVol+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
+24b Momentum+Quality (back-test years included) | CAGR +18.51% | excess +4.82% | DD +62.35% | bench DD +63.76% | worst 2008 -56.07% | recover 2.70 years | 5y +4.67% / +18.11% / +28.61% | 10y +12.72% / +17.40% / +23.60% | PASS
+24b Momentum+LowVol+Quality (back-test years included) | CAGR +17.99% | excess +4.30% | DD +58.50% | bench DD +63.76% | worst 2008 -52.23% | recover 2.52 years | 5y +5.19% / +17.27% / +27.33% | 10y +11.85% / +16.60% / +22.72% | PASS
 24b Alpha50+LowVol (back-test years included) | CAGR +18.69% | excess +5.00% | DD +66.65% | bench DD +63.76% | worst 2008 -61.13% | recover 4.84 years | 5y +1.30% / +17.94% / +30.17% | 10y +10.91% / +17.15% / +22.21% | PASS
-24c 70/20/10 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24c 60/25/15 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24c 70/20/10 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24c 60/25/15 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
+24c 70/20/10 NIFTY 200 (back-test years included) | starts 2011-01-03 | CAGR +10.24% | excess -0.85% | DD +25.42% | bench DD +38.07% | worst 2011 -15.64% | recover 0.51 years | 5y +3.92% / +12.01% / +18.11% | 10y +10.55% / +12.41% / +13.78% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24c 60/25/15 NIFTY 200 (back-test years included) | starts 2011-01-03 | CAGR +9.86% | excess -1.23% | DD +21.70% | bench DD +38.07% | worst 2011 -11.46% | recover 0.38 years | 5y +4.78% / +11.21% / +17.14% | 10y +10.25% / +11.67% / +12.99% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24c 70/20/10 24b Alpha50+LowVol (back-test years included) | starts 2011-01-03 | CAGR +14.43% | excess +3.34% | DD +23.70% | bench DD +38.07% | worst 2011 -8.98% | recover 0.34 years | 5y +5.40% / +15.32% / +24.72% | 10y +14.28% / +16.33% / +18.12% | PASS
+24c 60/25/15 24b Alpha50+LowVol (back-test years included) | starts 2011-01-03 | CAGR +13.50% | excess +2.40% | DD +20.42% | bench DD +38.07% | worst 2011 -5.70% | recover 0.33 years | 5y +5.99% / +14.08% / +22.79% | 10y +13.28% / +15.12% / +16.80% | PASS
 24d NIFTY 200 (back-test years included) | XIRR +12.63% | excess +0.00% | DD +63.76% | bench DD +63.76% | worst 2008 -56.22% | recover 6.23 years | 5y -1.38% / +12.73% / +22.40% | 10y +6.03% / +12.22% / +17.09% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
   minimum rolling 10-year CAGR is not higher
 24d Momentum 30 (back-test years included) | XIRR +18.37% | excess +5.74% | DD +67.82% | bench DD +63.76% | worst 2008 -60.24% | recover 6.02 years | 5y -1.64% / +18.78% / +29.86% | 10y +11.32% / +18.92% / +23.92% | PASS
 24d LowVol 30 (back-test years included) | XIRR +14.59% | excess +1.96% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
-24d Quality 30 | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
-24d Value 20 | NOT SCORED | series not on disk: NIFTY50_VALUE_20_TR
-  series not on disk: NIFTY50_VALUE_20_TR
+24d Quality 30 (back-test years included) | XIRR +15.52% | excess +2.89% | DD +55.83% | bench DD +63.76% | worst 2008 -50.24% | recover 1.76 years | 5y +3.23% / +16.07% / +34.22% | 10y +11.35% / +15.69% / +24.01% | PASS
+24d Value 20 | starts 2009-01-01 | XIRR +15.70% | excess +2.45% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
 24d Alpha 50 (back-test years included) | XIRR +19.61% | excess +6.98% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
-24d Midcap 150 | NOT SCORED | series not on disk: NIFTY_MIDCAP_150_TR
-  series not on disk: NIFTY_MIDCAP_150_TR
-24d Smallcap 250 | NOT SCORED | series not on disk: NIFTY_SMALLCAP_250_TR
-  series not on disk: NIFTY_SMALLCAP_250_TR
-24d Midcap150 Momentum 50 | NOT SCORED | series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
-  series not on disk: NIFTY_MIDCAP150_MOMENTUM_50_TR
-24d G-Sec 10y | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC
-24d Gold | NOT SCORED | series not on disk: GOLD_INR
-  series not on disk: GOLD_INR
+24d Midcap 150 (back-test years included) | XIRR +16.99% | excess +4.36% | DD +72.98% | bench DD +63.76% | worst 2008 -65.05% | recover 6.36 years | 5y -2.14% / +15.11% / +31.51% | 10y +7.64% / +14.92% / +22.86% | PASS
+24d Smallcap 250 (back-test years included) | XIRR +15.29% | excess +2.65% | DD +75.65% | bench DD +63.76% | worst 2008 -68.67% | recover 6.43 years | 5y -6.32% / +12.34% / +33.09% | 10y +2.85% / +12.66% / +21.26% | FAIL
+  minimum rolling 10-year CAGR is not higher
+24d Midcap150 Momentum 50 (back-test years included) | XIRR +22.93% | excess +10.30% | DD +72.68% | bench DD +63.76% | worst 2008 -65.25% | recover 4.93 years | 5y +1.57% / +22.89% / +39.21% | 10y +16.27% / +22.89% / +28.79% | PASS
+24d G-Sec 10y | starts 2011-01-03 | XIRR +4.65% | excess -8.94% | DD +11.79% | bench DD +38.07% | worst 2013 -1.09% | recover 1.42 years | 5y +3.53% / +6.76% / +9.59% | 10y +5.56% / +6.48% / +7.24% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24d Gold | starts 2007-03-19 | XIRR +8.11% | excess -4.58% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
 24d Momentum+LowVol (back-test years included) | XIRR +16.68% | excess +4.05% | DD +59.32% | bench DD +63.76% | worst 2008 -52.15% | recover 2.71 years | 5y +3.93% / +17.17% / +26.34% | 10y +12.14% / +16.82% / +22.03% | PASS
-24d Momentum+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
-24d Momentum+LowVol+Quality | NOT SCORED | series not on disk: NIFTY200_QUALITY_30_TR
-  series not on disk: NIFTY200_QUALITY_30_TR
+24d Momentum+Quality (back-test years included) | XIRR +17.17% | excess +4.54% | DD +61.77% | bench DD +63.76% | worst 2008 -55.39% | recover 2.69 years | 5y +4.88% / +18.16% / +28.50% | 10y +12.79% / +17.45% / +23.58% | PASS
+24d Momentum+LowVol+Quality (back-test years included) | XIRR +16.38% | excess +3.75% | DD +57.82% | bench DD +63.76% | worst 2008 -51.49% | recover 2.46 years | 5y +5.27% / +17.32% / +27.28% | 10y +11.92% / +16.64% / +22.73% | PASS
 24d Alpha50+LowVol (back-test years included) | XIRR +17.67% | excess +5.04% | DD +65.99% | bench DD +63.76% | worst 2008 -60.29% | recover 4.73 years | 5y +1.58% / +17.97% / +30.24% | 10y +11.00% / +17.23% / +22.28% | PASS
-24d 70/20/10 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24d 60/25/15 NIFTY 200 | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24d 70/20/10 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-24d 60/25/15 24b Alpha50+LowVol | NOT SCORED | series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-  series not on disk: NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR
-
-Not on disk: NIFTY200_QUALITY_30_TR, NIFTY50_VALUE_20_TR, NIFTY_MIDCAP_150_TR, NIFTY_SMALLCAP_250_TR, NIFTY_MIDCAP150_MOMENTUM_50_TR, NIFTY_10YR_BENCHMARK_GSEC, GOLD_INR.
-Index download, run from Terminal, not from Cursor: caffeinate -i python3 india/nse_archive.py --only indices
-Gold is not in that download. Save the IBJA 999 rate, INR per 10 grams, as data/nse/indices/GOLD_INR.csv.gz with columns date and close. Source: https://www.ibja.co
-Best 24b mix by after-tax CAGR: 24b Alpha50+LowVol at +18.69%.
-No 24c portfolio could be scored, so 24e was not run.
+24d 70/20/10 NIFTY 200 (back-test years included) | starts 2011-01-03 | XIRR +11.89% | excess -1.70% | DD +26.09% | bench DD +38.07% | worst 2011 -16.25% | recover 0.53 years | 5y +3.82% / +11.91% / +17.79% | 10y +10.50% / +12.36% / +13.67% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24d 60/25/15 NIFTY 200 (back-test years included) | starts 2011-01-03 | XIRR +11.29% | excess -2.30% | DD +22.53% | bench DD +38.07% | worst 2011 -12.22% | recover 0.41 years | 5y +4.65% / +11.19% / +16.84% | 10y +10.23% / +11.65% / +12.82% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
+24d 70/20/10 24b Alpha50+LowVol (back-test years included) | starts 2011-01-03 | XIRR +15.90% | excess +2.31% | DD +24.14% | bench DD +38.07% | worst 2011 -9.06% | recover 0.34 years | 5y +5.43% / +15.43% / +24.54% | 10y +14.22% / +16.25% / +18.13% | PASS
+24d 60/25/15 24b Alpha50+LowVol (back-test years included) | starts 2011-01-03 | XIRR +14.76% | excess +1.17% | DD +21.03% | bench DD +38.07% | worst 2011 -5.86% | recover 0.33 years | 5y +6.01% / +14.14% / +22.55% | 10y +13.23% / +15.12% / +16.67% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+24e 70/20/10 24b Alpha50+LowVol (back-test years included) | starts 2011-01-03 | CAGR +9.77% | excess -1.33% | DD +18.78% | bench DD +38.07% | worst 2022 -11.19% | recover 1.84 years | 5y +3.57% / +10.58% / +18.85% | 10y +9.07% / +10.97% / +12.73% | FAIL
+  CAGR is not 2 points higher, and the drawdown clause is not met
+  minimum rolling 10-year CAGR is not higher
 
 Holdout, 2025-01-01 through the last shared date. The rolling 10-year clause stays in sample.
 holdout 24a Momentum 30 | 2025-01-01 to 2026-11-09 | CAGR -4.20% | excess -8.09% | DD +22.38% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24a LowVol 30 | 2025-01-01 to 2026-11-09 | CAGR +3.53% | excess -0.36% | DD +14.30% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a Quality 30 | 2025-01-01 to 2026-11-17 | CAGR -1.95% | excess -6.40% | DD +15.82% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a Value 20 | 2025-01-01 to 2026-11-17 | CAGR -2.94% | excess -7.39% | DD +18.04% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24a Alpha 50 | 2025-01-01 to 2026-11-09 | CAGR -3.57% | excess -7.46% | DD +26.19% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a Midcap 150 | 2025-01-01 to 2026-11-17 | CAGR +3.82% | excess -0.64% | DD +17.29% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24a Midcap150 Momentum 50 | 2025-01-01 to 2026-11-17 | CAGR -1.13% | excess -5.58% | DD +22.31% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24b Momentum+LowVol | 2025-01-01 to 2026-11-09 | CAGR -0.28% | excess -4.17% | DD +15.43% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24b Momentum+Quality | 2025-01-01 to 2026-11-17 | CAGR -2.96% | excess -7.42% | DD +18.17% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24b Momentum+LowVol+Quality | 2025-01-01 to 2026-11-17 | CAGR -0.71% | excess -5.17% | DD +14.92% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | CAGR +0.17% | excess -3.71% | DD +17.49% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24c 70/20/10 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | CAGR +3.89% | excess +0.01% | DD +10.93% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24c 60/25/15 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | CAGR +5.51% | excess +1.63% | DD +10.76% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24d Momentum 30 | 2025-01-01 to 2026-11-09 | XIRR +0.96% | excess -4.16% | DD +22.38% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Quality 30 | 2025-01-01 to 2026-11-17 | XIRR -1.32% | excess -7.41% | DD +15.82% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Value 20 | 2025-01-01 to 2026-11-17 | XIRR +0.67% | excess -5.41% | DD +18.04% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24d Alpha 50 | 2025-01-01 to 2026-11-09 | XIRR +4.87% | excess -0.26% | DD +26.19% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Midcap 150 | 2025-01-01 to 2026-11-17 | XIRR +6.94% | excess +0.85% | DD +17.29% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Midcap150 Momentum 50 | 2025-01-01 to 2026-11-17 | XIRR +5.05% | excess -1.03% | DD +22.31% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24d Momentum+LowVol | 2025-01-01 to 2026-11-09 | XIRR +2.31% | excess -2.81% | DD +15.50% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Momentum+Quality | 2025-01-01 to 2026-11-17 | XIRR +0.10% | excess -5.99% | DD +18.15% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d Momentum+LowVol+Quality | 2025-01-01 to 2026-11-17 | XIRR +1.39% | excess -4.70% | DD +14.95% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
 holdout 24d Alpha50+LowVol | 2025-01-01 to 2026-11-09 | XIRR +4.36% | excess -0.76% | DD +17.67% | bench DD +14.82% | FAIL
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
+holdout 24d 70/20/10 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | XIRR +5.09% | excess -0.03% | DD +11.34% | bench DD +14.82% | FAIL
+  holdout CAGR is not 2 points higher, and the drawdown clause is not met
+
+Gold is GOLD_ETF, GOLDBEES series EQ, adjusted only for the unit split, with no expense ratio because the ETF price is already net of its charges. The rules above still name the IBJA rate at 0.3 percent. This scoring uses GOLD_ETF instead. First date 2007-03-19, close CAGR +13.64% through 2026-11-09. The 24c books start later, on the first date every sleeve shares. That date is the first G-Sec session, 2011-01-03, printed on the row. Gold itself is held from its own first date inside that window.
+NIFTY50 Value 20 has a blank launch date, so its row is not marked (back-test years included).
+Best 24b mix by after-tax CAGR: 24b Alpha50+LowVol at +18.69%.
+Best 24c portfolio by after-tax CAGR: 24c 70/20/10 24b Alpha50+LowVol at +14.43%.
+
+
+## Attempt 25
+
+Rules fixed on 2026-11-18, before the run.
+
+Each index with an official launch date in data/nse/indices/launch.csv is bought on the first session after that date and held to the end of the window. The launch day itself is not in the book. A blank launch date is skipped. The G-Sec row records a base date, not a launch date, and it is skipped. The series is the total-return file when that file is on disk, otherwise the price file. The book is a Rs 10,00,000 buy and hold, after the attempt 24 expense (0.3% a year for a broad index, 0.5% for a factor index) and the same equity tax. It is compared with NIFTY 200 TRI over the same dates, with the same expense and the same tax.
+
+Two windows. (i) through 2024-12-31. (ii) through the last date in the file. Each window reports the excess CAGR, the max drawdown, the worst calendar year, and the number of live years from the book's first session to that window's end.
+
+Pass rule, on window (ii) only. Excess CAGR above 1 point, and max drawdown no more than 5 points deeper than NIFTY 200 over those same dates. Above is strict: 1 point exactly does not pass. No more than includes 5 points exactly. An index with under 5 live years, measured to the last date, is reported as too short and gets no verdict. Under is strict: 5 years exactly is scored.
+
+This uses NSE's live index history. The rule was not designed on that history, so there is no holdout look. A file that starts years after the launch date is scored from its first session, and the row says so. Drawdown and the worst calendar year use the growth of the book before the final sale, the same path as attempt 24. The CAGR is after that sale and its tax.
+
+Results.
+
+name | window | dates | CAGR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD | worst year | live years | result
+25 NIFTY 50 (i) | 2005-01-03 to 2024-12-31 | CAGR +13.20% | excess -0.21% | DD +59.59% | bench DD +63.76% | worst 2008 -51.42% | live years 19.99
+25 NIFTY 50 (ii) | 2005-01-03 to 2026-11-17 | CAGR +12.45% | excess -0.18% | DD +59.59% | bench DD +63.76% | worst 2008 -51.42% | live years 21.87
+  on-disk history starts 2005-01-03, after the 1996-04-22 launch. NIFTY 200 comparison includes sessions before its 2011-07-19 launch
+  excess CAGR is not above 1 point
+  FAIL
+25 NIFTY 200 (i) | 2011-07-20 to 2024-12-31 | CAGR +12.32% | excess +0.00% | DD +38.07% | bench DD +38.07% | worst 2011 -19.42% | live years 13.45
+25 NIFTY 200 (ii) | 2011-07-20 to 2026-11-17 | CAGR +11.34% | excess +0.00% | DD +38.07% | bench DD +38.07% | worst 2011 -19.42% | live years 15.33
+  excess CAGR is not above 1 point
+  FAIL
+25 Momentum 30 (i) | 2020-08-26 to 2024-12-31 | CAGR +24.17% | excess +4.80% | DD +28.01% | bench DD +17.57% | worst 2022 -5.92% | live years 4.35
+25 Momentum 30 (ii) | 2020-08-26 to 2026-11-17 | CAGR +15.00% | excess +0.37% | DD +31.74% | bench DD +17.90% | worst 2022 -5.92% | live years 6.23
+  excess CAGR is not above 1 point
+  max drawdown is more than 5 points deeper
+  FAIL
+25 LowVol 30 (i) | 2016-07-11 to 2024-12-31 | CAGR +13.29% | excess -0.38% | DD +30.70% | bench DD +38.07% | worst 2016 -5.21% | live years 8.47
+25 LowVol 30 (ii) | 2016-07-11 to 2026-11-17 | CAGR +11.49% | excess -0.44% | DD +30.70% | bench DD +38.07% | worst 2016 -5.21% | live years 10.35
+  excess CAGR is not above 1 point
+  FAIL
+25 Alpha 50 (i) | 2012-11-20 to 2024-12-31 | CAGR +22.54% | excess +8.78% | DD +40.20% | bench DD +38.07% | worst 2018 -13.99% | live years 12.11
+25 Alpha 50 (ii) | 2012-11-20 to 2026-11-17 | CAGR +18.87% | excess +6.39% | DD +40.20% | bench DD +38.07% | worst 2018 -13.99% | live years 13.99
+  PASS
+25 Quality 30 (i) | 2018-04-18 to 2024-12-31 | CAGR +12.98% | excess -0.23% | DD +29.14% | bench DD +38.07% | worst 2022 -4.88% | live years 6.70
+25 Quality 30 (ii) | 2018-04-18 to 2026-11-17 | CAGR +9.58% | excess -1.64% | DD +29.14% | bench DD +38.07% | worst 2026 -7.32% | live years 8.58
+  excess CAGR is not above 1 point
+  FAIL
+25 Midcap 150 (i) | 2016-04-04 to 2024-12-31 | CAGR +19.43% | excess +4.99% | DD +43.43% | bench DD +38.07% | worst 2018 -12.88% | live years 8.74
+25 Midcap 150 (ii) | 2016-04-04 to 2026-11-17 | CAGR +16.54% | excess +3.92% | DD +43.43% | bench DD +38.07% | worst 2018 -12.88% | live years 10.62
+  max drawdown is more than 5 points deeper
+  FAIL
+25 Smallcap 250 (i) | 2016-04-04 to 2024-12-31 | CAGR +17.65% | excess +3.20% | DD +60.04% | bench DD +38.07% | worst 2018 -26.37% | live years 8.74
+25 Smallcap 250 (ii) | 2016-04-04 to 2026-11-17 | CAGR +14.38% | excess +1.76% | DD +60.04% | bench DD +38.07% | worst 2018 -26.37% | live years 10.62
+  max drawdown is more than 5 points deeper
+  FAIL
+25 Midcap150 Momentum 50 (i) | 2022-08-17 to 2024-12-31 | CAGR +29.31% | excess +14.50% | DD +11.51% | bench DD +11.18% | worst 2022 -2.71% | live years 2.37
+25 Midcap150 Momentum 50 (ii) | 2022-08-17 to 2026-11-17 | CAGR +15.00% | excess +4.99% | DD +25.68% | bench DD +17.90% | worst 2025 -3.94% | live years 4.25
+  too short
+
+No holdout. The live record was not used to design the rule.
+Window (ii) ends on the last date in the index file. A calendar year that is still in progress is the return from its first session through that date.
 
 
 ## Forward test

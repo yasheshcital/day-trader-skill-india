@@ -48,7 +48,8 @@ SINGLES = (
     ("NIFTY_SMALLCAP_250_TR", "Smallcap 250", False, False),
     ("NIFTY_MIDCAP150_MOMENTUM_50_TR", "Midcap150 Momentum 50", False, True),
     ("NIFTY_10YR_BENCHMARK_GSEC", "G-Sec 10y", True, False),
-    ("GOLD_INR", "Gold", True, False),
+    # GOLDBEES, already net of the ETF's charges, so the expense is 0.
+    ("GOLD_ETF", "Gold", True, False),
 )
 MIXES = (
     ("Momentum+LowVol", (
@@ -193,7 +194,11 @@ def _kind_map(weights, debt):
 def _expenses(weights, factors):
     out = {}
     for name in weights:
-        out[name] = longterm.expense_for(name in factors)
+        # The ETF price is already net of its charges.
+        if name == "GOLD_ETF":
+            out[name] = 0.0
+        else:
+            out[name] = longterm.expense_for(name in factors)
     return out
 
 
@@ -417,12 +422,56 @@ def _catalogue(blocks):
         fh.write(text)
 
 
-def main(argv=None):
+def _saved_holdouts(text):
+    """Holdout lines already written, keyed by the portfolio name."""
+    found = {}
+    lines = text.splitlines()
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if line.startswith("holdout "):
+            head = line.split("|", 1)[0]
+            name = head[len("holdout "):].strip()
+            tail = line.strip().split("|")[-1].strip()
+            result = tail if tail in ("PASS", "FAIL", "NOT SCORED") else "FAIL"
+            reasons = []
+            nxt = index + 1
+            while nxt < len(lines) and lines[nxt].startswith("  "):
+                reasons.append(lines[nxt].strip())
+                nxt += 1
+            found[name] = {"line": line, "reasons": reasons, "result": result}
+            index = nxt
+            continue
+        index += 1
+    return found
+
+
+def _summary_name(line):
+    parts = line.split("|")
+    if len(parts) < 4:
+        return ""
+    return parts[3].strip().rstrip(".")
+
+
+def main(argv=None, rules_stamp=None, reuse_holdouts=False):
     del argv
     stamp = datetime.date.today().isoformat()
+    rules_day = rules_stamp or stamp
     log = lambda line: print(line, flush=True)
-    follow.install_attempt(EXPERIMENTS, 24, rules_text(stamp), [])
-    log("rules for attempt 24 written to %s before the run" % EXPERIMENTS)
+    saved = {}
+    old_summary = []
+    if reuse_holdouts:
+        existing = open(EXPERIMENTS, encoding="utf-8").read()
+        start = existing.find("\n## Attempt 24\n")
+        end = existing.find("\n## ", start + 1) if start != -1 else -1
+        section = existing[start:end] if start != -1 else ""
+        saved = _saved_holdouts(section)
+        old_summary = [line for line in existing.splitlines() if line.startswith("| 24 |")]
+        log("attempt 24 rules already in the file, not rewritten")
+        log("holdouts already logged %d" % len(saved))
+    else:
+        follow.install_attempt(EXPERIMENTS, 24, rules_text(rules_day), [])
+        log("rules for attempt 24 written to %s before the run" % EXPERIMENTS)
     table = load_launches(LAUNCH_PATH)
     loaded = {}
     for name in os.listdir(INDEX_ROOT):
@@ -442,14 +491,38 @@ def main(argv=None):
             missing.append(slug)
     if missing:
         notes.append("Not on disk: %s." % ", ".join(missing))
-        notes.append("Index download, run from Terminal, not from Cursor: %s" % DOWNLOAD)
+        index_missing = [slug for slug in missing if slug != "GOLD_ETF"]
+        if index_missing:
+            notes.append("Index download, run from Terminal, not from Cursor: %s" % DOWNLOAD)
+            log(notes[-1])
+        if "GOLD_ETF" in missing:
+            notes.append(
+                "Gold is GOLDBEES series EQ from data/nse/cm, adjusted only for its "
+                "unit split, written to data/nse/indices/GOLD_ETF.csv.gz. No expense "
+                "ratio. python3 india/research/goldetf.py"
+            )
+            log(notes[-1])
+    if "GOLD_ETF" in loaded and loaded["GOLD_ETF"]:
+        from india.research import invest
+        g0 = loaded["GOLD_ETF"][0]
+        g1 = loaded["GOLD_ETF"][-1]
+        gcagr = invest._cagr(g0[1], g1[1], g0[0], g1[0])
         notes.append(
-            "Gold is not in that download. Save the IBJA 999 rate, INR per 10 grams, "
-            "as data/nse/indices/GOLD_INR.csv.gz with columns date and close. "
-            "Source: https://www.ibja.co"
+            "Gold is GOLD_ETF, GOLDBEES series EQ, adjusted only for the unit split, "
+            "with no expense ratio because the ETF price is already net of its charges. "
+            "The rules above still name the IBJA rate at 0.3 percent. This scoring uses "
+            "GOLD_ETF instead. First date %s, close CAGR %s through %s. "
+            "The 24c books start later, on the first date every sleeve shares. "
+            "That date is the first G-Sec session, which is printed on the row. "
+            "Gold itself is held from its own first date inside that window."
+            % (g0[0].isoformat(), _pct(gcagr), g1[0].isoformat())
         )
-        log(notes[-2])
         log(notes[-1])
+    if launch_of(table, "NIFTY50_VALUE_20_TR") is None and "NIFTY50_VALUE_20_TR" in loaded:
+        notes.append(
+            "NIFTY50 Value 20 has a blank launch date, so its row is not marked "
+            "(back-test years included)."
+        )
 
     blocks = []
     # 24a
@@ -501,7 +574,7 @@ def main(argv=None):
         for alloc, eq, gs, gd in ALLOCATIONS:
             weights = _scale(equity_weights, eq)
             weights["NIFTY_10YR_BENCHMARK_GSEC"] = gs
-            weights["GOLD_INR"] = gd
+            weights["GOLD_ETF"] = gd
             row, why = _run_one(loaded, weights, debt, factors, table, START, END, None, None)
             bench = None
             if row is not None:
@@ -556,30 +629,52 @@ def main(argv=None):
         blocks.append(block)
         log(_line(block))
 
+    if reuse_holdouts:
+        guard = [block for block in blocks if block["name"] == "24a NIFTY 200"]
+        if guard and "+13.69%" not in _line(guard[0]):
+            log("NIFTY 200 in-sample CAGR moved, attempt 24 was not rewritten")
+            return 1
+
     # Holdout, one look each, only after an in-sample pass.
+    # A portfolio that already has a logged look is not opened again.
     passing = [block for block in blocks if block["passed"]]
+    fresh = []
+    for block in passing:
+        prior = saved.get(block["name"]) if reuse_holdouts else None
+        if prior:
+            block["holdout_result"] = prior["result"]
+            block["holdout_line"] = prior["line"]
+            block["holdout_reasons"] = prior["reasons"]
+            log("holdout reused %s" % block["name"])
+        else:
+            fresh.append(block)
     if not passing:
         notes.append("No attempt 24 portfolio passed in sample. The holdout was not opened.")
         log(notes[-1])
+    elif not fresh:
+        notes.append("No new attempt 24 portfolio passed. The earlier holdout looks were kept.")
+        log(notes[-1])
     else:
-        last = None
-        for block in passing:
-            if last is None or block["row"]["end"] > last:
-                last = block["row"]["end"]
-        # The holdout end is the last date on disk, which is on or after 2025-01-01.
         hold_end = data.HOLDOUT_START
         for slug in loaded:
             if loaded[slug] and loaded[slug][-1][0] > hold_end:
                 hold_end = loaded[slug][-1][0]
         data._guard("attempt24", [hold_end], True, None)
-        for block in passing:
+        log("new holdout looks %d" % len(fresh))
+        for block in fresh:
+            book_end = hold_end
+            for name in block["weights"]:
+                if loaded.get(name):
+                    book_end = min(book_end, loaded[name][-1][0])
+            if loaded.get(BENCH):
+                book_end = min(book_end, loaded[BENCH][-1][0])
             overlay = None
             if block["group"] == "e":
                 overlay = _overlay_fn(loaded[PRICE])
             sip = SIP if block["sip"] else None
             row, why = _run_one(
                 loaded, block["weights"], debt, factors, table,
-                data.HOLDOUT_START, hold_end, sip, overlay)
+                data.HOLDOUT_START, book_end, sip, overlay)
             bench = None
             if row is not None:
                 bench, _bw = _run_one(
@@ -602,11 +697,28 @@ def main(argv=None):
                 block["holdout_reasons"] = reasons
             log(block["holdout_line"])
 
-    rows = [_summary_row(stamp, block) for block in blocks if block["result"] != "NOT SCORED"]
-    follow.install_attempt(EXPERIMENTS, 24, _report(stamp, blocks, notes), rows)
+    if reuse_holdouts:
+        known = set(_summary_name(line) for line in old_summary)
+        rows = list(old_summary)
+        for block in blocks:
+            if block["result"] == "NOT SCORED" or block["name"] in known:
+                continue
+            rows.append(_summary_row(stamp, block))
+    else:
+        rows = [_summary_row(stamp, block) for block in blocks if block["result"] != "NOT SCORED"]
+    follow.install_attempt(EXPERIMENTS, 24, _report(rules_day, blocks, notes), rows)
     _catalogue(blocks)
     log("attempt 24 written")
     return 0
+
+
+def finish():
+    """Score the rows that were waiting on the index files. Do not rewrite the rules date.
+
+    Portfolios that already have a holdout line keep that line. A new in-sample
+    pass gets one look, logged once for the whole batch.
+    """
+    return main(rules_stamp="2026-11-17", reuse_holdouts=True)
 
 
 if __name__ == "__main__":

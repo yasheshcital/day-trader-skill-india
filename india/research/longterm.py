@@ -7,9 +7,10 @@ exactly is not enough. The first purchase is not a band check.
 
 The expense ratio is a drag on the index level between sessions. The default
 is 0.3% a year for a broad index and 0.5% for a factor index. There is no
-delivery brokerage. Gold is not an NSE index: Nifty Indices does not publish
-a bullion series, so the sleeve is the IBJA 999 fine-gold rate in INR per 10
-grams (https://www.ibja.co), file data/nse/indices/GOLD_INR.csv.gz.
+delivery brokerage. Gold is not an NSE index. The sleeve is GOLDBEES
+(series EQ), adjusted only for its unit split, in
+data/nse/indices/GOLD_ETF.csv.gz. That price is already net of the ETF's
+charges, so the series is given no expense ratio. It is taxed as debt.
 
 Tax. An equity sleeve held for more than 12 months is LTCG, 10% above
 Rs 1,00,000 on a sale before 2024-07-23 and 12.5% above Rs 1,25,000 on or

@@ -56,6 +56,7 @@ A real edge, for the later investing phase.
 | Name | Attempt | Note |
 |---|---|---|
 | mom 12-1 K20 above200 | 11 | PASS in-sample, but inflated by survivorship bias; real NIFTY200 Momentum 30 TRI: 18.8% CAGR vs NIFTY 50 TRI 13.6% since Apr 2005 (HDFC MF, Jul 2026) |
+| 25 Alpha 50 | 25 | live record PASS. No holdout, by the attempt 25 rule. |
 
 
 ## Near-miss
@@ -146,6 +147,40 @@ Tested and not in a bucket above.
 | 24d Alpha 50 | 24 | PASS in-sample, Holdout FAIL |
 | 24d Momentum+LowVol | 24 | PASS in-sample, Holdout FAIL |
 | 24d Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 25 NIFTY 50 | 25 | FAIL |
+| 25 NIFTY 200 | 25 | FAIL |
+| 25 Momentum 30 | 25 | FAIL |
+| 25 LowVol 30 | 25 | FAIL |
+| 25 Quality 30 | 25 | FAIL |
+| 25 Midcap 150 | 25 | FAIL |
+| 25 Smallcap 250 | 25 | FAIL |
+| 24a Quality 30 | 24 | PASS in-sample, Holdout FAIL |
+| 24a Value 20 | 24 | PASS in-sample, Holdout FAIL |
+| 24a Midcap 150 | 24 | PASS in-sample, Holdout FAIL |
+| 24a Smallcap 250 | 24 | FAIL |
+| 24a Midcap150 Momentum 50 | 24 | PASS in-sample, Holdout FAIL |
+| 24a G-Sec 10y | 24 | FAIL |
+| 24a Gold | 24 | FAIL |
+| 24b Momentum+Quality | 24 | PASS in-sample, Holdout FAIL |
+| 24b Momentum+LowVol+Quality | 24 | PASS in-sample, Holdout FAIL |
+| 24c 70/20/10 NIFTY 200 | 24 | FAIL |
+| 24c 60/25/15 NIFTY 200 | 24 | FAIL |
+| 24c 70/20/10 24b Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24c 60/25/15 24b Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24d Quality 30 | 24 | PASS in-sample, Holdout FAIL |
+| 24d Value 20 | 24 | PASS in-sample, Holdout FAIL |
+| 24d Midcap 150 | 24 | PASS in-sample, Holdout FAIL |
+| 24d Smallcap 250 | 24 | FAIL |
+| 24d Midcap150 Momentum 50 | 24 | PASS in-sample, Holdout FAIL |
+| 24d G-Sec 10y | 24 | FAIL |
+| 24d Gold | 24 | FAIL |
+| 24d Momentum+Quality | 24 | PASS in-sample, Holdout FAIL |
+| 24d Momentum+LowVol+Quality | 24 | PASS in-sample, Holdout FAIL |
+| 24d 70/20/10 NIFTY 200 | 24 | FAIL |
+| 24d 60/25/15 NIFTY 200 | 24 | FAIL |
+| 24d 70/20/10 24b Alpha50+LowVol | 24 | PASS in-sample, Holdout FAIL |
+| 24d 60/25/15 24b Alpha50+LowVol | 24 | FAIL |
+| 24e 70/20/10 24b Alpha50+LowVol | 24 | FAIL |
 
 
 ## Sources
