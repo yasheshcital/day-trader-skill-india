@@ -103,9 +103,15 @@ def needs_rebalance(current, target, band=BAND):
 
 
 def before_launch(session, launch):
-    """True when this session uses the index before its launch date."""
-    if session is None or launch is None:
+    """True when this session is not a live session of the index.
+
+    A session before the launch date is a back-test. A blank launch date is
+    unknown, and unknown is not live, so it is marked as well.
+    """
+    if session is None:
         return False
+    if launch is None:
+        return True
     return session < launch
 
 

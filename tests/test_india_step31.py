@@ -41,7 +41,9 @@ class Step31Test(unittest.TestCase):
         self.assertTrue(term.before_launch(datetime.date(2005, 4, 1), launch))
         self.assertFalse(term.before_launch(datetime.date(2016, 4, 1), launch))
         self.assertFalse(term.before_launch(datetime.date(2016, 4, 2), launch))
-        self.assertFalse(term.before_launch(datetime.date(2005, 4, 1), None))
+        # Step 33: a blank launch is unknown, and unknown is not live.
+        self.assertTrue(term.before_launch(datetime.date(2005, 4, 1), None))
+        self.assertFalse(term.before_launch(None, None))
         text = term.annotate("24a Midcap 150", True)
         self.assertIn("(back-test years included)", text)
         self.assertNotIn("(back-test years included)", term.annotate("24a Midcap 150", False))

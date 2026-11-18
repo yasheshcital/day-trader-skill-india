@@ -17,6 +17,7 @@ import datetime
 import gzip
 import io
 import os
+import re
 import sys
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -28,6 +29,12 @@ from india.nse_archive import _SPLIT_LOOSE
 from india.nse_archive import _SPLIT_PAIR
 from india.nse_archive import _SPLIT_WORD
 from india.research import invest
+
+# The share-wording patterns miss "Per Unit" and "Re 1". NSE writes both.
+_PER_UNIT = re.compile(
+    r"r(?:s\.?|e\.?)\s*([0-9]+(?:\.[0-9]+)?)\s*/-\s*per\s+unit\s+to\s*"
+    r"(?:r(?:s\.?|e\.?)\s*)?([0-9]+(?:\.[0-9]+)?)",
+    re.I)
 
 SYMBOL = "GOLDBEES"
 SERIES = "EQ"
@@ -50,7 +57,7 @@ def unit_split_factor(purpose):
     raw = (purpose or "").strip()
     if raw == "" or _SPLIT_WORD.search(raw) is None:
         return None
-    pairs = _SPLIT_PAIR.findall(raw) or _SPLIT_LOOSE.findall(raw)
+    pairs = _SPLIT_PAIR.findall(raw) or _SPLIT_LOOSE.findall(raw) or _PER_UNIT.findall(raw)
     factor = 1.0
     have = False
     for old_face, new_face in pairs:

@@ -520,8 +520,8 @@ def main(argv=None, rules_stamp=None, reuse_holdouts=False):
         log(notes[-1])
     if launch_of(table, "NIFTY50_VALUE_20_TR") is None and "NIFTY50_VALUE_20_TR" in loaded:
         notes.append(
-            "NIFTY50 Value 20 has a blank launch date, so its row is not marked "
-            "(back-test years included)."
+            "NIFTY50 Value 20 has a blank launch date. A blank launch is unknown, "
+            "and unknown is not live, so the row is marked (back-test years included)."
         )
 
     blocks = []

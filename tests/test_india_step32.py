@@ -12,6 +12,10 @@ class Step32Test(unittest.TestCase):
         purpose = "Face Value Split (Sub-Division) - From Rs 100/- To Rs 1/-"
         factor = gold.unit_split_factor(purpose)
         self.assertAlmostEqual(factor, 0.01)
+        per_unit = "Face Value Split (Sub-Division) - From Rs 10/- Per Unit To Rs 2/- Per Unit"
+        self.assertAlmostEqual(gold.unit_split_factor(per_unit), 0.2)
+        re_one = "Face Value Split (Sub-Division) - From Rs 10/- Per Unit To Re 1/- Per Unit"
+        self.assertAlmostEqual(gold.unit_split_factor(re_one), 0.1)
         self.assertIsNone(gold.unit_split_factor("Dividend - Rs 1 Per Share"))
         self.assertIsNone(gold.unit_split_factor("Bonus 1:1"))
         ex = datetime.date(2019, 12, 19)

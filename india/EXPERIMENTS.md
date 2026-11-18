@@ -147,12 +147,12 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 24 | 2026-11-17 | 24d Momentum+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 348 | +4.05% | +12.14% | PASS Holdout FAIL |
 | 24 | 2026-11-17 | 24d Alpha50+LowVol. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 346 | +5.04% | +11.00% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24a Quality 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +3.60% | +11.35% | PASS Holdout FAIL |
-| 24 | 2026-11-18 | 24a Value 20. | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 1 | +3.63% | +9.06% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24a Value 20 (back-test years included). | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 1 | +3.63% | +9.06% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24a Midcap 150. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +3.30% | +7.64% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24a Smallcap 250. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +2.28% | +2.85% | FAIL |
 | 24 | 2026-11-18 | 24a Midcap150 Momentum 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 1 | +9.60% | +16.27% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24a G-Sec 10y. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 1 | -6.24% | +5.56% | FAIL |
-| 24 | 2026-11-18 | 24a Gold. | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 1 | -2.31% | +3.72% | FAIL |
+| 24 | 2026-11-18 | 24a Gold (back-test years included). | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 1 | -2.31% | +3.72% | FAIL |
 | 24 | 2026-11-18 | 24b Momentum+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 88 | +4.82% | +12.72% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24b Momentum+LowVol+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 126 | +4.30% | +11.85% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24c 70/20/10 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 117 | -0.85% | +10.55% | FAIL |
@@ -160,12 +160,12 @@ The market filter in step 8 chose NIFTY's direction for the whole day, so a stoc
 | 24 | 2026-11-18 | 24c 70/20/10 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 168 | +3.34% | +14.28% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24c 60/25/15 24b Alpha50+LowVol. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 180 | +2.40% | +13.28% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d Quality 30. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +2.89% | +11.35% | PASS Holdout FAIL |
-| 24 | 2026-11-18 | 24d Value 20. | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 192 | +2.45% | +9.06% | PASS Holdout FAIL |
+| 24 | 2026-11-18 | 24d Value 20 (back-test years included). | attempt 24, rules fixed before the run | 2009-01-01 to 2024-12-31 | 192 | +2.45% | +9.06% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d Midcap 150. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +4.36% | +7.64% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d Smallcap 250. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +2.65% | +2.85% | FAIL |
 | 24 | 2026-11-18 | 24d Midcap150 Momentum 50. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 237 | +10.30% | +16.27% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d G-Sec 10y. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 168 | -8.94% | +5.56% | FAIL |
-| 24 | 2026-11-18 | 24d Gold. | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 214 | -4.58% | +3.72% | FAIL |
+| 24 | 2026-11-18 | 24d Gold (back-test years included). | attempt 24, rules fixed before the run | 2007-03-19 to 2024-12-31 | 214 | -4.58% | +3.72% | FAIL |
 | 24 | 2026-11-18 | 24d Momentum+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 336 | +4.54% | +12.79% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d Momentum+LowVol+Quality. | attempt 24, rules fixed before the run | 2005-04-01 to 2024-12-31 | 450 | +3.75% | +11.92% | PASS Holdout FAIL |
 | 24 | 2026-11-18 | 24d 70/20/10 NIFTY 200. | attempt 24, rules fixed before the run | 2011-01-03 to 2024-12-31 | 370 | -1.70% | +10.50% | FAIL |
@@ -1853,7 +1853,7 @@ name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD 
 24a Momentum 30 (back-test years included) | CAGR +19.27% | excess +5.58% | DD +67.82% | bench DD +63.76% | worst 2008 -60.24% | recover 6.02 years | 5y -1.64% / +18.78% / +29.86% | 10y +11.32% / +18.92% / +23.92% | PASS
 24a LowVol 30 (back-test years included) | CAGR +16.70% | excess +3.01% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | PASS
 24a Quality 30 (back-test years included) | CAGR +17.29% | excess +3.60% | DD +55.83% | bench DD +63.76% | worst 2008 -50.24% | recover 1.76 years | 5y +3.23% / +16.07% / +34.22% | 10y +11.35% / +15.69% / +24.01% | PASS
-24a Value 20 | starts 2009-01-01 | CAGR +18.42% | excess +3.63% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
+24a Value 20 (back-test years included) | starts 2009-01-01 | CAGR +18.42% | excess +3.63% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
 24a Alpha 50 (back-test years included) | CAGR +19.46% | excess +5.77% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
 24a Midcap 150 (back-test years included) | CAGR +16.99% | excess +3.30% | DD +72.98% | bench DD +63.76% | worst 2008 -65.05% | recover 6.36 years | 5y -2.14% / +15.11% / +31.51% | 10y +7.64% / +14.92% / +22.86% | PASS
 24a Smallcap 250 (back-test years included) | CAGR +15.97% | excess +2.28% | DD +75.65% | bench DD +63.76% | worst 2008 -68.67% | recover 6.43 years | 5y -6.32% / +12.34% / +33.09% | 10y +2.85% / +12.66% / +21.26% | FAIL
@@ -1862,7 +1862,7 @@ name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD 
 24a G-Sec 10y | starts 2011-01-03 | CAGR +4.86% | excess -6.24% | DD +11.79% | bench DD +38.07% | worst 2013 -1.09% | recover 1.42 years | 5y +3.53% / +6.76% / +9.59% | 10y +5.56% / +6.48% / +7.24% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
   minimum rolling 10-year CAGR is not higher
-24a Gold | starts 2007-03-19 | CAGR +9.51% | excess -2.31% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
+24a Gold (back-test years included) | starts 2007-03-19 | CAGR +9.51% | excess -2.31% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
   minimum rolling 10-year CAGR is not higher
 24b Momentum+LowVol (back-test years included) | CAGR +18.16% | excess +4.47% | DD +60.12% | bench DD +63.76% | worst 2008 -53.07% | recover 2.73 years | 5y +3.54% / +17.16% / +26.24% | 10y +12.07% / +16.76% / +21.97% | PASS
@@ -1884,7 +1884,7 @@ name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD 
 24d LowVol 30 (back-test years included) | XIRR +14.59% | excess +1.96% | DD +48.86% | bench DD +63.76% | worst 2008 -42.63% | recover 1.74 years | 5y +4.18% / +15.05% / +27.17% | 10y +10.07% / +14.77% / +21.46% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
 24d Quality 30 (back-test years included) | XIRR +15.52% | excess +2.89% | DD +55.83% | bench DD +63.76% | worst 2008 -50.24% | recover 1.76 years | 5y +3.23% / +16.07% / +34.22% | 10y +11.35% / +15.69% / +24.01% | PASS
-24d Value 20 | starts 2009-01-01 | XIRR +15.70% | excess +2.45% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
+24d Value 20 (back-test years included) | starts 2009-01-01 | XIRR +15.70% | excess +2.45% | DD +29.77% | bench DD +38.07% | worst 2011 -21.33% | recover 1.26 years | 5y +4.95% / +15.04% / +26.53% | 10y +9.06% / +15.30% / +20.93% | PASS
 24d Alpha 50 (back-test years included) | XIRR +19.61% | excess +6.98% | DD +79.00% | bench DD +63.76% | worst 2008 -73.62% | recover 6.65 years | 5y -7.05% / +19.06% / +38.75% | 10y +8.58% / +17.90% / +27.42% | PASS
 24d Midcap 150 (back-test years included) | XIRR +16.99% | excess +4.36% | DD +72.98% | bench DD +63.76% | worst 2008 -65.05% | recover 6.36 years | 5y -2.14% / +15.11% / +31.51% | 10y +7.64% / +14.92% / +22.86% | PASS
 24d Smallcap 250 (back-test years included) | XIRR +15.29% | excess +2.65% | DD +75.65% | bench DD +63.76% | worst 2008 -68.67% | recover 6.43 years | 5y -6.32% / +12.34% / +33.09% | 10y +2.85% / +12.66% / +21.26% | FAIL
@@ -1893,7 +1893,7 @@ name | CAGR or XIRR after tax | excess vs NIFTY 200 TRI | max DD | NIFTY 200 DD 
 24d G-Sec 10y | starts 2011-01-03 | XIRR +4.65% | excess -8.94% | DD +11.79% | bench DD +38.07% | worst 2013 -1.09% | recover 1.42 years | 5y +3.53% / +6.76% / +9.59% | 10y +5.56% / +6.48% / +7.24% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
   minimum rolling 10-year CAGR is not higher
-24d Gold | starts 2007-03-19 | XIRR +8.11% | excess -4.58% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
+24d Gold (back-test years included) | starts 2007-03-19 | XIRR +8.11% | excess -4.58% | DD +27.08% | bench DD +63.76% | worst 2014 -9.32% | recover 6.64 years | 5y -2.61% / +10.01% / +26.83% | 10y +3.72% / +7.74% / +11.53% | FAIL
   CAGR is not 2 points higher, and the drawdown clause is not met
   minimum rolling 10-year CAGR is not higher
 24d Momentum+LowVol (back-test years included) | XIRR +16.68% | excess +4.05% | DD +59.32% | bench DD +63.76% | worst 2008 -52.15% | recover 2.71 years | 5y +3.93% / +17.17% / +26.34% | 10y +12.14% / +16.82% / +22.03% | PASS
@@ -1964,7 +1964,7 @@ holdout 24d 70/20/10 24b Alpha50+LowVol | 2025-01-01 to 2026-11-09 | XIRR +5.09%
   holdout CAGR is not 2 points higher, and the drawdown clause is not met
 
 Gold is GOLD_ETF, GOLDBEES series EQ, adjusted only for the unit split, with no expense ratio because the ETF price is already net of its charges. The rules above still name the IBJA rate at 0.3 percent. This scoring uses GOLD_ETF instead. First date 2007-03-19, close CAGR +13.64% through 2026-11-09. The 24c books start later, on the first date every sleeve shares. That date is the first G-Sec session, 2011-01-03, printed on the row. Gold itself is held from its own first date inside that window.
-NIFTY50 Value 20 has a blank launch date, so its row is not marked (back-test years included).
+NIFTY50 Value 20 has a blank launch date. A blank launch is unknown, and unknown is not live, so the row is marked (back-test years included). Gold has no launch date in launch.csv, and its rows are marked the same way. Step 33 made this change. The verdicts are unchanged.
 Best 24b mix by after-tax CAGR: 24b Alpha50+LowVol at +18.69%.
 Best 24c portfolio by after-tax CAGR: 24c 70/20/10 24b Alpha50+LowVol at +14.43%.
 
@@ -2034,3 +2034,88 @@ The entry rule matches attempt 7. A trend day is a day when NIFTY's first 5-minu
 Sizing is not attempt 7's Rs 2,000 a trade. The paper book risks Rs 6,000 a day, split into 35 equal slices, with a position cap of Rs 5,00,000 and whole shares. A later signal is not opened once the day's committed risk reaches Rs 6,000.
 
 The forward test passes only when all of these hold: at least 30 qualifying days, average R after costs at least +0.10, winning days above 55%, still profitable in rupees without the best 2 days, and net rupees above 0 on at least 60% of the stocks that traded. Until 30 qualifying days the report says IN PROGRESS. Confirmation uses only sessions after 2026-10-30.
+
+## Conclusions (research phase 1)
+
+Step 33, 2026-11-18. No verdict was changed.
+
+Trading verdict. No rule is in the Bucket: nothing has an in-sample pass and a holdout pass. Attempt 23 closed short-term stock picking, and factor exposure from here goes through index funds. The Watch list is still open and is not a pass: rsi2 < 5, m2 regime, rel rsi5, rel rsi5 stock10, tom rsi20, the S2 ATM straddle, and nifty basis 5d. Each of those was positive after costs on the holdout and none had a holdout t above 2.
+
+Investing verdict. On the live record, only NIFTY Alpha 50 clears the attempt 25 bar. Its monthly excess over NIFTY 200 TRI is in the luck table below. The other live indices do not clear the bar. Midcap150 Momentum 50 is under 5 live years and has no verdict. The back-tested factor books that passed attempt 24 in sample failed the 2025 holdout. Two of the four 24c mixes passed in sample on a window that includes back-test years, and both failed that same holdout. The 10-month rule on the best 24c book failed in sample. Value 20 and gold are marked (back-test years included) because a blank launch date is unknown, and unknown is not live.
+
+Luck test, attempt 25 live window through the last index date, monthly excess versus NIFTY 200 TRI. The t is the one-sample t of those monthly excesses, sample standard deviation. A rolling 3-year window counts as ahead only when the index CAGR is higher. NIFTY 50's file starts on 2005-01-03, after its 1996-04-22 launch, and that comparison uses NIFTY 200 TRI before the NIFTY 200 launch on 2011-07-19.
+
+NIFTY 50 | 2005-01-03 to 2026-11-17 | n 262 | mean -0.04% | std +0.95% | t -0.60 | 3y ahead 41.0% (93/227)
+NIFTY 200 | 2011-07-20 to 2026-11-17 | n 184 | mean +0.00% | std +0.00% | t 0.00 | 3y ahead 0.0% (0/149)
+Momentum 30 | 2020-08-26 to 2026-11-17 | n 75 | mean +0.12% | std +2.80% | t 0.36 | 3y ahead 92.5% (37/40)
+LowVol 30 | 2016-07-11 to 2026-11-17 | n 124 | mean -0.05% | std +1.84% | t -0.31 | 3y ahead 61.8% (55/89)
+Alpha 50 | 2012-11-20 to 2026-11-17 | n 168 | mean +0.58% | std +3.57% | t 2.12 | 3y ahead 88.7% (118/133)
+Quality 30 | 2018-04-18 to 2026-11-17 | n 103 | mean -0.15% | std +2.47% | t -0.62 | 3y ahead 20.6% (14/68)
+Midcap 150 | 2016-04-04 to 2026-11-17 | n 127 | mean +0.35% | std +2.32% | t 1.68 | 3y ahead 72.8% (67/92)
+Smallcap 250 | 2016-04-04 to 2026-11-17 | n 127 | mean +0.25% | std +3.71% | t 0.75 | 3y ahead 69.6% (64/92)
+
+Alpha 50 t 2.12 on 168 months. One-sided p 0.01788. Bonferroni, p times 7: 0.1251. This is the chance bound that the best of the 7 indices other than NIFTY 200 reaches a t this large when every monthly excess has mean zero.
+
+24c rolling 10-year comparison. Old bench min is the NIFTY 200 book the stored verdict used, run from that book's own start through 2024-12-31, after the same expense and tax. New bench min is the NIFTY 200 book from 2011-01-03 through 2024-12-31. The headline minimum is the NIFTY 200 book from 2005-04-01, the figure on the 24a row. Higher, in the rolling clause, is strict.
+
+24c 70/20/10 NIFTY 200 | start 2011-01-03 | book min +10.55% | old bench min +11.09% | new bench min +11.09% | headline 2005-04-01 min +6.03% | old FAIL | new FAIL | verdict unchanged
+  same-start: CAGR is not 2 points higher, and the drawdown clause is not met; minimum rolling 10-year CAGR is not higher
+24c 70/20/10 Alpha50+LowVol | start 2011-01-03 | book min +14.28% | old bench min +11.09% | new bench min +11.09% | headline 2005-04-01 min +6.03% | old PASS | new PASS | verdict unchanged
+24c 60/25/15 NIFTY 200 | start 2011-01-03 | book min +10.25% | old bench min +11.09% | new bench min +11.09% | headline 2005-04-01 min +6.03% | old FAIL | new FAIL | verdict unchanged
+  same-start: CAGR is not 2 points higher, and the drawdown clause is not met; minimum rolling 10-year CAGR is not higher
+24c 60/25/15 Alpha50+LowVol | start 2011-01-03 | book min +13.28% | old bench min +11.09% | new bench min +11.09% | headline 2005-04-01 min +6.03% | old PASS | new PASS | verdict unchanged
+No 24c verdict would change. The catalogue was not changed.
+Against the 2005-04-01 minimum the verdict would not change either. The two NIFTY 200 mixes already fail the CAGR clause, and the two Alpha mixes already beat the higher same-start minimum.
+
+Tracking differences. An exchange-traded fund is an INF symbol in series EQ. The cash file has no fund name. A fund is assigned when it has at least 250 overlapping daily returns and its correlation with one index TRI is the highest of the six. The lead over the next index must be at least 0.04, and the correlation at least 0.90. NIFTY 50 and NIFTY 200 move together, so when those two are the top pair the correlation must be at least 0.95 and the lead at least 0.004. Prices are adjusted only for face-value splits in the actions files. Where the mutual-fund feed had a split the equities file did not, that EQ row was copied into the actions file and then read back. The difference is the ETF price CAGR minus the index TRI CAGR from the first shared date to the last. Median turnover is rupees, on days with volume above zero. Days with no trade are market sessions from the fund's first print to its last print with no EQ volume.
+
+NIFTYBEES | NIFTY 50 | 2011-06-22 to 2026-11-09 | ETF +11.43% | index TRI +12.00% | difference -0.56% | median turnover Rs 82,111,652 | days with no trade 0 | splits 1
+ICICINIFTY | NIFTY 50 | 2018-04-10 to 2023-12-19 | ETF +14.87% | index TRI +14.95% | difference -0.08% | median turnover Rs 19,703,044 | days with no trade 0 | splits 0
+NIFTYETF | NIFTY 50 | 2023-09-01 to 2026-11-09 | ETF +9.39% | index TRI +9.50% | difference -0.11% | median turnover Rs 34,894,233 | days with no trade 0 | splits 0
+NIFTYIETF | NIFTY 50 | 2023-12-20 to 2026-11-09 | ETF +7.20% | index TRI +7.29% | difference -0.09% | median turnover Rs 135,231,640 | days with no trade 0 | splits 0
+NIFTY1 | NIFTY 50 | 2024-03-20 to 2026-11-09 | ETF +6.51% | index TRI +6.63% | difference -0.12% | median turnover Rs 21,237,483 | days with no trade 0 | splits 0
+AONENIFTY | NIFTY 50 | 2025-05-28 to 2026-11-09 | ETF +1.50% | index TRI +2.11% | difference -0.61% | median turnover Rs 2,265,816 | days with no trade 0 | splits 0
+NIFTYCASE | NIFTY 50 | 2025-10-20 to 2026-11-09 | ETF -2.40% | index TRI -1.89% | difference -0.51% | median turnover Rs 8,548,171 | days with no trade 0 | splits 0
+ALPHA | NIFTY Alpha 50 | 2024-03-20 to 2026-11-09 | ETF +6.63% | index TRI +7.99% | difference -1.35% | median turnover Rs 57,505,586 | days with no trade 0 | splits 0
+MOALPHA50 | NIFTY Alpha 50 | 2025-07-10 to 2026-11-09 | ETF -0.89% | index TRI +0.81% | difference -1.69% | median turnover Rs 277,688 | days with no trade 0 | splits 0
+MAMFGETF | NIFTY Midcap 150 | 2022-02-02 to 2023-08-31 | ETF +13.56% | index TRI +16.85% | difference -3.29% | median turnover Rs 408,691 | days with no trade 0 | splits 0
+MAM150ETF | NIFTY Midcap 150 | 2022-03-15 to 2023-08-31 | ETF +26.83% | index TRI +26.56% | difference +0.27% | median turnover Rs 1,344,661 | days with no trade 0 | splits 0
+MID150BEES | NIFTY Midcap 150 | 2022-05-10 to 2026-11-09 | ETF +18.99% | index TRI +19.50% | difference -0.51% | median turnover Rs 86,277,599 | days with no trade 0 | splits 0
+MIDCAPETF | NIFTY Midcap 150 | 2023-09-01 to 2026-11-09 | ETF +14.30% | index TRI +14.53% | difference -0.23% | median turnover Rs 36,519,755 | days with no trade 0 | splits 0
+MIDCAPIETF | NIFTY Midcap 150 | 2023-12-20 to 2026-11-09 | ETF +11.85% | index TRI +12.26% | difference -0.41% | median turnover Rs 17,518,768 | days with no trade 0 | splits 1
+MID150CASE | NIFTY Midcap 150 | 2024-06-19 to 2026-11-09 | ETF +4.52% | index TRI +4.25% | difference +0.27% | median turnover Rs 11,999,986 | days with no trade 0 | splits 0
+LOWVOLIETF | NIFTY100 Low Volatility 30 | 2023-12-20 to 2026-11-09 | ETF +7.84% | index TRI +8.53% | difference -0.70% | median turnover Rs 33,629,900 | days with no trade 0 | splits 1
+MOM30IETF | NIFTY200 Momentum 30 | 2023-12-20 to 2026-11-09 | ETF +4.70% | index TRI +5.58% | difference -0.88% | median turnover Rs 30,418,245 | days with no trade 0 | splits 0
+No fund cleared the bar as a NIFTY 200 tracker. The NIFTY 50 funds above are closer to NIFTY 50 than to NIFTY 200, and GROWWN200's daily correlation with NIFTY 200 TRI is about 0.59.
+
+Named funds that did not clear that bar. MOMENTUM50, MOMMIDCAP and a momentum-50 symbol are not treated as NIFTY200 Momentum 30 from the letters alone, and ALPL30 is not treated as NIFTY Alpha 50.
+GROWWN200 | letters say NIFTY 200 (corr 0.587) | closest NIFTY 200 (corr 0.587, lead 0.0162) | days 416 | splits 0
+NIFTYIWIN | letters say NIFTY 50 (corr 0.945) | closest NIFTY 50 (corr 0.945, lead 0.0163) | days 421 | splits 0
+GROWWNIFTY | letters say NIFTY 50 (corr 0.941) | closest NIFTY 50 (corr 0.941, lead 0.0076) | days 320 | splits 0
+HDFCNIFTY | letters say NIFTY 50 (corr 0.921) | closest NIFTY 50 (corr 0.921, lead 0.0288) | days 836 | splits 0
+NIFTY50ADD | letters say NIFTY 50 (corr 0.887) | closest NIFTY 50 (corr 0.887, lead 0.0260) | days 450 | splits 0
+QNIFTY | letters say NIFTY 50 (corr 0.792) | closest NIFTY 50 (corr 0.792, lead 0.0031) | days 3231 | splits 1
+NIFTYBETF | letters say NIFTY 50 (corr 0.684) | closest NIFTY 50 (corr 0.684, lead 0.0142) | days 685 | splits 0
+IIFLNIFTY | letters say NIFTY 50 (corr 0.613) | closest NIFTY 50 (corr 0.613, lead 0.0088) | days 918 | splits 0
+NIFTYQLITY | letters say NIFTY 50 (corr 0.558) | closest NIFTY100 Low Volatility 30 (corr 0.611, lead 0.0228) | days 1040 | splits 0
+KOTAKNIFTY | letters say NIFTY 50 (corr 0.457) | closest NIFTY 50 (corr 0.457, lead 0.0000) | days 3143 | splits 0 | no split row; price not adjusted
+IVZINNIFTY | letters say NIFTY 50 (corr 0.454) | closest NIFTY 50 (corr 0.454, lead 0.0066) | days 1913 | splits 1
+ALPHAETF | letters say NIFTY Alpha 50 (corr 0.887) | closest NIFTY200 Momentum 30 (corr 0.907, lead 0.0205) | days 746 | splits 0
+KOTAKALPHA | letters say NIFTY Alpha 50 (corr 0.897) | closest NIFTY Alpha 50 (corr 0.897, lead 0.0819) | days 549 | splits 0
+MIDCAP | letters say NIFTY Midcap 150 (corr 0.862) | closest NIFTY Midcap 150 (corr 0.862, lead 0.0650) | days 649 | splits 1
+HDFCMID150 | letters say NIFTY Midcap 150 (corr 0.775) | closest NIFTY Midcap 150 (corr 0.775, lead 0.0584) | days 913 | splits 1
+MIDCAPIWIN | letters say NIFTY Midcap 150 (corr 0.746) | closest NIFTY Midcap 150 (corr 0.746, lead 0.0141) | days 418 | splits 0
+MID150 | letters say NIFTY Midcap 150 (corr 0.698) | closest NIFTY Midcap 150 (corr 0.698, lead 0.0507) | days 397 | splits 0
+NETFMID150 | letters say NIFTY Midcap 150 (corr 0.610) | closest NIFTY Midcap 150 (corr 0.610, lead 0.0432) | days 625 | splits 0
+NIFMID150 | letters say NIFTY Midcap 150 (corr 0.553) | closest NIFTY Midcap 150 (corr 0.553, lead 0.0192) | days 565 | splits 0
+LOWVOL | letters say NIFTY100 Low Volatility 30 (corr 0.885) | closest NIFTY100 Low Volatility 30 (corr 0.885, lead 0.0964) | days 774 | splits 0
+LOWVOL1 | letters say NIFTY100 Low Volatility 30 (corr 0.697) | closest NIFTY100 Low Volatility 30 (corr 0.697, lead 0.0628) | days 649 | splits 0
+MOLOWVOL | letters say NIFTY100 Low Volatility 30 (corr 0.573) | closest NIFTY100 Low Volatility 30 (corr 0.573, lead 0.0447) | days 1136 | splits 1
+HDFCLOWVOL | letters say NIFTY100 Low Volatility 30 (corr 0.493) | closest NIFTY100 Low Volatility 30 (corr 0.493, lead 0.0785) | days 991 | splits 1
+MOMENTUM50 | letters say NIFTY200 Momentum 30 (corr 0.949) | closest NIFTY200 Momentum 30 (corr 0.949, lead 0.0309) | days 520 | splits 0
+MOMENTUM30 | letters say NIFTY200 Momentum 30 (corr 0.822) | closest NIFTY200 Momentum 30 (corr 0.822, lead 0.0655) | days 260 | splits 0
+HDFCMOMENT | letters say NIFTY200 Momentum 30 (corr 0.813) | closest NIFTY200 Momentum 30 (corr 0.813, lead 0.0876) | days 999 | splits 1
+MOMOMENTUM | letters say NIFTY200 Momentum 30 (corr 0.804) | closest NIFTY200 Momentum 30 (corr 0.804, lead 0.0668) | days 1164 | splits 1
+MOMENTUM | letters say NIFTY200 Momentum 30 (corr 0.792) | closest NIFTY200 Momentum 30 (corr 0.792, lead 0.0635) | days 1040 | splits 0
+
+Open items. The Watch list above is unconfirmed. The forward record in the section above this one started 2026-11-04, has no filled numbers, and stays IN PROGRESS until 30 qualifying days. nse_holidays.py covers 2010 through 2026 and has no 2027 holiday list.
